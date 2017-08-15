@@ -49,8 +49,13 @@ variable "cluster_size" {
   default     = 3
 }
 
-variable "network_tags" {
-  description = "A list of network tags that may be used to apply firewall filters."
+variable "network_name" {
+  description = "The name of the VPC Network where all resources should be created."
+  default = "default"
+}
+
+variable "custom_network_tags" {
+  description = "A list of network tags that will be added to the Compute Instance Template in addition to the tags automatically added by this module."
   type = "list"
   default = ["foo", "bar", "name", "josh"]
 }
@@ -63,6 +68,42 @@ variable "metadata" {
     name2 = "josh2"
   }
 }
+
+# Firewall Ports
+
+variable "server_rpc_port" {
+  description = "The port used by servers to handle incoming requests from other agents."
+  default     = 8300
+}
+
+variable "cli_rpc_port" {
+  description = "The port used by all agents to handle RPC from the CLI."
+  default     = 8400
+}
+
+variable "serf_lan_port" {
+  description = "The port used to handle gossip in the LAN. Required by all agents."
+  default     = 8301
+}
+
+variable "serf_wan_port" {
+  description = "The port used by servers to gossip over the WAN to other servers."
+  default     = 8302
+}
+
+variable "http_api_port" {
+  description = "The port used by clients to talk to the HTTP API"
+  default     = 8500
+}
+
+variable "dns_port" {
+  description = "The port used to resolve DNS queries."
+  default     = 8600
+}
+
+
+
+
 
 //variable "cluster_tag_key" {
 //  description = "Add a tag with this key and the value var.cluster_tag_value to each Instance in the ASG. This can be used to automatically find other Consul nodes and form a cluster."
@@ -159,42 +200,3 @@ variable "metadata" {
 //  default     = 300
 //}
 //
-//variable "instance_profile_path" {
-//  description = "Path in which to create the IAM instance profile."
-//  default     = "/"
-//}
-//
-//variable "server_rpc_port" {
-//  description = "The port used by servers to handle incoming requests from other agents."
-//  default     = 8300
-//}
-//
-//variable "cli_rpc_port" {
-//  description = "The port used by all agents to handle RPC from the CLI."
-//  default     = 8400
-//}
-//
-//variable "serf_lan_port" {
-//  description = "The port used to handle gossip in the LAN. Required by all agents."
-//  default     = 8301
-//}
-//
-//variable "serf_wan_port" {
-//  description = "The port used by servers to gossip over the WAN to other servers."
-//  default     = 8302
-//}
-//
-//variable "http_api_port" {
-//  description = "The port used by clients to talk to the HTTP API"
-//  default     = 8500
-//}
-//
-//variable "dns_port" {
-//  description = "The port used to resolve DNS queries."
-//  default     = 8600
-//}
-//
-//variable "ssh_port" {
-//  description = "The port used for SSH connections"
-//  default     = 22
-//}

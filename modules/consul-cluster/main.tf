@@ -33,15 +33,7 @@ resource "google_compute_instance_group_manager" "consul" {
 resource "google_compute_instance_template" "consul_server" {
   name = "consul-${var.cluster_name}"
   description = "${var.cluster_description}"
-
-  #tags = "${concat(data.template_file.convert_tags_map_to_list.*.rendered)}"
-  tags = "${var.network_tags}"
-
-//  tags = {
-//    foo = "bar"
-//    name = "josh"
-//  }
-//  tags = ["foo", "bar", "name", "josh"]
+  tags = "${concat(list("consul-server"), var.custom_network_tags)}"
 
   instance_description = "${var.cluster_description}"
   machine_type         = "${var.machine_type}"
@@ -60,7 +52,7 @@ resource "google_compute_instance_template" "consul_server" {
   }
 
   network_interface {
-    network = "default"
+    network = "${var.network_name}"
   }
 
   metadata = "${var.metadata}"
@@ -70,20 +62,40 @@ resource "google_compute_instance_template" "consul_server" {
 //  }
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# UPDATE FIREWALL RULES TO ALLOW CONSUL-SPECIFIC TRAFFIC WITHIN CLUSTER
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "google_compute_firewall" "consul_server" {
+  name    = "consul-server"
+  network = "${var.network_name}"
+
+  allow {
+    protocol = "tcp"
+    ports    = [
+      "${var.server_rpc_port}",
+      "${var.cli_rpc_port}",
+      "${var.serf_lan_port}",
+      "${var.serf_wan_port}",
+      "${var.http_api_port}",
+      "${var.dns_port}"
+    ]
+  }
+
+  allow {
+    protocol = "udp"
+    ports    = [
+      "${var.serf_lan_port}",
+      "${var.serf_wan_port}",
+      "${var.dns_port}"
+    ]
+  }
+
+  source_tags = ["consul-server"]
+}
 
 
 
-//
-//
-//
-//
-//resource "google_compute_instance_group" "instance_group" {
-//  name        = "${var.cluster_name}"
-//  description = "${var.cluster_instance_group_description}"
-//  zone        = "us-central1-a"
-//  network     = "${google_compute_network.default.self_link}"
-//}
-//
 //resource "aws_autoscaling_group" "autoscaling_group" {
 //  launch_configuration = "${aws_launch_configuration.launch_configuration.name}"
 //
