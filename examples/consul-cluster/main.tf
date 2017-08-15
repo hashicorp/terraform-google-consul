@@ -64,4 +64,10 @@ module "consul_servers" {
   cluster_name = "josh-test"
   cluster_description = "Consul Server cluster"
   machine_type = "n1-standard-1"
+  assign_public_ip_addresses = true
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE A BASTION HOST
+# Our Consul Server nodes have no public IP address by default, so we create a Bastion Host so that we can reach them.
+# ---------------------------------------------------------------------------------------------------------------------

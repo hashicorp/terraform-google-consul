@@ -44,9 +44,14 @@ variable "source_image" {
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "assign_public_ip_addresses" {
+  description = "If true, each of the Compute Instances will receive a public IP address and be reachable from the Public Internet (if Firewall rules permit). If false, the Compute Instances will have private IP addresses only. In production, this should be set to false."
+  default = false
+}
+
 variable "cluster_size" {
   description = "The number of nodes to have in the Consul cluster. We strongly recommended that you use either 3 or 5."
-  default     = 3
+  default = 3
 }
 
 variable "network_name" {

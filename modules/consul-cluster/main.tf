@@ -13,12 +13,12 @@ terraform {
 # single-zone Managed Instance Group.
 # ---------------------------------------------------------------------------------------------------------------------
 
-# Create the single-zone Managed Instance Group where Consul Server will live
-resource "google_compute_instance_group_manager" "consul" {
+# Create the single-zone Managed Instance Group where Consul Server will live.
+resource "google_compute_instance_group_manager" "consul_server" {
   name = "consul-${var.cluster_name}"
 
   base_instance_name = "consul-${var.cluster_name}"
-  instance_template  = "${google_compute_instance_template.consul_server.self_link}"
+  instance_template  = "${data.template_file.compute_instance_template_self_link.rendered}"
   zone               = "${var.gcp_zone}"
 
   # Consul Server is a stateful cluster, so the update strategy used to roll out a new GCE Instance Template must be
@@ -29,9 +29,12 @@ resource "google_compute_instance_group_manager" "consul" {
   target_size  = "${var.cluster_size}"
 }
 
-# Create the Instance Template that will be used to populate the Managed Instance Group
-resource "google_compute_instance_template" "consul_server" {
-  name = "consul-${var.cluster_name}"
+# Create the Instance Template that will be used to populate the Managed Instance Group.
+# NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is true.
+resource "google_compute_instance_template" "consul_servers_public" {
+  count = "${var.assign_public_ip_addresses}"
+
+  name_prefix = "consul-${var.cluster_name}"
   description = "${var.cluster_description}"
   tags = "${concat(list("consul-server"), var.custom_network_tags)}"
 
@@ -44,7 +47,52 @@ resource "google_compute_instance_template" "consul_server" {
     preemptible = false
   }
 
-  // Create a new boot disk from an image
+  disk {
+    boot         = true
+    auto_delete  = true
+    source_image = "${var.source_image}"
+  }
+
+  network_interface {
+    network = "${var.network_name}"
+    # The presence of this property assigns a public IP address to each Compute Instance.
+    access_config {
+      nat_ip = ""
+    }
+  }
+
+  metadata = "${var.metadata}"
+
+//  service_account {
+//    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+//  }
+
+  # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
+  # we need to create a new instance template before we can destroy the old one. Note that any Terraform resource on
+  # which this Terraform resource depends will also need this lifecycle statement.
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Create the Instance Template that will be used to populate the Managed Instance Group.
+# NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is false.
+resource "google_compute_instance_template" "consul_servers_private" {
+  count = "${1 - var.assign_public_ip_addresses}"
+
+  name_prefix = "consul-${var.cluster_name}"
+  description = "${var.cluster_description}"
+  tags = "${concat(list("consul-server"), var.custom_network_tags)}"
+
+  instance_description = "${var.cluster_description}"
+  machine_type         = "${var.machine_type}"
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+    preemptible = false
+  }
+
   disk {
     boot         = true
     auto_delete  = true
@@ -57,9 +105,16 @@ resource "google_compute_instance_template" "consul_server" {
 
   metadata = "${var.metadata}"
 
-//  service_account {
-//    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-//  }
+  //  service_account {
+  //    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+  //  }
+
+  # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
+  # we need to create a new instance template before we can destroy the old one. Note that any Terraform resource on
+  # which this Terraform resource depends will also need this lifecycle statement.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -94,6 +149,23 @@ resource "google_compute_firewall" "consul_server" {
   source_tags = ["consul-server"]
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# CONVENIENCE VARIABLES
+# Because we've got some conditional logic in this template, some values will depend on our properties. This section
+# wraps such values in a nicer construct.
+# ---------------------------------------------------------------------------------------------------------------------
+
+# The Google Compute Instance Group needs the self_link of the Compute Instance Template that's actually created.
+data "template_file" "compute_instance_template_self_link" {
+  # This will return the self_link of the Compute Instance Template that is actually created. It works as follows:
+  # - Make a list of 1 value or 0 values for each of google_compute_instance_template.consul_servers_public and
+  #   google_compute_instance_template.consul_servers_private by adding the glob (*) notation. Terraform will complain
+  #   if we directly reference a resource property that doesn't exist, but it will permit us to turn a single resource
+  #   into a list of 1 resource and "no resource" into an empty list.
+  # - Concat these lists. concat(list-of-1-value, empty-list) == list-of-1-value
+  # - Take the first element of list-of-1-value
+  template = "${element(concat(google_compute_instance_template.consul_servers_public.*.self_link, google_compute_instance_template.consul_servers_private.*.self_link), 0)}"
+}
 
 
 //resource "aws_autoscaling_group" "autoscaling_group" {
