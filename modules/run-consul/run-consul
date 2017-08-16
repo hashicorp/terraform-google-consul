@@ -23,7 +23,7 @@ function print_usage {
   echo
   echo -e "  --server\t\tIf set, run in server mode. Optional. Exactly one of --server or --client must be set."
   echo -e "  --client\t\tIf set, run in client mode. Optional. Exactly one of --server or --client must be set."
-  echo -e "  --instance-tag-name\tAutomatically form a cluster with Instances that have the same value for this Compute Instance tag name. Optional."
+  echo -e "  --cluster-tag-name\tAutomatically form a cluster with Instances that have the same value for this Compute Instance tag name. Optional."
   echo -e "  --config-dir\t\tThe path to the Consul config folder. Optional. Default is the absolute path of '../config', relative to this script."
   echo -e "  --data-dir\t\tThe path to the Consul data folder. Optional. Default is the absolute path of '../data', relative to this script."
   echo -e "  --log-dir\t\tThe path to the Consul log folder. Optional. Default is the absolute path of '../log', relative to this script."
@@ -98,19 +98,22 @@ function get_instance_custom_metadata_value {
   local readonly key="$1"
 
   log_info "Looking up Custom Instance Metadata value for key \"$key\""
-  get_instance_metadata_value "/instance/attributes/$key"
+  get_instance_metadata_value "instance/attributes/$key"
 }
 
 # Get the ID of the Project in which this Compute Instance currently resides
 function get_instance_project_id {
   log_info "Looking up Project ID"
-  get_instance_metadata_value "/project/project-id"
+  get_instance_metadata_value "project/project-id"
 }
 
 # Get the GCE Zone in which this Compute Instance currently resides
 function get_instance_zone {
   log_info "Looking up Zone of the current Compute Instance"
-  get_instance_metadata_value "/instance/zone"
+
+  # The value returned for zone will be of the form "projects/121238320500/zones/us-west1-a" so we need to split the string
+  # by "/" and return the 4th string.
+  get_instance_metadata_value "instance/zone" | cut -d'/' -f4
 }
 
 # Get the ID of the current Compute Instance
@@ -124,7 +127,7 @@ function get_instance_ip_address {
   local network_interface_number="$1"
 
   # If no network interface number was specified, default to the first one
-  if [[ ! -z "$network_interface_number" ]]; then
+  if [[ -z "$network_interface_number" ]]; then
     network_interface_number=0
   fi
 
@@ -136,7 +139,7 @@ function generate_consul_config {
   local readonly server="$1"
   local readonly config_dir="$2"
   local readonly user="$3"
-  local readonly instance_tag_name="$4"
+  local readonly cluster_tag_name="$4"
   local readonly cluster_size_instance_metadata_key_name="$5"
   local readonly config_path="$config_dir/$CONSUL_CONFIG_FILE"
 
@@ -150,15 +153,10 @@ function generate_consul_config {
   project_id=$(get_instance_project_id)
 
   local retry_join_json=""
-  if [[ -z "$instance_tag_name" ]]; then
-    log_warn "The Instance Tag name \"$instance_tag_name\" is empty. Will not automatically try to form a cluster based on Instance Tag name."
+  if [[ -z "$cluster_tag_name" ]]; then
+    log_warn "The Instance Tag name \"$cluster_tag_name\" is empty. Will not automatically try to form a cluster based on Instance Tag name."
   else
-    retry_join_json=$(cat <<EOF
-  {
-     "retry_join": ["provider=gce project_name=$project_id tag_value=$instance_tag_name"]
-  },
-EOF
-)
+    retry_join_json="\"retry_join\": [\"provider=gce project_name=$project_id tag_value=$cluster_tag_name\"],"
   fi
 
   local bootstrap_expect=""
@@ -230,7 +228,7 @@ function run {
   local log_dir=""
   local bin_dir=""
   local user=""
-  local instance_tag_name=""
+  local cluster_tag_name=""
   local skip_consul_config="false"
   local all_args=()
 
@@ -269,9 +267,9 @@ function run {
         user="$2"
         shift
         ;;
-      --instance-tag-name)
+      --cluster-tag-name)
         assert_not_empty "$key" "$2"
-        instance_tag_name="$2"
+        cluster_tag_name="$2"
         shift
         ;;
       --skip-consul-config)
@@ -324,7 +322,7 @@ function run {
   if [[ "$skip_consul_config" == "true" ]]; then
     log_info "The --skip-consul-config flag is set, so will not generate a default Consul config file."
   else
-    generate_consul_config "$server" "$config_dir" "$user" "$instance_tag_name" "$CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME"
+    generate_consul_config "$server" "$config_dir" "$user" "$cluster_tag_name" "$CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME"
   fi
 
   generate_supervisor_config "$SUPERVISOR_CONFIG_PATH" "$config_dir" "$data_dir" "$log_dir" "$bin_dir" "$user"

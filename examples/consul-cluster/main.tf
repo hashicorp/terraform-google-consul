@@ -66,9 +66,20 @@ module "consul_servers" {
   machine_type = "n1-standard-1"
   assign_public_ip_addresses = true
   instance_group_update_strategy = "RESTART"
+  source_image = "consul"
+  cluster_tag_name = "consul-server-josh-test"
+  startup_script = "${data.template_file.startup_script_server.rendered}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE A BASTION HOST
-# Our Consul Server nodes have no public IP address by default, so we create a Bastion Host so that we can reach them.
+# RENDER THE STARTUP SCRIPT THAT WILL RUN ON EACH CONSUL SERVER INSTANCE WHEN IT'S BOOTING
+# This script will configure and start Consul.
 # ---------------------------------------------------------------------------------------------------------------------
+
+data "template_file" "startup_script_server" {
+  template = "${file("${path.module}/startup-script-server.sh")}"
+
+  vars {
+    cluster_tag_name = "${var.cluster_tag_name}"
+  }
+}

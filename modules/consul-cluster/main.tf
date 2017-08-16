@@ -15,9 +15,9 @@ terraform {
 
 # Create the single-zone Managed Instance Group where Consul Server will live.
 resource "google_compute_instance_group_manager" "consul_server" {
-  name = "consul-${var.cluster_name}"
+  name = "${var.cluster_name}"
 
-  base_instance_name = "consul-${var.cluster_name}"
+  base_instance_name = "${var.cluster_name}"
   instance_template  = "${data.template_file.compute_instance_template_self_link.rendered}"
   zone               = "${var.gcp_zone}"
 
@@ -31,15 +31,16 @@ resource "google_compute_instance_group_manager" "consul_server" {
 
 # Create the Instance Template that will be used to populate the Managed Instance Group.
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is true.
-resource "google_compute_instance_template" "consul_servers_public" {
+resource "google_compute_instance_template" "consul_server_public" {
   count = "${var.assign_public_ip_addresses}"
 
-  name_prefix = "consul-${var.cluster_name}"
+  name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
-  tags = "${concat(list("consul-server-${var.cluster_name}"), var.custom_network_tags)}"
+  tags = "${concat(list(var.cluster_tag_name), var.custom_network_tags)}"
 
   instance_description = "${var.cluster_description}"
   machine_type         = "${var.machine_type}"
+  metadata_startup_script = "${var.startup_script}"
 
   scheduling {
     automatic_restart   = true
@@ -51,6 +52,7 @@ resource "google_compute_instance_template" "consul_servers_public" {
     boot         = true
     auto_delete  = true
     source_image = "${var.source_image}"
+
   }
 
   network_interface {
@@ -63,9 +65,9 @@ resource "google_compute_instance_template" "consul_servers_public" {
 
   metadata = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
 
-//  service_account {
-//    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-//  }
+  service_account {
+    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+  }
 
   # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
   # we need to create a new instance template before we can destroy the old one. Note that any Terraform resource on
@@ -77,12 +79,12 @@ resource "google_compute_instance_template" "consul_servers_public" {
 
 # Create the Instance Template that will be used to populate the Managed Instance Group.
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is false.
-resource "google_compute_instance_template" "consul_servers_private" {
+resource "google_compute_instance_template" "consul_server_private" {
   count = "${1 - var.assign_public_ip_addresses}"
 
-  name_prefix = "consul-${var.cluster_name}"
+  name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
-  tags = "${concat(list("consul-server-${var.cluster_name}"), var.custom_network_tags)}"
+  tags = "${concat(list(var.cluster_tag_name), var.custom_network_tags)}"
 
   instance_description = "${var.cluster_description}"
   machine_type         = "${var.machine_type}"
@@ -105,9 +107,9 @@ resource "google_compute_instance_template" "consul_servers_private" {
 
   metadata = "${var.custom_metadata}"
 
-  //  service_account {
-  //    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-  //  }
+  service_account {
+    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+  }
 
   # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
   # we need to create a new instance template before we can destroy the old one. Note that any Terraform resource on
@@ -122,7 +124,7 @@ resource "google_compute_instance_template" "consul_servers_private" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "google_compute_firewall" "consul_server" {
-  name    = "consul-server-${var.cluster_name}"
+  name    = "${var.cluster_name}"
   network = "${var.network_name}"
 
   allow {
@@ -146,7 +148,7 @@ resource "google_compute_firewall" "consul_server" {
     ]
   }
 
-  source_tags = ["consul-server-${var.cluster_name}"]
+  source_tags = ["${var.cluster_tag_name}"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -164,7 +166,7 @@ data "template_file" "compute_instance_template_self_link" {
   #   into a list of 1 resource and "no resource" into an empty list.
   # - Concat these lists. concat(list-of-1-value, empty-list) == list-of-1-value
   # - Take the first element of list-of-1-value
-  template = "${element(concat(google_compute_instance_template.consul_servers_public.*.self_link, google_compute_instance_template.consul_servers_private.*.self_link), 0)}"
+  template = "${element(concat(google_compute_instance_template.consul_server_public.*.self_link, google_compute_instance_template.consul_server_private.*.self_link), 0)}"
 }
 
 

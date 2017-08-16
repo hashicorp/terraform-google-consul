@@ -26,18 +26,20 @@ variable "source_image" {
   default = "ubuntu-1604-lts"
 }
 
-//variable "vpc_id" {
-//  description = "The ID of the VPC in which to deploy the Consul cluster"
-//}
-//
+variable "startup_script" {
+  description = "A Startup Script to execute when the server first boots. We remmend passing in a bash script that executes the run-consul script, which should have been installed in the Consul Google Image by the install-consul module."
+}
+
+variable "cluster_tag_name" {
+  description = "The tag the Compute Instances will look for to automatically discover each other and form a cluster. TIP: If running more than one Consul Server cluster, each cluster should have its own unique tag name"
+}
+
 //variable "allowed_inbound_cidr_blocks" {
 //  description = "A list of CIDR-formatted IP address ranges from which the EC2 Instances will allow connections to Consul"
 //  type        = "list"
 //}
-//
-//variable "user_data" {
-//  description = "A User Data script to execute while the server is booting. We remmend passing in a bash script that executes the run-consul script, which should have been installed in the Consul AMI by the install-consul module."
-//}
+
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
