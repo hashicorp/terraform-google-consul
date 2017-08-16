@@ -1,31 +1,31 @@
-//output "asg_name" {
-//  value = "${aws_autoscaling_group.autoscaling_group.name}"
-//}
-//
-//output "cluster_size" {
-//  value = "${aws_autoscaling_group.autoscaling_group.desired_capacity}"
-//}
-//
-//output "launch_config_name" {
-//  value = "${aws_launch_configuration.launch_configuration.name}"
-//}
-//
-//output "iam_role_arn" {
-//  value = "${aws_iam_role.instance_role.arn}"
-//}
-//
-//output "iam_role_id" {
-//  value = "${aws_iam_role.instance_role.id}"
-//}
-//
-//output "security_group_id" {
-//  value = "${aws_security_group.lc_security_group.id}"
-//}
-//
-//output "cluster_tag_key" {
-//  value = "${var.cluster_tag_key}"
-//}
-//
-//output "cluster_tag_value" {
-//  value = "${var.cluster_tag_value}"
-//}
+output "gcp_zone" {
+  value = "${var.gcp_zone}"
+}
+
+output "instance_group_self_link" {
+  value = "${google_compute_instance_group_manager.consul_server.self_link}"
+}
+
+output "instance_group_name" {
+  value = "${google_compute_instance_group_manager.consul_server.name}"
+}
+
+output "instance_template_self_link" {
+  value = "${data.template_file.compute_instance_template_self_link.rendered}"
+}
+
+output "instance_template_name" {
+  value = "${element(concat(google_compute_instance_template.consul_server_public.*.name, google_compute_instance_template.consul_server_private.*.name), 0)}"
+}
+
+output "instance_template_metadata_fingerprint" {
+  value = "${element(concat(google_compute_instance_template.consul_server_public.*.metadata_fingerprint, google_compute_instance_template.consul_server_private.*.metadata_fingerprint), 0)}"
+}
+
+output "firewall_rule_self_link" {
+  value = "${google_compute_firewall.consul_server.self_link}"
+}
+
+output "firewall_rule_self_name" {
+  value = "${google_compute_firewall.consul_server.name}"
+}

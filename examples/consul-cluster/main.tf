@@ -16,42 +16,6 @@ terraform {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-//# AUTOMATICALLY LOOK UP THE LATEST PRE-BUILT AMI
-//# This repo contains a CircleCI job that automatically builds and publishes the latest AMI by building the Packer
-//# template at /examples/consul-ami upon every new release. The Terraform data source below automatically looks up the
-//# latest AMI so that a simple "terraform apply" will just work without the user needing to manually build an AMI and
-//# fill in the right value.
-//#
-//# !! WARNING !! These exmaple AMIs are meant only convenience when initially testing this repo. Do NOT use these example
-//# AMIs in a production setting because it is important that you consciously think through the configuration you want
-//# in your own production AMI.
-//#
-//# NOTE: This Terraform data source must return at least one AMI result or the entire template will fail. See
-//# /_ci/publish-amis-in-new-account.md for more information.
-//# ---------------------------------------------------------------------------------------------------------------------
-//data "aws_ami" "consul" {
-//  most_recent      = true
-//
-//  # If we change the AWS Account in which test are run, update this value.
-//  owners     = ["562637147889"]
-//
-//  filter {
-//    name   = "virtualization-type"
-//    values = ["hvm"]
-//  }
-//
-//  filter {
-//    name   = "is-public"
-//    values = ["true"]
-//  }
-//
-//  filter {
-//    name   = "name"
-//    values = ["consul-ubuntu-*"]
-//  }
-//}
-
-# ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY THE CONSUL SERVER NODES
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -71,11 +35,8 @@ module "consul_servers" {
   startup_script = "${data.template_file.startup_script_server.rendered}"
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# RENDER THE STARTUP SCRIPT THAT WILL RUN ON EACH CONSUL SERVER INSTANCE WHEN IT'S BOOTING
+# Render the Startup Script that will run on each Consul Server Instance on boot.
 # This script will configure and start Consul.
-# ---------------------------------------------------------------------------------------------------------------------
-
 data "template_file" "startup_script_server" {
   template = "${file("${path.module}/startup-script-server.sh")}"
 
@@ -83,3 +44,9 @@ data "template_file" "startup_script_server" {
     cluster_tag_name = "${var.cluster_tag_name}"
   }
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ADD CUSTOM RESOURCES AS NEEDED
+# You may wish to front the Consul Server cluster with a Load Balancer so that you can have a single endpoint for
+# accessing the Consul UI, assign a DNS Record or create other custom resources as your needs dicate.
+# ---------------------------------------------------------------------------------------------------------------------

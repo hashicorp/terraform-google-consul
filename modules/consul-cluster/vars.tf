@@ -3,35 +3,24 @@
 # You must provide a value for each of these parameters.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "gcp_zone" {
+  description = "All GCP resources will be launched in this Zone."
+}
+
 variable "cluster_name" {
   description = "The name of the Consul cluster (e.g. consul-stage). This variable is used to namespace all resources created by this module."
 }
 
-variable "cluster_description" {
-  description = "A description of the Consul cluster; it will be added to the Compute Instance Template."
-}
-
-variable "gcp_zone" {
-  description = "All GCP resources will be launched in this Zone."
-  default = "us-west1-a"
+variable "cluster_tag_name" {
+  description = "The tag the Compute Instances will look for to automatically discover each other and form a cluster. TIP: If running more than one Consul Server cluster, each cluster should have its own unique tag name"
 }
 
 variable "machine_type" {
   description = "The machine type of the Compute Instance to run for each node in the cluster (e.g. n1-standard-1)."
 }
 
-variable "source_image" {
-  description = "The source image used to create the boot disk for a Consul Server node."
-  #default = "debian-cloud/debian-8"
-  default = "ubuntu-1604-lts"
-}
-
 variable "startup_script" {
   description = "A Startup Script to execute when the server first boots. We remmend passing in a bash script that executes the run-consul script, which should have been installed in the Consul Google Image by the install-consul module."
-}
-
-variable "cluster_tag_name" {
-  description = "The tag the Compute Instances will look for to automatically discover each other and form a cluster. TIP: If running more than one Consul Server cluster, each cluster should have its own unique tag name"
 }
 
 //variable "allowed_inbound_cidr_blocks" {
@@ -39,12 +28,20 @@ variable "cluster_tag_name" {
 //  type        = "list"
 //}
 
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
+
+variable "source_image" {
+  description = "The source image used to create the boot disk for a Consul Server node. Only Ubuntu 16.04 LTS is supported at this time."
+  default = "ubuntu-1604-lts"
+}
+
+variable "cluster_description" {
+  description = "A description of the Consul cluster; it will be added to the Compute Instance Template."
+  default = ""
+}
 
 variable "assign_public_ip_addresses" {
   description = "If true, each of the Compute Instances will receive a public IP address and be reachable from the Public Internet (if Firewall rules permit). If false, the Compute Instances will have private IP addresses only. In production, this should be set to false."
