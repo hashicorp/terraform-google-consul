@@ -36,7 +36,7 @@ resource "google_compute_instance_template" "consul_servers_public" {
 
   name_prefix = "consul-${var.cluster_name}"
   description = "${var.cluster_description}"
-  tags = "${concat(list("consul-server"), var.custom_network_tags)}"
+  tags = "${concat(list("consul-server-${var.cluster_name}"), var.custom_network_tags)}"
 
   instance_description = "${var.cluster_description}"
   machine_type         = "${var.machine_type}"
@@ -82,7 +82,7 @@ resource "google_compute_instance_template" "consul_servers_private" {
 
   name_prefix = "consul-${var.cluster_name}"
   description = "${var.cluster_description}"
-  tags = "${concat(list("consul-server"), var.custom_network_tags)}"
+  tags = "${concat(list("consul-server-${var.cluster_name}"), var.custom_network_tags)}"
 
   instance_description = "${var.cluster_description}"
   machine_type         = "${var.machine_type}"
@@ -122,7 +122,7 @@ resource "google_compute_instance_template" "consul_servers_private" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "google_compute_firewall" "consul_server" {
-  name    = "consul-server"
+  name    = "consul-server-${var.cluster_name}"
   network = "${var.network_name}"
 
   allow {
@@ -146,7 +146,7 @@ resource "google_compute_firewall" "consul_server" {
     ]
   }
 
-  source_tags = ["consul-server"]
+  source_tags = ["consul-server-${var.cluster_name}"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

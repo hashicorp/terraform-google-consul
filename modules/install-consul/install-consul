@@ -2,8 +2,8 @@
 # This script can be used to install Consul and its dependencies. This script has been tested with the following
 # operating systems:
 #
-# 1. Ubuntu 16.04
-# 1. Amazon Linux
+# - Debian 9
+# - Ubuntu 16.04
 
 set -e
 

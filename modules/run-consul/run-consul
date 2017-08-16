@@ -1,15 +1,14 @@
 #!/bin/bash
-# This script is used to configure and run Consul on an AWS server.
+# This script is used to configure and run Consul on a Google Compute Instance.
 
 set -e
-
-readonly AWS_ASG_TAG_KEY="aws:autoscaling:groupName"
 
 readonly CONSUL_CONFIG_FILE="default.json"
 readonly SUPERVISOR_CONFIG_PATH="/etc/supervisor/conf.d/run-consul.conf"
 
-readonly EC2_INSTANCE_METADATA_URL="http://169.254.169.254/latest/meta-data"
-readonly EC2_INSTANCE_DYNAMIC_DATA_URL="http://169.254.169.254/latest/dynamic"
+readonly COMPUTE_INSTANCE_METADATA_URL="http://metadata.google.internal/computeMetadata/v1"
+readonly GOOGLE_CLOUD_METADATA_REQUEST_HEADER="Metadata-Flavor: Google"
+readonly CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME="ClusterSize"
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_NAME="$(basename "$0")"
@@ -18,14 +17,13 @@ function print_usage {
   echo
   echo "Usage: run-consul [OPTIONS]"
   echo
-  echo "This script is used to configure and run Consul on an AWS server."
+  echo "This script is used to configure and run Consul on a Google Compute Instance."
   echo
   echo "Options:"
   echo
   echo -e "  --server\t\tIf set, run in server mode. Optional. Exactly one of --server or --client must be set."
   echo -e "  --client\t\tIf set, run in client mode. Optional. Exactly one of --server or --client must be set."
-  echo -e "  --cluster-tag-key\tAutomatically form a cluster with Instances that have this tag key and the tag value in --cluster-tag-value. Optional."
-  echo -e "  --cluster-tag-value\tAutomatically form a cluster with Instances that have the tag key in --cluster-tag-key and this tag value. Optional."
+  echo -e "  --instance-tag-name\tAutomatically form a cluster with Instances that have the same value for this Compute Instance tag name. Optional."
   echo -e "  --config-dir\t\tThe path to the Consul config folder. Optional. Default is the absolute path of '../config', relative to this script."
   echo -e "  --data-dir\t\tThe path to the Consul data folder. Optional. Default is the absolute path of '../data', relative to this script."
   echo -e "  --log-dir\t\tThe path to the Consul log folder. Optional. Default is the absolute path of '../log', relative to this script."
@@ -35,7 +33,7 @@ function print_usage {
   echo
   echo "Example:"
   echo
-  echo "  run-consul --server --config-dir /custom/path/to/consul/config"
+  echo "  run-consul --server --instance-tag-name consul-xyz --config-dir /custom/path/to/consul/config"
 }
 
 function log {
@@ -67,6 +65,15 @@ function strip_prefix {
   echo "${str#$prefix}"
 }
 
+function assert_is_installed {
+  local readonly name="$1"
+
+  if [[ ! $(command -v ${name}) ]]; then
+    log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
+    exit 1
+  fi
+}
+
 function assert_not_empty {
   local readonly arg_name="$1"
   local readonly arg_value="$2"
@@ -78,116 +85,89 @@ function assert_not_empty {
   fi
 }
 
-function lookup_path_in_instance_metadata {
+# Get the value at a specific Instance Metadata path.
+function get_instance_metadata_value {
   local readonly path="$1"
-  curl --silent --location "$EC2_INSTANCE_METADATA_URL/$path/"
+
+  log_info "Looking up Metadata value at $COMPUTE_INSTANCE_METADATA_URL/$path"
+  curl --silent --show-error --location --header "$GOOGLE_CLOUD_METADATA_REQUEST_HEADER" "$COMPUTE_INSTANCE_METADATA_URL/$path"
 }
 
-function lookup_path_in_instance_dynamic_data {
-  local readonly path="$1"
-  curl --silent --location "$EC2_INSTANCE_DYNAMIC_DATA_URL/$path/"
+# Get the value of the given Custom Metadata Key
+function get_instance_custom_metadata_value {
+  local readonly key="$1"
+
+  log_info "Looking up Custom Instance Metadata value for key \"$key\""
+  get_instance_metadata_value "/instance/attributes/$key"
 }
 
+# Get the ID of the Project in which this Compute Instance currently resides
+function get_instance_project_id {
+  log_info "Looking up Project ID"
+  get_instance_metadata_value "/project/project-id"
+}
+
+# Get the GCE Zone in which this Compute Instance currently resides
+function get_instance_zone {
+  log_info "Looking up Zone of the current Compute Instance"
+  get_instance_metadata_value "/instance/zone"
+}
+
+# Get the ID of the current Compute Instance
+function get_instance_name {
+  log_info "Looking up current Compute Instance name"
+  get_instance_metadata_value "instance/name"
+}
+
+# Get the IP Address of the current Compute Instance
 function get_instance_ip_address {
-  lookup_path_in_instance_metadata "local-ipv4"
-}
+  local network_interface_number="$1"
 
-function get_instance_id {
-  lookup_path_in_instance_metadata "instance-id"
-}
-
-function get_instance_region {
-  lookup_path_in_instance_dynamic_data "instance-identity/document" | jq -r ".region"
-}
-
-function get_instance_tags {
-  local readonly instance_id="$1"
-  local readonly instance_region="$2"
-
-  log_info "Looking up tags for Instance $instance_id in $instance_region"
-  aws ec2 describe-tags --region "$instance_region" --filters "Name=resource-type,Values=instance" "Name=resource-id,Values=${instance_id}"
-}
-
-function get_asg_size {
-  local readonly asg_name="$1"
-  local readonly aws_region="$2"
-  local asg_json=""
-
-  log_info "Looking up the size of the Auto Scaling Group $asg_name in $aws_region"
-  asg_json=$(aws autoscaling describe-auto-scaling-groups --region "$aws_region" --auto-scaling-group-names "$asg_name")
-  echo "$asg_json" | jq -r '.AutoScalingGroups[0].DesiredCapacity'
-}
-
-function get_cluster_size {
-  local readonly instance_tags="$1"
-  local readonly aws_region="$2"
-
-  local asg_name=""
-  asg_name=$(get_tag_value "$instance_tags" "$AWS_ASG_TAG_KEY")
-  if [[ -z "$asg_name" ]]; then
-    log_warn "This EC2 Instance does not appear to be part of an Auto Scaling Group, so cannot determine cluster size. Setting cluster size to 1."
-    echo 1
-  else
-    get_asg_size "$asg_name" "$aws_region"
+  # If no network interface number was specified, default to the first one
+  if [[ ! -z "$network_interface_number" ]]; then
+    network_interface_number=0
   fi
-}
 
-# Get the value for a specific tag from the tags JSON returned by the AWS describe-tags:
-# https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-tags.html
-function get_tag_value {
-  local readonly tags="$1"
-  local readonly tag_key="$2"
-
-  echo "$tags" | jq -r ".Tags[] | select(.Key == \"$tag_key\") | .Value"
-}
-
-function assert_is_installed {
-  local readonly name="$1"
-
-  if [[ ! $(command -v ${name}) ]]; then
-    log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
-    exit 1
-  fi
+  log_info "Looking up Compute Instance IP Address on Network Interface $network_interface_number"
+  get_instance_metadata_value "instance/network-interfaces/$network_interface_number/ip"
 }
 
 function generate_consul_config {
   local readonly server="$1"
   local readonly config_dir="$2"
   local readonly user="$3"
-  local readonly cluster_tag_key="$4"
-  local readonly cluster_tag_value="$5"
+  local readonly instance_tag_name="$4"
+  local readonly cluster_size_instance_metadata_key_name="$5"
   local readonly config_path="$config_dir/$CONSUL_CONFIG_FILE"
 
-  local instance_id=""
   local instance_ip_address=""
-  local instance_region=""
+  local instance_name=""
+  local project_id=""
 
-  instance_id=$(get_instance_id)
   instance_ip_address=$(get_instance_ip_address)
-  instance_region=$(get_instance_region)
+  instance_name=$(get_instance_name)
+  instance_zone=$(get_instance_zone)
+  project_id=$(get_instance_project_id)
 
   local retry_join_json=""
-  if [[ -z "$cluster_tag_key" || -z "$cluster_tag_value" ]]; then
-    log_warn "Either the cluster tag key ($cluster_tag_key) or value ($cluster_tag_value) is empty. Will not automatically try to form a cluster based on EC2 tags."
+  if [[ -z "$instance_tag_name" ]]; then
+    log_warn "The Instance Tag name \"$instance_tag_name\" is empty. Will not automatically try to form a cluster based on Instance Tag name."
   else
     retry_join_json=$(cat <<EOF
-  "retry_join_ec2": {
-    "tag_key": "$cluster_tag_key",
-    "tag_value": "$cluster_tag_value",
-    "region": "$instance_region"
+  {
+     "retry_join": ["provider=gce project_name=$project_id tag_value=$instance_tag_name"]
   },
 EOF
 )
   fi
 
   local bootstrap_expect=""
+  local
+
   if [[ "$server" == "true" ]]; then
-    local instance_tags=""
     local cluster_size=""
 
-    instance_tags=$(get_instance_tags "$instance_id" "$instance_region")
-    cluster_size=$(get_cluster_size "$instance_tags" "$instance_region")
-
+    cluster_size=$(get_instance_custom_metadata_value "$cluster_size_instance_metadata_key_name")
     bootstrap_expect="\"bootstrap_expect\": $cluster_size,"
   fi
 
@@ -198,8 +178,8 @@ EOF
   "bind_addr": "$instance_ip_address",
   $bootstrap_expect
   "client_addr": "0.0.0.0",
-  "datacenter": "$instance_region",
-  "node_name": "$instance_id",
+  "datacenter": "$instance_zone",
+  "node_name": "$instance_name",
   $retry_join_json
   "server": $server,
   "ui": true
@@ -250,8 +230,7 @@ function run {
   local log_dir=""
   local bin_dir=""
   local user=""
-  local cluster_tag_key=""
-  local cluster_tag_value=""
+  local instance_tag_name=""
   local skip_consul_config="false"
   local all_args=()
 
@@ -290,14 +269,9 @@ function run {
         user="$2"
         shift
         ;;
-      --cluster-tag-key)
+      --instance-tag-name)
         assert_not_empty "$key" "$2"
-        cluster_tag_key="$2"
-        shift
-        ;;
-      --cluster-tag-value)
-        assert_not_empty "$key" "$2"
-        cluster_tag_value="$2"
+        instance_tag_name="$2"
         shift
         ;;
       --skip-consul-config)
@@ -323,7 +297,7 @@ function run {
   fi
 
   assert_is_installed "supervisorctl"
-  assert_is_installed "aws"
+  assert_is_installed "gcloud"
   assert_is_installed "curl"
   assert_is_installed "jq"
 
@@ -350,7 +324,7 @@ function run {
   if [[ "$skip_consul_config" == "true" ]]; then
     log_info "The --skip-consul-config flag is set, so will not generate a default Consul config file."
   else
-    generate_consul_config "$server" "$config_dir" "$user" "$cluster_tag_key" "$cluster_tag_value"
+    generate_consul_config "$server" "$config_dir" "$user" "$instance_tag_name" "$CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME"
   fi
 
   generate_supervisor_config "$SUPERVISOR_CONFIG_PATH" "$config_dir" "$data_dir" "$log_dir" "$bin_dir" "$user"
