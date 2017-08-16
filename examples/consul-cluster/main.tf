@@ -65,6 +65,7 @@ module "consul_servers" {
   cluster_description = "Consul Server cluster"
   machine_type = "n1-standard-1"
   assign_public_ip_addresses = true
+  instance_group_update_strategy = "RESTART"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

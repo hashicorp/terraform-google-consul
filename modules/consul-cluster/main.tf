@@ -23,7 +23,7 @@ resource "google_compute_instance_group_manager" "consul_server" {
 
   # Consul Server is a stateful cluster, so the update strategy used to roll out a new GCE Instance Template must be
   # a rolling update. But since Terraform does not yet support ROLLING_UPDATE, such updates must be manually rolled out.
-  update_strategy = "NONE"
+  update_strategy = "${var.instance_group_update_strategy}"
 
   #target_pools = ["${google_compute_target_pool.appserver.self_link}"]
   target_size  = "${var.cluster_size}"
@@ -61,7 +61,7 @@ resource "google_compute_instance_template" "consul_servers_public" {
     }
   }
 
-  metadata = "${var.metadata}"
+  metadata = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
 
 //  service_account {
 //    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
@@ -103,7 +103,7 @@ resource "google_compute_instance_template" "consul_servers_private" {
     network = "${var.network_name}"
   }
 
-  metadata = "${var.metadata}"
+  metadata = "${var.custom_metadata}"
 
   //  service_account {
   //    scopes = ["userinfo-email", "compute-ro", "storage-ro"]

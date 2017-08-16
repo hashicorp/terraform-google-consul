@@ -62,10 +62,22 @@ variable "network_name" {
 variable "custom_network_tags" {
   description = "A list of network tags that will be added to the Compute Instance Template in addition to the tags automatically added by this module."
   type = "list"
-  default = ["foo", "bar", "name", "josh"]
+  default = ["name", "josh"]
 }
 
-variable "metadata" {
+variable "instance_group_update_strategy" {
+  description = "The update strategy to be used by the Instance Group. IMPORTNAT! When you update almost any cluster setting, under the hood, this module creates a new Instance Group Template. Once that Instance Group Template is created, the value of this variable determines how the new Template will be rolled out across the Instance Group. Unfortunately, as of August 2017, Google only supports the options 'RESTART' (instantly restart all Compute Instances and launch new ones from the new Template) or 'NONE' (do nothing; updates should be handled manually). Google does offer a rolling updates feature that perfectly meets our needs, but this is in Alphia (https://goo.gl/MC3mfc). Therefore, until this module supports a built-in rolling update strategy, we recommend using `NONE` and using the alpha rolling updates strategy to roll out new Consul versions. As an alpha feature, be sure you are comfortable with the level of risk you are taking on. For additional detail, see https://goo.gl/hGH6dd."
+  default = "NONE"
+}
+
+# Metadata
+
+variable "metadata_key_name_for_cluster_size" {
+  description = "The key name to be used for the custom metadata attribute that represents the size of the Consul cluster."
+  default = "cluster-size"
+}
+
+variable "custom_metadata" {
   description = "A map of metadata key value pairs to assign to the Compute Instance metadata."
   type = "map"
   default = {

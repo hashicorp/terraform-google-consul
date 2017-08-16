@@ -8,7 +8,7 @@ readonly SUPERVISOR_CONFIG_PATH="/etc/supervisor/conf.d/run-consul.conf"
 
 readonly COMPUTE_INSTANCE_METADATA_URL="http://metadata.google.internal/computeMetadata/v1"
 readonly GOOGLE_CLOUD_METADATA_REQUEST_HEADER="Metadata-Flavor: Google"
-readonly CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME="ClusterSize"
+readonly CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME="cluster-size"
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_NAME="$(basename "$0")"
