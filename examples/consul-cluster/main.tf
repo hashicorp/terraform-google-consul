@@ -61,13 +61,13 @@ module "consul_servers" {
   # source = "git::git@github.com:gruntwork-io/consul-aws-blueprint.git//modules/consul-cluster?ref=v0.0.1"
   source = "../../modules/consul-cluster"
 
-  cluster_name = "josh-test"
+  cluster_name = "${var.cluster_name}"
   cluster_description = "Consul Server cluster"
   machine_type = "n1-standard-1"
   assign_public_ip_addresses = true
   instance_group_update_strategy = "RESTART"
   source_image = "consul"
-  cluster_tag_name = "consul-server-josh-test"
+  cluster_tag_name = "${var.cluster_tag_name}"
   startup_script = "${data.template_file.startup_script_server.rendered}"
 }
 
