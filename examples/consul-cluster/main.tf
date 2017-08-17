@@ -28,6 +28,7 @@ module "consul_servers" {
   gcp_zone = "${var.gcp_zone}"
   cluster_name = "${var.consul_server_cluster_name}"
   cluster_description = "Consul Server cluster"
+  cluster_size = "${var.consul_server_cluster_size}"
   machine_type = "n1-standard-1"
   assign_public_ip_addresses = false
   source_image = "consul"
@@ -68,6 +69,7 @@ module "consul_clients" {
 
   gcp_zone = "${var.gcp_zone}"
   cluster_name = "${var.consul_client_cluster_name}"
+  cluster_size = "${var.consul_client_cluster_size}"
   cluster_description = "Consul Clients cluster"
   machine_type = "n1-standard-1"
   assign_public_ip_addresses = true

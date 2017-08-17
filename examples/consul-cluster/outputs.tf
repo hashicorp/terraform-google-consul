@@ -1,3 +1,7 @@
+output "num_servers" {
+  value = "${var.consul_server_cluster_size}"
+}
+
 output "gcp_zone" {
   value = "${module.consul_servers.gcp_zone}"
 }

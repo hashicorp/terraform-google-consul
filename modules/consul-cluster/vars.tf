@@ -19,6 +19,10 @@ variable "machine_type" {
   description = "The machine type of the Compute Instance to run for each node in the cluster (e.g. n1-standard-1)."
 }
 
+variable "cluster_size" {
+  description = "The number of nodes to have in the Consul cluster. We strongly recommended that you use either 3 or 5."
+}
+
 variable "source_image" {
   description = "The source image used to create the boot disk for a Consul Server node. Only images based on Ubuntu 16.04 LTS are supported at this time."
 }
@@ -51,11 +55,6 @@ variable "cluster_description" {
 variable "assign_public_ip_addresses" {
   description = "If true, each of the Compute Instances will receive a public IP address and be reachable from the Public Internet (if Firewall rules permit). If false, the Compute Instances will have private IP addresses only. In production, this should be set to false."
   default = false
-}
-
-variable "cluster_size" {
-  description = "The number of nodes to have in the Consul cluster. We strongly recommended that you use either 3 or 5."
-  default = 3
 }
 
 variable "network_name" {

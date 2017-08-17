@@ -54,13 +54,13 @@ explaining why the change is absolutely necessary.
 
 ### Downtime
 
-Bear in mind that the Terraform code in this Blueprint is used by real companies to run real infrastructure in 
+Bear in mind that the Terraform code in this Terraform Module is used by real companies to run real infrastructure in 
 production, and certain types of changes could cause downtime. For example, consider the following:
 
-1. If you rename a resource (e.g. `aws_instance "foo"` -> `aws_instance "bar"`), Terraform will see that as deleting
-   the old resource and creating a new one.
-1. If you change certain attributes of a resource (e.g. the `name` of an `aws_elb`), the cloud provider (e.g. AWS) may
-   treat that as an instruction to delete the old resource and a create a new one. 
+1. If you rename a resource (e.g. `google_compute_instance "foo"` -> `google_compute_instance "bar"`), Terraform will see
+   that as deleting the old resource and creating a new one.
+1. If you change certain attributes of a resource (e.g. the `name` of a `google_compute_instance_template`), the cloud
+   provider (e.g. Google) may treat that as an instruction to delete the old resource and a create a new one. 
    
 Deleting certain types of resources (e.g. virtual servers, load balancers) can cause downtime, so when making code
 changes, think carefully about how to avoid that. For example, can you avoid downtime by using 
