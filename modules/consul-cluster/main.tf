@@ -121,20 +121,6 @@ resource "google_compute_instance_template" "consul_server_private" {
   }
 }
 
-# Add a Health Check so that GCE will auto-restart unhealthy instances
-# WARNING: This Health Check requires that the Raft Protocol be set to 3 or higher. If you wish to use a lower Raft
-# Protocol version, you should disable this Health Check by setting var.enable_health_check = false.
-resource "google_compute_http_health_check" "consul_server" {
-  name = "${var.cluster_name}"
-
-  request_path = "${var.health_check_request_path}"
-  port = "${var.http_api_port}"
-  check_interval_sec = "${var.health_check_interval_sec}"
-  timeout_sec = "${var.health_check_timeout_sec}"
-  healthy_threshold = "${var.health_check_healthy_threshold}"
-  unhealthy_threshold = "${var.health_check_unhealthy_threshold}"
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # UPDATE FIREWALL RULES TO ALLOW CONSUL-SPECIFIC TRAFFIC WITHIN CLUSTER
 # ---------------------------------------------------------------------------------------------------------------------

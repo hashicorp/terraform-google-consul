@@ -51,3 +51,14 @@ data "template_file" "startup_script_server" {
 # You may wish to front the Consul Server cluster with a Load Balancer so that you can have a single endpoint for
 # accessing the Consul UI, assign a DNS Record or create other custom resources as your needs dicate.
 # ---------------------------------------------------------------------------------------------------------------------
+
+module "load_balancer" {
+  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
+  # to a specific version of the modules, such as the following example:
+  # source = "git::git@github.com:gruntwork-io/consul-aws-blueprint.git//modules/consul-regional-load-balancer?ref=v0.0.1"
+  source = "../../modules/consul-regional-load-balancer"
+
+  cluster_name = "${var.cluster_name}"
+  compute_instance_group_name = "${module.consul_servers.instance_group_name}"
+  enable_public_access = true
+}

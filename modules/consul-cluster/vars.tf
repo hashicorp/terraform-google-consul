@@ -117,33 +117,6 @@ variable "dns_port" {
   default     = 8600
 }
 
-# Health Check Settings
-
-variable "health_check_request_path" {
-  description = "The URL path the Health Check will query. Note that the default requires that Raft Protocol version 3 or higher be used. This is the default setting when running the run-consul module in this repo."
-  default = "/v1/operator/autopilot/health"
-}
-
-variable "health_check_interval_sec" {
-  description = "The number of seconds between each Health Check attempt."
-  default = 5
-}
-
-variable "health_check_timeout_sec" {
-  description = "The number of seconds to wait before the Health Check declares failure."
-  default = 3
-}
-
-variable "health_check_healthy_threshold" {
-  description = "The number of consecutive successes required to consider the Compute Instance healthy."
-  default = 2
-}
-
-variable "health_check_unhealthy_threshold" {
-  description = "The number of consecutive failures required to consider the Compute Instance unhealthy."
-  default = 1
-}
-
 //variable "ssh_key_name" {
 //  description = "The name of an EC2 Key Pair that can be used to SSH to the EC2 Instances in this cluster. Set to an empty string to not associate a Key Pair."
 //  default     = ""
