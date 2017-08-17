@@ -2,8 +2,7 @@
 # Install Dnsmasq and configure it to forward requests for a specific domain to Consul. This script has been tested
 # with the following operating systems:
 #
-# 1. Ubuntu 16.04
-# 2. Amazon Linux
+# - Ubuntu 16.04
 
 set -e
 

@@ -1,14 +1,11 @@
-# Consul AMI
+# Consul Google Image
 
 This folder shows an example of how to use the [install-consul](/modules/install-consul) and 
-[install-dnsmasq](/modules/install-dnsmasq) modules with [Packer](https://www.packer.io/) to create [Amazon Machine 
-Images (AMIs)](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) that have Consul and Dnsmasq installed on 
-top of:
- 
-1. Ubuntu 16.04
-1. Amazon Linux
+[install-dnsmasq](/modules/install-dnsmasq) modules with [Packer](https://www.packer.io/) to create [Custom Images](
+https://cloud.google.com/compute/docs/images) that have Consul and Dnsmasq installed on 
+top of Ubuntu 16.04 LTS. At this time, Ubuntu 16.04 LTS is the only supported Linux distribution.
 
-These AMIs will have [Consul](https://www.consul.io/) installed and configured to automatically join a cluster during 
+These Images will have [Consul](https://www.consul.io/) installed and configured to automatically join a cluster during 
 boot-up. They also have [Dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) installed and configured to use 
 Consul for DNS lookups of the `.consul` domain (e.g. `foo.service.consul`) (see [registering 
 services](https://www.consul.io/intro/getting-started/services.html) for instructions on how to register your services
@@ -21,19 +18,17 @@ For more info on Consul installation and configuration, check out the
 
 ## Quick start
 
-To build the Consul AMI:
+To build the Consul Image:
 
 1. `git clone` this repo to your computer.
 1. Install [Packer](https://www.packer.io/).
-1. Configure your AWS credentials using one of the [options supported by the AWS 
-   SDK](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html). Usually, the easiest option is to
-   set the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
-1. Update the `variables` section of the `consul.json` Packer template to configure the AWS region, Consul version, and 
-   Dnsmasq version you wish to use.
+1. Configure your environment's Google credentials using the [Google Cloud SDK](https://cloud.google.com/sdk/).
+1. Update the `variables` section of the `consul.json` Packer template to configure the Project ID, Google Cloud Zone, 
+   and Consul version you wish to use.
 1. Run `packer build consul.json`.
 
-When the build finishes, it will output the IDs of the new AMIs. To see how to deploy one of these AMIs, check out the 
-[consul-cluster example](/examples/consul-cluster).
+When the build finishes, it will output the ID of the new Custom Image. To see how to deploy one of these Images, check
+out the  [consul-cluster example](/examples/consul-cluster).
 
 
 
@@ -48,13 +43,13 @@ provisioner. Instead of:
 {
   "provisioners": [{
     "type": "file",
-    "source": "{{template_dir}}/../../../consul-aws-blueprint",
+    "source": "{{template_dir}}/../../../consul-gcp-module",
     "destination": "/tmp"
   },{
     "type": "shell",
     "inline": [
-      "/tmp/consul-aws-blueprint/modules/install-consul/install-consul --version {{user `consul_version`}}",
-      "/tmp/consul-aws-blueprint/modules/install-dnsmasq/install-dnsmasq"
+      "/tmp/consul-gcp-module/modules/install-consul/install-consul --version {{user `consul_version`}}",
+      "/tmp/consul-gcp-module/modules/install-dnsmasq/install-dnsmasq"
     ],
     "pause_before": "30s"
   }]
@@ -68,17 +63,17 @@ Your code should look more like this:
   "provisioners": [{
     "type": "shell",
     "inline": [
-      "git clone --branch <BLUEPRINT_VERSION> https://github.com/gruntwork-io/consul-aws-blueprint.git /tmp/consul-aws-blueprint",
-      "/tmp/consul-aws-blueprint/modules/install-consul/install-consul --version {{user `consul_version`}}",
-      "/tmp/consul-aws-blueprint/modules/install-dnsmasq/install-dnsmasq"
+      "git clone --branch <MODULE_VERSION> https://github.com/gruntwork-io/consul-gcp-module.git /tmp/consul-gcp-module",
+      "/tmp/consul-gcp-module/modules/install-consul/install-consul --version {{user `consul_version`}}",
+      "/tmp/consul-gcp-module/modules/install-dnsmasq/install-dnsmasq"
     ],
     "pause_before": "30s"
   }]
 }
 ```
 
-You should replace `<BLUEPRINT_VERSION>` in the code above with the version of this blueprint that you want to use (see
+You should replace `<MODULE_VERSION>` in the code above with the version of this Module that you want to use (see
 the [Releases Page](../../releases) for all available versions). That's because for production usage, you should always
-use a fixed, known version of this Blueprint, downloaded from the official Git repo. On the other hand, when you're 
-just experimenting with the Blueprint, it's OK to use a local checkout of the Blueprint, uploaded from your own 
+use a fixed, known version of this Module, downloaded from the official Git repo. On the other hand, when you're 
+just experimenting with the Module, it's OK to use a local checkout of the Module, uploaded from your own 
 computer.
