@@ -1,9 +1,9 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY A CONSUL CLUSTER IN AWS
-# These templates show an example of how to use the consul-cluster module to deploy Consul in AWS. We deploy two Auto
-# Scaling Groups (ASGs): one with a small number of Consul server nodes and one with a larger number of Consul client
-# nodes. Note that these templates assume that the AMI you provide via the ami_id input variable is built from
-# the examples/consul-ami/consul.json Packer template.
+# DEPLOY A CONSUL CLUSTER IN GOOGLE CLOUD
+# These templates show an example of how to use the consul-cluster module to deploy Consul in Google Cloud. We deploy two
+# Compute Instance Groups: one with Consul server nodes and one with Consul client nodes. Note that these templates assume
+# that the Custom Image you provide via the source_image input variable is built from the
+# examples/consul-image/consul.json Packer template.
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "google" {
@@ -22,7 +22,7 @@ terraform {
 module "consul_servers" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/consul-aws-blueprint.git//modules/consul-cluster?ref=v0.0.1"
+  # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-cluster?ref=v0.0.1"
   source = "../../modules/consul-cluster"
 
   gcp_zone = "${var.gcp_zone}"
@@ -64,7 +64,7 @@ data "template_file" "startup_script_server" {
 module "consul_clients" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/consul-aws-blueprint.git//modules/consul-cluster?ref=v0.0.1"
+  # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-cluster?ref=v0.0.1"
   source = "../../modules/consul-cluster"
 
   gcp_zone = "${var.gcp_zone}"
@@ -100,7 +100,7 @@ data "template_file" "startup_script_client" {
 module "load_balancer" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/consul-aws-blueprint.git//modules/consul-regional-load-balancer?ref=v0.0.1"
+  # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-regional-load-balancer?ref=v0.0.1"
   source = "../../modules/consul-external-regional-load-balancer"
 
   cluster_name = "${var.consul_server_cluster_name}"
