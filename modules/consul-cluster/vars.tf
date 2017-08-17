@@ -61,7 +61,7 @@ variable "network_name" {
 variable "custom_network_tags" {
   description = "A list of network tags that will be added to the Compute Instance Template in addition to the tags automatically added by this module."
   type = "list"
-  default = ["name", "josh"]
+  default = []
 }
 
 variable "instance_group_update_strategy" {
@@ -117,32 +117,33 @@ variable "dns_port" {
   default     = 8600
 }
 
+# Health Check Settings
 
+variable "health_check_request_path" {
+  description = "The URL path the Health Check will query. Note that the default requires that Raft Protocol version 3 or higher be used. This is the default setting when running the run-consul module in this repo."
+  default = "/v1/operator/autopilot/health"
+}
 
+variable "health_check_interval_sec" {
+  description = "The number of seconds between each Health Check attempt."
+  default = 5
+}
 
+variable "health_check_timeout_sec" {
+  description = "The number of seconds to wait before the Health Check declares failure."
+  default = 3
+}
 
-//variable "cluster_tag_key" {
-//  description = "Add a tag with this key and the value var.cluster_tag_value to each Instance in the ASG. This can be used to automatically find other Consul nodes and form a cluster."
-//  default     = "consul-servers"
-//}
-//
-//variable "cluster_tag_value" {
-//  description = "Add a tag with key var.clsuter_tag_key and this value to each Instance in the ASG. This can be used to automatically find other Consul nodes and form a cluster."
-//  default     = "auto-join"
-//}
-//
-//variable "subnet_ids" {
-//  description = "The subnet IDs into which the EC2 Instances should be deployed. We recommend one subnet ID per node in the cluster_size variable. At least one of var.subnet_ids or var.availability_zones must be non-empty."
-//  type        = "list"
-//  default     = []
-//}
-//
-//variable "availability_zones" {
-//  description = "The availability zones into which the EC2 Instances should be deployed. We recommend one availability zone per node in the cluster_size variable. At least one of var.subnet_ids or var.availability_zones must be non-empty."
-//  type        = "list"
-//  default     = []
-//}
-//
+variable "health_check_healthy_threshold" {
+  description = "The number of consecutive successes required to consider the Compute Instance healthy."
+  default = 2
+}
+
+variable "health_check_unhealthy_threshold" {
+  description = "The number of consecutive failures required to consider the Compute Instance unhealthy."
+  default = 1
+}
+
 //variable "ssh_key_name" {
 //  description = "The name of an EC2 Key Pair that can be used to SSH to the EC2 Instances in this cluster. Set to an empty string to not associate a Key Pair."
 //  default     = ""
@@ -159,21 +160,6 @@ variable "dns_port" {
 //  default     = "Default"
 //}
 //
-//variable "associate_public_ip_address" {
-//  description = "If set to true, associate a public IP address with each EC2 Instance in the cluster."
-//  default     = false
-//}
-//
-//variable "tenancy" {
-//  description = "The tenancy of the instance. Must be one of: default or dedicated."
-//  default     = "default"
-//}
-//
-//variable "root_volume_ebs_optimized" {
-//  description = "If true, the launched EC2 instance will be EBS-optimized."
-//  default     = false
-//}
-//
 //variable "root_volume_type" {
 //  description = "The type of volume. Must be one of: standard, gp2, or io1."
 //  default     = "standard"
@@ -187,32 +173,5 @@ variable "dns_port" {
 //variable "root_volume_delete_on_termination" {
 //  description = "Whether the volume should be destroyed on instance termination."
 //  default     = true
-//}
-//
-//variable "target_group_arns" {
-//  description = "A list of target group ARNs of Application Load Balanacer (ALB) targets to associate with this ASG. If you're using a Elastic Load Balancer (AKA ELB Classic), use the load_balancers variable instead."
-//  type        = "list"
-//  default     = []
-//}
-//
-//variable "load_balancers" {
-//  description = "A list of Elastic Load Balancer (ELB) names to associate with this ASG. If you're using an Application Load Balancer (ALB), use the target_group_arns variable instead."
-//  type        = "list"
-//  default     = []
-//}
-//
-//variable "wait_for_capacity_timeout" {
-//  description = "A maximum duration that Terraform should wait for ASG instances to be healthy before timing out. Setting this to '0' causes Terraform to skip all Capacity Waiting behavior."
-//  default     = "10m"
-//}
-//
-//variable "health_check_type" {
-//  description = "Controls how health checking is done. Must be one of EC2 or ELB."
-//  default     = "EC2"
-//}
-//
-//variable "health_check_grace_period" {
-//  description = "Time, in seconds, after instance comes into service before checking health."
-//  default     = 300
 //}
 //

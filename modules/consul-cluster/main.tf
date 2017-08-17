@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# THESE TEMPLATES REQUIRE TERRAFORM VERSION 0.8 AND ABOVE
+# THESE TEMPLATES REQUIRE TERRAFORM VERSION 0.10.0 AND ABOVE
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
@@ -27,6 +27,8 @@ resource "google_compute_instance_group_manager" "consul_server" {
 
   #target_pools = ["${google_compute_target_pool.appserver.self_link}"]
   target_size  = "${var.cluster_size}"
+
+  depends_on = ["google_compute_instance_template.consul_server_public", "google_compute_instance_template.consul_server_private"]
 }
 
 # Create the Instance Template that will be used to populate the Managed Instance Group.
@@ -117,6 +119,20 @@ resource "google_compute_instance_template" "consul_server_private" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+# Add a Health Check so that GCE will auto-restart unhealthy instances
+# WARNING: This Health Check requires that the Raft Protocol be set to 3 or higher. If you wish to use a lower Raft
+# Protocol version, you should disable this Health Check by setting var.enable_health_check = false.
+resource "google_compute_http_health_check" "consul_server" {
+  name = "${var.cluster_name}"
+
+  request_path = "${var.health_check_request_path}"
+  port = "${var.http_api_port}"
+  check_interval_sec = "${var.health_check_interval_sec}"
+  timeout_sec = "${var.health_check_timeout_sec}"
+  healthy_threshold = "${var.health_check_healthy_threshold}"
+  unhealthy_threshold = "${var.health_check_unhealthy_threshold}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

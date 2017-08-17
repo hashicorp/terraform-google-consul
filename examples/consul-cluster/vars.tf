@@ -8,6 +8,11 @@ variable "gcp_region" {
   default = "us-west-1"
 }
 
+variable "gcp_zone" {
+  description = "The region in which all GCP resources will be launched."
+  default = "us-west1-a"
+}
+
 variable "cluster_name" {
   description = "The name of the Cluster. All resources will be namespaced by this value. E.g. consul-server-prod"
   default = "consul-server-josh"

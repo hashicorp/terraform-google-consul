@@ -25,6 +25,7 @@ module "consul_servers" {
   # source = "git::git@github.com:gruntwork-io/consul-aws-blueprint.git//modules/consul-cluster?ref=v0.0.1"
   source = "../../modules/consul-cluster"
 
+  gcp_zone = "${var.gcp_zone}"
   cluster_name = "${var.cluster_name}"
   cluster_description = "Consul Server cluster"
   machine_type = "n1-standard-1"
