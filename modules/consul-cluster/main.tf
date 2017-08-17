@@ -151,6 +151,7 @@ resource "google_compute_firewall" "consul_server" {
   }
 
   source_tags = ["${var.cluster_tag_name}"]
+  target_tags = ["${var.cluster_tag_name}"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

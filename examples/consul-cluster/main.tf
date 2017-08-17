@@ -29,7 +29,7 @@ module "consul_servers" {
   cluster_name = "${var.cluster_name}"
   cluster_description = "Consul Server cluster"
   machine_type = "n1-standard-1"
-  assign_public_ip_addresses = true
+  assign_public_ip_addresses = false
   instance_group_update_strategy = "RESTART"
   source_image = "consul"
   cluster_tag_name = "${var.cluster_tag_name}"
@@ -59,12 +59,8 @@ module "load_balancer" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
   # source = "git::git@github.com:gruntwork-io/consul-aws-blueprint.git//modules/consul-regional-load-balancer?ref=v0.0.1"
-  source = "../../modules/consul-regional-load-balancer"
+  source = "../../modules/consul-external-regional-load-balancer"
 
   cluster_name = "${var.cluster_name}"
-  #compute_instance_group_name = "${module.consul_servers.instance_group_name}"
-  compute_instance_group_name = "${module.consul_servers.instance_group_url}"
-  enable_public_access = false
-  external_load_balancer_port_range = "8500"
-  internal_load_balancer_port_list = ["8500"]
+  compute_instance_group_name = "${module.consul_servers.instance_group_name}"
 }
