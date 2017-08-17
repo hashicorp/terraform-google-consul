@@ -26,7 +26,7 @@ variable "http_api_port" {
 }
 
 variable "network_name" {
-  description = "The name of the VPC Network where all resources should be created."
+  description = "The URL of the VPC Network where all resources should be created. If left blank, we will use the default VPC network."
   default = "default"
 }
 
@@ -59,6 +59,19 @@ variable "health_check_unhealthy_threshold" {
 
 # Forwarding Rule Options
 
+# if var.enable_public_access == true, make sure this is non-empty.
+variable "external_load_balancer_port_range" {
+  description = "A range (e.g. 1024-2048) or a single port (1024) on which the Load Balancer will accept inbound connections. The empty string means all ports. Must be used if var.enable_public_access == true; otherwise leave empty."
+  default = ""
+}
+
+# if var.enable_public_access == false, make sure this is non-empty.
+variable "internal_load_balancer_port_list" {
+  description = "A list of ports (maximum of 5) on which the internal Load Balancer will accept inbound connections. Must be used if var.enable_public_access == false; otherwise leave empty."
+  type = "list"
+  default = []
+}
+
 variable "forwarding_rule_description" {
   description = "The description added to the Forwarding Rule created by this module."
   default = ""
@@ -67,17 +80,6 @@ variable "forwarding_rule_description" {
 variable "forwarding_rule_ip_address" {
   description = "The static IP address to assign to the Forwarding Rule. If not set, an ephemeral IP address is used."
   default = ""
-}
-
-variable "external_load_balancer_port_range" {
-  description = "A range (e.g. 1024-2048) or a single port (1024) on which the Load Balancer will accept inbound connections. The empty string means all ports. Must be used if var.enable_public_access == true; otherwise leave empty."
-  default = ""
-}
-
-variable "internal_load_balancer_port_list" {
-  description = "A list of ports (maximum of 5) on which the internal Load Balancer will accept inbound connections. Must be used if var.enable_public_access == false; otherwise leave empty."
-  type = "list"
-  default = []
 }
 
 variable "forwarding_rule_subnetwork" {
@@ -113,10 +115,12 @@ variable "backend_service_enable_cdn" {
   description = "If true, enables the Cloud CDN on the backend service. Unless var.enable_public_access == false, this setting is ignored."
   default = ""
 }
+
 variable "backend_service_port_name" {
   description = "The name of a service that has been added to an Instance Group in the Backend. Unless var.enable_public_access == false, this setting is ignored."
   default = "http"
 }
+
 variable "backend_service_protocol" {
   description = "The protocol the Backend Service will use to communicate with Backends. Options are HTTP, HTTPS, TCP, and SSL. For internal load balancing, options are TCP and UDP. Unless var.enable_public_access == false, this setting is ignored."
   default = "HTTP"
@@ -126,10 +130,12 @@ variable "backend_service_session_affinity" {
   description = "How to distribute load. Options are NONE (no affinity), CLIENT_IP (hash of the source/dest addresses/ports), and GENERATED_COOKIE (distribute load using a generated session cookie). Unless var.enable_public_access == false, this setting is ignored."
   default = "NONE"
 }
+
 variable "backend_service_timeout_sec" {
   default = "The number of seconds to wait for a Backend to respond to a request before considering the request failed. Unless var.enable_public_access == false, this setting is ignored."
   default = 5
 }
+
 variable "backend_service_connection_draining_timeout_sec" {
   default = "The number of seconds for which a Compute Instance will be drained (not accept new connections, but still work to finish started ones). Unless var.enable_public_access == false, this setting is ignored."
   default = 0

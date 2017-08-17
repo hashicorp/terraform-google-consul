@@ -64,6 +64,12 @@ variable "custom_network_tags" {
   default = []
 }
 
+variable "instance_group_target_pools" {
+  description = "A list of Target Pool URLs to which new Instances in the Instance Group will be added. Note that updating the Target Pools attribute does not affect existing instances."
+  type = "list"
+  default = []
+}
+
 variable "instance_group_update_strategy" {
   description = "The update strategy to be used by the Instance Group. IMPORTNAT! When you update almost any cluster setting, under the hood, this module creates a new Instance Group Template. Once that Instance Group Template is created, the value of this variable determines how the new Template will be rolled out across the Instance Group. Unfortunately, as of August 2017, Google only supports the options 'RESTART' (instantly restart all Compute Instances and launch new ones from the new Template) or 'NONE' (do nothing; updates should be handled manually). Google does offer a rolling updates feature that perfectly meets our needs, but this is in Alphia (https://goo.gl/MC3mfc). Therefore, until this module supports a built-in rolling update strategy, we recommend using `NONE` and using the alpha rolling updates strategy to roll out new Consul versions. As an alpha feature, be sure you are comfortable with the level of risk you are taking on. For additional detail, see https://goo.gl/hGH6dd."
   default = "NONE"
@@ -79,10 +85,7 @@ variable "metadata_key_name_for_cluster_size" {
 variable "custom_metadata" {
   description = "A map of metadata key value pairs to assign to the Compute Instance metadata."
   type = "map"
-  default = {
-    foo2 = "bar2"
-    name2 = "josh2"
-  }
+  default = {}
 }
 
 # Firewall Ports

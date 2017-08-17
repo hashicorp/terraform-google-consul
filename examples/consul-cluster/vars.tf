@@ -5,7 +5,7 @@ variable "gcp_project" {
 
 variable "gcp_region" {
   description = "The region in which all GCP resources will be launched."
-  default = "us-west-1"
+  default = "us-west1"
 }
 
 variable "gcp_zone" {

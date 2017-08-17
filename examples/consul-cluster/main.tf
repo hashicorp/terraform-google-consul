@@ -34,6 +34,9 @@ module "consul_servers" {
   source_image = "consul"
   cluster_tag_name = "${var.cluster_tag_name}"
   startup_script = "${data.template_file.startup_script_server.rendered}"
+
+  # Remove this if you don't want a load balancer.
+  instance_group_target_pools = ["${module.load_balancer.target_pool_url}"]
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
@@ -59,6 +62,9 @@ module "load_balancer" {
   source = "../../modules/consul-regional-load-balancer"
 
   cluster_name = "${var.cluster_name}"
-  compute_instance_group_name = "${module.consul_servers.instance_group_name}"
-  enable_public_access = true
+  #compute_instance_group_name = "${module.consul_servers.instance_group_name}"
+  compute_instance_group_name = "${module.consul_servers.instance_group_url}"
+  enable_public_access = false
+  external_load_balancer_port_range = "8500"
+  internal_load_balancer_port_list = ["8500"]
 }

@@ -25,7 +25,7 @@ resource "google_compute_instance_group_manager" "consul_server" {
   # a rolling update. But since Terraform does not yet support ROLLING_UPDATE, such updates must be manually rolled out.
   update_strategy = "${var.instance_group_update_strategy}"
 
-  #target_pools = ["${google_compute_target_pool.appserver.self_link}"]
+  target_pools = ["${var.instance_group_target_pools}"]
   target_size  = "${var.cluster_size}"
 
   depends_on = ["google_compute_instance_template.consul_server_public", "google_compute_instance_template.consul_server_private"]

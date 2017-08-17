@@ -32,7 +32,6 @@ resource "google_compute_backend_service" "consul_server" {
   name = "${var.cluster_name}"
   description = "${var.backend_service_description}"
 
-  balancing_mode = "${var.backend_service_balancing_mode}"
   enable_cdn  = "${var.backend_service_enable_cdn}"
   port_name   = "${var.backend_service_port_name}"
   protocol    = "${var.backend_service_protocol}"
@@ -42,6 +41,7 @@ resource "google_compute_backend_service" "consul_server" {
 
   backend {
     group = "${var.compute_instance_group_name}"
+    balancing_mode = "${var.backend_service_balancing_mode}"
   }
 
   health_checks = ["${google_compute_http_health_check.consul_server.self_link}"]
@@ -54,7 +54,7 @@ resource "google_compute_target_pool" "consul_server" {
   name = "${var.cluster_name}"
   description = "${var.target_pool_description}"
   session_affinity = "${var.target_pool_session_affinity}"
-  health_checks = ["${google_compute_http_health_check.consul_server.self_link}"]
+  health_checks = ["${google_compute_http_health_check.consul_server.name}"]
 }
 
 resource "google_compute_forwarding_rule" "consul_server" {
@@ -87,5 +87,6 @@ resource "google_compute_firewall" "load_balancer" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["int-lb"]
+  # TODO: Fix this
+  target_tags = ["consul-server-josh"]
 }
