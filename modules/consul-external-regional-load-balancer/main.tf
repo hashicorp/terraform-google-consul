@@ -60,6 +60,7 @@ resource "google_compute_firewall" "load_balancer" {
   }
 
   # These hardcoded IP addresses represent the Load Balancer and Health Checker, per Google Cloud Docs (https://goo.gl/xULu8U)
-  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  # TODO: Remove 0.0.0.0/0 once I understand why the Load Balancer fails without this rule.
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16", "0.0.0.0/0"]
   target_tags = ["${var.cluster_tag_name}"]
 }
