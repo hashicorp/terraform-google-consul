@@ -48,9 +48,9 @@ resource "google_compute_http_health_check" "consul_server" {
   request_path = "${var.health_check_request_path}"
 }
 
-# The Load Balancer needs explicit permission to forward traffic to our Consul Cluster.
+# The Load Balancer may need explicit permission to forward traffic to our Consul Cluster.
 resource "google_compute_firewall" "load_balancer" {
-  name    = "${var.cluster_name}-lb"
+  name    = "${var.cluster_name}-rule-lb"
   description = "${var.firewall_rule_description}"
   network = "${var.network_name == "" ? "default" : var.network_name}"
 
@@ -59,7 +59,7 @@ resource "google_compute_firewall" "load_balancer" {
     ports    = ["${var.http_api_port}"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
-  # TODO: Fix this
-  target_tags = ["consul-server-josh"]
+  # These hardcoded IP addresses represent the Load Balancer and Health Checker, per Google Cloud Docs (https://goo.gl/xULu8U)
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  target_tags = ["${var.cluster_tag_name}"]
 }

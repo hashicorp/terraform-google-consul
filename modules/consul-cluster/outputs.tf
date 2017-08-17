@@ -23,9 +23,9 @@ output "instance_template_metadata_fingerprint" {
 }
 
 output "firewall_rule_url" {
-  value = "${google_compute_firewall.consul_server.self_link}"
+  value = "${google_compute_firewall.consul_server_allow.self_link}"
 }
 
 output "firewall_rule_name" {
-  value = "${google_compute_firewall.consul_server.name}"
+  value = "${google_compute_firewall.consul_server_allow.name}"
 }

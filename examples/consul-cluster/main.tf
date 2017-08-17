@@ -62,5 +62,6 @@ module "load_balancer" {
   source = "../../modules/consul-external-regional-load-balancer"
 
   cluster_name = "${var.cluster_name}"
+  cluster_tag_name = "${var.cluster_tag_name}"
   compute_instance_group_name = "${module.consul_servers.instance_group_name}"
 }

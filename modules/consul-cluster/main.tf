@@ -125,8 +125,10 @@ resource "google_compute_instance_template" "consul_server_private" {
 # UPDATE FIREWALL RULES TO ALLOW CONSUL-SPECIFIC TRAFFIC WITHIN CLUSTER
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "google_compute_firewall" "consul_server" {
-  name    = "${var.cluster_name}-firewall-rule"
+# This Firewall Rule may be redundant depnding on the settings of your VPC Network, but if your Network is locked down,
+# this Rule will open up the appropriate ports.
+resource "google_compute_firewall" "consul_server_allow" {
+  name    = "${var.cluster_name}-rule-cluster"
   network = "${var.network_name}"
 
   allow {

@@ -12,7 +12,7 @@ variable "cluster_name" {
 }
 
 variable "cluster_tag_name" {
-  description = "The tag the Compute Instances will look for to automatically discover each other and form a cluster. TIP: If running more than one Consul Server cluster, each cluster should have its own unique tag name"
+  description = "The tag name the Compute Instances will look for to automatically discover each other and form a cluster. TIP: If running more than one Consul Server cluster, each cluster should have its own unique tag name."
 }
 
 variable "machine_type" {
@@ -32,6 +32,12 @@ variable "startup_script" {
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
+
+variable "instance_group_target_pools" {
+  description = "To use a Load Balancer with the Consul cluster, you must populate this value. Specifically, this is the list of Target Pool URLs to which new Compute Instances in the Instance Group created by this module will be added. Note that updating the Target Pools attribute does not affect existing Compute Instances."
+  type = "list"
+  default = []
+}
 
 variable "source_image" {
   description = "The source image used to create the boot disk for a Consul Server node. Only Ubuntu 16.04 LTS is supported at this time."
@@ -60,12 +66,6 @@ variable "network_name" {
 
 variable "custom_tags" {
   description = "A list of tags that will be added to the Compute Instance Template in addition to the tags automatically added by this module."
-  type = "list"
-  default = []
-}
-
-variable "instance_group_target_pools" {
-  description = "A list of Target Pool URLs to which new Instances in the Instance Group will be added. Note that updating the Target Pools attribute does not affect existing instances."
   type = "list"
   default = []
 }

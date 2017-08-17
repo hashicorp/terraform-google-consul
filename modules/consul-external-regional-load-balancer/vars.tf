@@ -11,6 +11,10 @@ variable "compute_instance_group_name" {
   description = "The name of the Compute Instance Group that contains the Consul Server nodes."
 }
 
+variable "cluster_tag_name" {
+  description = "The tag name that the Consul Server Compute Instances use to automatically discover each other and form a cluster."
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
