@@ -77,9 +77,6 @@ module "consul_clients" {
 
   # Our Consul Clients are completely stateless, so we are free to destroy and re-create them as needed.
   instance_group_update_strategy = "RESTART"
-
-  # Remove this if you don't want a load balancer.
-  instance_group_target_pools = ["${module.load_balancer.target_pool_url}"]
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
