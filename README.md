@@ -1,6 +1,6 @@
-# Consul GCP Blueprint
+# Consul Terraform Module for Google Cloud Platform (GCP)
 
-This repo contains a Blueprint for how to deploy a [Consul](https://www.consul.io/) cluster on 
+This repo contains a Terraform Module for how to deploy a [Consul](https://www.consul.io/) cluster on 
 [GCP](https://cloud.google.com/) using [Terraform](https://www.terraform.io/). Consul is a distributed, highly-available 
 tool that you can use for service discovery and key/value storage. A Consul cluster typically includes a small number
 of server nodes, which are responsible for being part of the [consensus 
@@ -52,15 +52,15 @@ companies that provide commercial support.
 
 Instead of figuring out the details of how to run a piece of infrastructure from scratch, you can reuse 
 existing code that has been proven in production. And instead of maintaining all that infrastructure code yourself, 
-you can leverage the work of the Blueprint community to pick up infrastructure improvements through
+you can leverage the work of the Terraform Module community to pick up infrastructure improvements through
 a version number bump.
  
  
  
-## Who maintains this Blueprint?
+## Who maintains this Terraform Module?
 
-This Blueprint is maintained by [Gruntwork](http://www.gruntwork.io/). If you're looking for help or commercial 
-support, send an email to [blueprints@gruntwork.io](mailto:blueprints@gruntwork.io?Subject=Consul%20Blueprint). 
+This Terraform Module is maintained by [Gruntwork](http://www.gruntwork.io/). If you're looking for help or commercial 
+support, send an email to [blueprints@gruntwork.io](mailto:blueprints@gruntwork.io?Subject=Consul%20Terraform%20Module). 
 Gruntwork can help with:
 
 * Setup, customization, and support for this Terraform Module.
@@ -98,9 +98,9 @@ Contributions are very welcome! Check out the [Contribution Guidelines](/CONTRIB
 
 
 
-## How is this Blueprint versioned?
+## How is this Terraform Module versioned?
 
-This Blueprint follows the principles of [Semantic Versioning](http://semver.org/). You can find each new release, 
+This Terraform Module follows the principles of [Semantic Versioning](http://semver.org/). You can find each new release, 
 along with the changelog, in the [Releases Page](../../releases). 
 
 During initial development, the major version will be 0 (e.g., `0.x.y`), which indicates the code does not yet have a 
