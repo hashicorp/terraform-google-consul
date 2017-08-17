@@ -15,7 +15,7 @@ terraform {
 
 # Create the single-zone Managed Instance Group where Consul Server will live.
 resource "google_compute_instance_group_manager" "consul_server" {
-  name = "${var.cluster_name}"
+  name = "${var.cluster_name}-ig"
 
   base_instance_name = "${var.cluster_name}"
   instance_template  = "${data.template_file.compute_instance_template_self_link.rendered}"
@@ -38,11 +38,13 @@ resource "google_compute_instance_template" "consul_server_public" {
 
   name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
-  tags = "${concat(list(var.cluster_tag_name), var.custom_network_tags)}"
 
   instance_description = "${var.cluster_description}"
   machine_type         = "${var.machine_type}"
+
+  tags = "${concat(list(var.cluster_tag_name), var.custom_tags)}"
   metadata_startup_script = "${var.startup_script}"
+  metadata = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
 
   scheduling {
     automatic_restart   = true
@@ -54,18 +56,15 @@ resource "google_compute_instance_template" "consul_server_public" {
     boot         = true
     auto_delete  = true
     source_image = "${var.source_image}"
-
   }
 
   network_interface {
     network = "${var.network_name}"
-    # The presence of this property assigns a public IP address to each Compute Instance.
     access_config {
+      # The presence of this property assigns a public IP address to each Compute Instance.
       nat_ip = ""
     }
   }
-
-  metadata = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
 
   service_account {
     scopes = ["userinfo-email", "compute-ro", "storage-ro"]
@@ -86,10 +85,13 @@ resource "google_compute_instance_template" "consul_server_private" {
 
   name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
-  tags = "${concat(list(var.cluster_tag_name), var.custom_network_tags)}"
 
   instance_description = "${var.cluster_description}"
-  machine_type         = "${var.machine_type}"
+  machine_type = "${var.machine_type}"
+
+  tags = "${concat(list(var.cluster_tag_name), var.custom_tags)}"
+  metadata_startup_script = "${var.startup_script}"
+  metadata = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
 
   scheduling {
     automatic_restart   = true
@@ -106,8 +108,6 @@ resource "google_compute_instance_template" "consul_server_private" {
   network_interface {
     network = "${var.network_name}"
   }
-
-  metadata = "${var.custom_metadata}"
 
   service_account {
     scopes = ["userinfo-email", "compute-ro", "storage-ro"]
@@ -126,7 +126,7 @@ resource "google_compute_instance_template" "consul_server_private" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "google_compute_firewall" "consul_server" {
-  name    = "${var.cluster_name}"
+  name    = "${var.cluster_name}-firewall-rule"
   network = "${var.network_name}"
 
   allow {

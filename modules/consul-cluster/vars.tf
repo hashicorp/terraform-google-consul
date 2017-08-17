@@ -58,8 +58,8 @@ variable "network_name" {
   default = "default"
 }
 
-variable "custom_network_tags" {
-  description = "A list of network tags that will be added to the Compute Instance Template in addition to the tags automatically added by this module."
+variable "custom_tags" {
+  description = "A list of tags that will be added to the Compute Instance Template in addition to the tags automatically added by this module."
   type = "list"
   default = []
 }
