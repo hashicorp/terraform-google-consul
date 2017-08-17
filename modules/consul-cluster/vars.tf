@@ -19,6 +19,10 @@ variable "machine_type" {
   description = "The machine type of the Compute Instance to run for each node in the cluster (e.g. n1-standard-1)."
 }
 
+variable "source_image" {
+  description = "The source image used to create the boot disk for a Consul Server node. Only images based on Ubuntu 16.04 LTS are supported at this time."
+}
+
 variable "startup_script" {
   description = "A Startup Script to execute when the server first boots. We remmend passing in a bash script that executes the run-consul script, which should have been installed in the Consul Google Image by the install-consul module."
 }
@@ -37,11 +41,6 @@ variable "instance_group_target_pools" {
   description = "To use a Load Balancer with the Consul cluster, you must populate this value. Specifically, this is the list of Target Pool URLs to which new Compute Instances in the Instance Group created by this module will be added. Note that updating the Target Pools attribute does not affect existing Compute Instances."
   type = "list"
   default = []
-}
-
-variable "source_image" {
-  description = "The source image used to create the boot disk for a Consul Server node. Only Ubuntu 16.04 LTS is supported at this time."
-  default = "ubuntu-1604-lts"
 }
 
 variable "cluster_description" {
