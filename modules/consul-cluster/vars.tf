@@ -125,34 +125,12 @@ variable "dns_port" {
   default = 8600
 }
 
-//variable "ssh_key_name" {
-//  description = "The name of an EC2 Key Pair that can be used to SSH to the EC2 Instances in this cluster. Set to an empty string to not associate a Key Pair."
-//  default     = ""
-//}
-//
-//variable "allowed_ssh_cidr_blocks" {
-//  description = "A list of CIDR-formatted IP address ranges from which the EC2 Instances will allow SSH connections"
-//  type        = "list"
-//  default     = []
-//}
-//
-//variable "termination_policies" {
-//  description = "A list of policies to decide how the instances in the auto scale group should be terminated. The allowed values are OldestInstance, NewestInstance, OldestLaunchConfiguration, ClosestToNextInstanceHour, Default."
-//  default     = "Default"
-//}
-//
-//variable "root_volume_type" {
-//  description = "The type of volume. Must be one of: standard, gp2, or io1."
-//  default     = "standard"
-//}
-//
-//variable "root_volume_size" {
-//  description = "The size, in GB, of the root EBS volume."
-//  default     = 50
-//}
-//
-//variable "root_volume_delete_on_termination" {
-//  description = "Whether the volume should be destroyed on instance termination."
-//  default     = true
-//}
-//
+variable "root_volume_disk_size_gb" {
+  description = "The size, in GB, of the root disk volume on each Consul node."
+  default = 30
+}
+
+variable "root_volume_disk_type" {
+  description = "The GCE disk type. Can be either pd-ssd, local-ssd, or pd-standard"
+  default = "pd-standard"
+}
