@@ -1,0 +1,29 @@
+{
+  "min_packer_version": "1.0.4",
+  "variables": {
+    "project_id": null,
+    "zone": null,
+    "consul_version": "0.9.2"
+  },
+  "builders": [{
+    "type": "googlecompute",
+    "image_name": "consul-{{isotime \"2006-01-02-030405\"}}",
+    "image_family": "consul",
+    "project_id": "{{user `project_id`}}",
+    "source_image_family": "ubuntu-1604-lts",
+    "zone": "{{user `zone`}}",
+    "ssh_username": "ubuntu"
+  }],
+  "provisioners": [{
+    "type": "file",
+    "source": "{{template_dir}}/../../../consul-gcp-module",
+    "destination": "/tmp"
+  },{
+    "type": "shell",
+    "inline": [
+      "/tmp/consul-gcp-module/modules/install-consul/install-consul --version {{user `consul_version`}}",
+      "/tmp/consul-gcp-module/modules/install-dnsmasq/install-dnsmasq"
+    ],
+    "pause_before": "30s"
+  }]
+}

@@ -1,0 +1,353 @@
+#!/bin/bash
+# This script is used to configure and run Consul on a Google Compute Instance.
+
+set -e
+
+readonly CONSUL_CONFIG_FILE="default.json"
+readonly SUPERVISOR_CONFIG_PATH="/etc/supervisor/conf.d/run-consul.conf"
+
+readonly COMPUTE_INSTANCE_METADATA_URL="http://metadata.google.internal/computeMetadata/v1"
+readonly GOOGLE_CLOUD_METADATA_REQUEST_HEADER="Metadata-Flavor: Google"
+readonly CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME="cluster-size"
+
+readonly DEFAULT_RAFT_PROTOCOL="3"
+
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_NAME="$(basename "$0")"
+
+function print_usage {
+  echo
+  echo "Usage: run-consul [OPTIONS]"
+  echo
+  echo "This script is used to configure and run Consul on a Google Compute Instance."
+  echo
+  echo "Required Arguments:"
+  echo
+  echo -e "  --server\t\tIf set, run in server mode. Exactly one of --server or --client must be set."
+  echo -e "  --client\t\tIf set, run in client mode. Exactly one of --server or --client must be set."
+  echo
+  echo "Optional Arguments:"
+  echo
+  echo -e "  --cluster-tag-name\tAutomatically form a cluster with Instances that have the same value for this Compute Instance tag name."
+  echo -e "  --raft-protocol\tThis controls the internal version of the Raft consensus protocol used for server "
+  echo -e "                 \tcommunications. Must be set to 3 in order to gain access to Autopilot features, with the"
+  echo -e "                 \texception of cleanup_dead_servers. Default: 3"
+  echo -e "  --config-dir\t\tThe path to the Consul config folder. Default is the absolute path of '../config', relative to this script."
+  echo -e "  --data-dir\t\tThe path to the Consul data folder. Default is the absolute path of '../data', relative to this script."
+  echo -e "  --log-dir\t\tThe path to the Consul log folder. Default is the absolute path of '../log', relative to this script."
+  echo -e "  --bin-dir\t\tThe path to the folder with Consul binary. Default is the absolute path of the parent folder of this script."
+  echo -e "  --user\t\tThe user to run Consul as. Default is to use the owner of --config-dir."
+  echo -e "  --skip-consul-config\tIf this flag is set, don't generate a Consul configuration file. Default is false."
+  echo
+  echo "Example:"
+  echo
+  echo "  run-consul --server --instance-tag-name consul-xyz --config-dir /custom/path/to/consul/config"
+}
+
+function log {
+  local readonly level="$1"
+  local readonly message="$2"
+  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
+}
+
+function log_info {
+  local readonly message="$1"
+  log "INFO" "$message"
+}
+
+function log_warn {
+  local readonly message="$1"
+  log "WARN" "$message"
+}
+
+function log_error {
+  local readonly message="$1"
+  log "ERROR" "$message"
+}
+
+# Based on code from: http://stackoverflow.com/a/16623897/483528
+function strip_prefix {
+  local readonly str="$1"
+  local readonly prefix="$2"
+  echo "${str#$prefix}"
+}
+
+function assert_is_installed {
+  local readonly name="$1"
+
+  if [[ ! $(command -v ${name}) ]]; then
+    log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
+    exit 1
+  fi
+}
+
+function assert_not_empty {
+  local readonly arg_name="$1"
+  local readonly arg_value="$2"
+
+  if [[ -z "$arg_value" ]]; then
+    log_error "The value for '$arg_name' cannot be empty"
+    print_usage
+    exit 1
+  fi
+}
+
+# Get the value at a specific Instance Metadata path.
+function get_instance_metadata_value {
+  local readonly path="$1"
+
+  log_info "Looking up Metadata value at $COMPUTE_INSTANCE_METADATA_URL/$path"
+  curl --silent --show-error --location --header "$GOOGLE_CLOUD_METADATA_REQUEST_HEADER" "$COMPUTE_INSTANCE_METADATA_URL/$path"
+}
+
+# Get the value of the given Custom Metadata Key
+function get_instance_custom_metadata_value {
+  local readonly key="$1"
+
+  log_info "Looking up Custom Instance Metadata value for key \"$key\""
+  get_instance_metadata_value "instance/attributes/$key"
+}
+
+# Get the ID of the Project in which this Compute Instance currently resides
+function get_instance_project_id {
+  log_info "Looking up Project ID"
+  get_instance_metadata_value "project/project-id"
+}
+
+# Get the GCE Zone in which this Compute Instance currently resides
+function get_instance_zone {
+  log_info "Looking up Zone of the current Compute Instance"
+
+  # The value returned for zone will be of the form "projects/121238320500/zones/us-west1-a" so we need to split the string
+  # by "/" and return the 4th string.
+  get_instance_metadata_value "instance/zone" | cut -d'/' -f4
+}
+
+# Get the ID of the current Compute Instance
+function get_instance_name {
+  log_info "Looking up current Compute Instance name"
+  get_instance_metadata_value "instance/name"
+}
+
+# Get the IP Address of the current Compute Instance
+function get_instance_ip_address {
+  local network_interface_number="$1"
+
+  # If no network interface number was specified, default to the first one
+  if [[ -z "$network_interface_number" ]]; then
+    network_interface_number=0
+  fi
+
+  log_info "Looking up Compute Instance IP Address on Network Interface $network_interface_number"
+  get_instance_metadata_value "instance/network-interfaces/$network_interface_number/ip"
+}
+
+function generate_consul_config {
+  local readonly server="$1"
+  local readonly raft_protocol="$2"
+  local readonly config_dir="$3"
+  local readonly user="$4"
+  local readonly cluster_tag_name="$5"
+  local readonly cluster_size_instance_metadata_key_name="$6"
+  local readonly config_path="$config_dir/$CONSUL_CONFIG_FILE"
+
+  local instance_ip_address=""
+  local instance_name=""
+  local project_id=""
+
+  instance_ip_address=$(get_instance_ip_address)
+  instance_name=$(get_instance_name)
+  instance_zone=$(get_instance_zone)
+  project_id=$(get_instance_project_id)
+
+  local retry_join_json=""
+  if [[ -z "$cluster_tag_name" ]]; then
+    log_warn "The --cluster-tag-name property is empty. Will not automatically try to form a cluster based on Cluster Tag Name."
+  else
+    retry_join_json="\"retry_join\": [\"provider=gce project_name=$project_id tag_value=$cluster_tag_name\"],"
+  fi
+
+  local bootstrap_expect=""
+
+  if [[ "$server" == "true" ]]; then
+    local cluster_size=""
+
+    cluster_size=$(get_instance_custom_metadata_value "$cluster_size_instance_metadata_key_name")
+    bootstrap_expect="\"bootstrap_expect\": $cluster_size,"
+  fi
+
+  log_info "Creating default Consul config file in $config_path"
+  cat > "$config_path" <<EOF
+{
+  "advertise_addr": "$instance_ip_address",
+  "bind_addr": "$instance_ip_address",
+  $bootstrap_expect
+  "client_addr": "0.0.0.0",
+  "datacenter": "$instance_zone",
+  "node_name": "$instance_name",
+  $retry_join_json
+  "server": $server,
+  "ui": true,
+  "raft_protocol": $raft_protocol
+}
+EOF
+  chown "$user:$user" "$config_path"
+}
+
+function generate_supervisor_config {
+  local readonly supervisor_config_path="$1"
+  local readonly consul_config_dir="$2"
+  local readonly consul_data_dir="$3"
+  local readonly consul_log_dir="$4"
+  local readonly consul_bin_dir="$5"
+  local readonly consul_user="$6"
+
+  log_info "Creating Supervisor config file to run Consul in $supervisor_config_path"
+  cat > "$supervisor_config_path" <<EOF
+[program:consul]
+command=$consul_bin_dir/consul agent -config-dir $consul_config_dir -data-dir $consul_data_dir
+stdout_logfile=$consul_log_dir/consul-stdout.log
+stderr_logfile=$consul_log_dir/consul-error.log
+numprocs=1
+autostart=true
+autorestart=true
+stopsignal=INT
+user=$consul_user
+EOF
+}
+
+function start_consul {
+  log_info "Reloading Supervisor config and starting Consul"
+  supervisorctl reread
+  supervisorctl update
+}
+
+# Based on: http://unix.stackexchange.com/a/7732/215969
+function get_owner_of_path {
+  local readonly path="$1"
+  ls -ld "$path" | awk '{print $3}'
+}
+
+function run {
+  local server="false"
+  local client="false"
+  local raft_protocol="$DEFAULT_RAFT_PROTOCOL"
+  local cluster_tag_name=""
+  local config_dir=""
+  local data_dir=""
+  local log_dir=""
+  local bin_dir=""
+  local user=""
+  local skip_consul_config="false"
+  local all_args=()
+
+  while [[ $# > 0 ]]; do
+    local key="$1"
+
+    case "$key" in
+      --server)
+        server="true"
+        ;;
+      --client)
+        client="true"
+        ;;
+      --cluster-tag-name)
+        assert_not_empty "$key" "$2"
+        cluster_tag_name="$2"
+        shift
+        ;;
+      --raft-protocol)
+        assert_not_empty "$key" "$2"
+        raft_protocol="$2"
+        shift
+        ;;
+      --config-dir)
+        assert_not_empty "$key" "$2"
+        config_dir="$2"
+        shift
+        ;;
+      --data-dir)
+        assert_not_empty "$key" "$2"
+        data_dir="$2"
+        shift
+        ;;
+      --log-dir)
+        assert_not_empty "$key" "$2"
+        log_dir="$2"
+        shift
+        ;;
+      --bin-dir)
+        assert_not_empty "$key" "$2"
+        bin_dir="$2"
+        shift
+        ;;
+      --user)
+        assert_not_empty "$key" "$2"
+        user="$2"
+        shift
+        ;;
+      --skip-consul-config)
+        skip_consul_config="true"
+        ;;
+      --help)
+        print_usage
+        exit
+        ;;
+      *)
+        log_error "Unrecognized argument: $key"
+        print_usage
+        exit 1
+        ;;
+    esac
+
+    shift
+  done
+
+  if [[ ("$server" == "true" && "$client" == "true") || ("$server" == "false" && "$client" == "false") ]]; then
+    log_error "Exactly one of --server or --client must be set."
+    exit 1
+  fi
+
+  assert_is_installed "supervisorctl"
+  assert_is_installed "gcloud"
+  assert_is_installed "curl"
+  assert_is_installed "jq"
+
+  if [[ -z "$config_dir" ]]; then
+    config_dir=$(cd "$SCRIPT_DIR/../config" && pwd)
+  fi
+
+  if [[ -z "$data_dir" ]]; then
+    data_dir=$(cd "$SCRIPT_DIR/../data" && pwd)
+  fi
+
+  if [[ -z "$log_dir" ]]; then
+    log_dir=$(cd "$SCRIPT_DIR/../log" && pwd)
+  fi
+
+  if [[ -z "$bin_dir" ]]; then
+    bin_dir=$(cd "$SCRIPT_DIR/../bin" && pwd)
+  fi
+
+  if [[ -z "$user" ]]; then
+    user=$(get_owner_of_path "$config_dir")
+  fi
+
+  if [[ "$skip_consul_config" == "true" ]]; then
+    log_info "The --skip-consul-config flag is set, so will not generate a default Consul config file."
+  else
+    generate_consul_config \
+        "$server" \
+        "$raft_protocol" \
+        "$config_dir" \
+        "$user" \
+        "$cluster_tag_name" \
+        "$CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME"
+  fi
+
+  generate_supervisor_config "$SUPERVISOR_CONFIG_PATH" "$config_dir" "$data_dir" "$log_dir" "$bin_dir" "$user"
+  start_consul
+}
+
+run "$@"
