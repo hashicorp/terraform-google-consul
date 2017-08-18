@@ -19,7 +19,7 @@ function print_usage {
   echo
   echo "Usage: install-dnsmasq [OPTIONS]"
   echo
-  echo "Install Dnsmasq and configure it to forward requests for a specific domain to Consul. This script has been tested with Ubuntu 16.04 and Amazon Linux."
+  echo "Install Dnsmasq and configure it to forward requests for a specific domain to Consul. This script has been tested with Ubuntu 16.04."
   echo
   echo "Options:"
   echo
@@ -81,12 +81,6 @@ function install_dnsmasq {
   if $(has_apt_get); then
     sudo apt-get update -y
     sudo apt-get install -y dnsmasq
-  elif $(has_yum); then
-    sudo yum update -y
-    sudo yum install -y dnsmasq
-    echo "prepend domain-name-servers $consul_ip;" | sudo tee -a "/etc/dhcp/dhclient.conf" > /dev/null
-    echo "conf-dir=/etc/dnsmasq.d" | sudo tee -a "/etc/dnsmasq.conf" > /dev/null
-    sudo chkconfig dnsmasq on
   else
     log_error "Could not find apt-get or yum. Cannot install on this OS."
     exit 1
