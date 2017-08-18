@@ -60,7 +60,7 @@ a version number bump.
 ## Who maintains this Terraform Module?
 
 This Terraform Module is maintained by [Gruntwork](http://www.gruntwork.io/). If you're looking for help or commercial 
-support, send an email to [blueprints@gruntwork.io](mailto:blueprints@gruntwork.io?Subject=Consul%20Terraform%20Module). 
+support, send an email to [modules@gruntwork.io](mailto:modules@gruntwork.io?Subject=Consul%20Terraform%20Module). 
 Gruntwork can help with:
 
 * Setup, customization, and support for this Terraform Module.

@@ -100,7 +100,7 @@ data "template_file" "startup_script_client" {
 module "load_balancer" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-regional-load-balancer?ref=v0.0.1"
+  # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-external-regional-load-balancer?ref=v0.0.1"
   source = "../../modules/consul-external-regional-load-balancer"
 
   cluster_name = "${var.consul_server_cluster_name}"
