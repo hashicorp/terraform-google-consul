@@ -1,5 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # THESE TEMPLATES REQUIRE TERRAFORM VERSION 0.10.0 AND ABOVE
+# Why? Because we want the latest GCP updates available in https://github.com/terraform-providers/terraform-provider-google
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {

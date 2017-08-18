@@ -31,11 +31,6 @@ variable "startup_script" {
   description = "A Startup Script to execute when the server first boots. We remmend passing in a bash script that executes the run-consul script, which should have been installed in the Consul Google Image by the install-consul module."
 }
 
-//variable "allowed_inbound_cidr_blocks" {
-//  description = "A list of CIDR-formatted IP address ranges from which the EC2 Instances will allow connections to Consul"
-//  type        = "list"
-//}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
@@ -73,6 +68,18 @@ variable "instance_group_update_strategy" {
   default = "NONE"
 }
 
+variable "allowed_inbound_cidr_blocks_http_api" {
+  description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul"
+  type = "list"
+  default = ["0.0.0.0/0"]
+}
+
+variable "allowed_inbound_cidr_blocks_dns" {
+  description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow TCP DNS and UDP DNS connections to Consul"
+  type = "list"
+  default = ["0.0.0.0/0"]
+}
+
 # Metadata
 
 variable "metadata_key_name_for_cluster_size" {
@@ -90,32 +97,32 @@ variable "custom_metadata" {
 
 variable "server_rpc_port" {
   description = "The port used by servers to handle incoming requests from other agents."
-  default     = 8300
+  default = 8300
 }
 
 variable "cli_rpc_port" {
   description = "The port used by all agents to handle RPC from the CLI."
-  default     = 8400
+  default = 8400
 }
 
 variable "serf_lan_port" {
   description = "The port used to handle gossip in the LAN. Required by all agents."
-  default     = 8301
+  default = 8301
 }
 
 variable "serf_wan_port" {
   description = "The port used by servers to gossip over the WAN to other servers."
-  default     = 8302
+  default = 8302
 }
 
 variable "http_api_port" {
   description = "The port used by clients to talk to the HTTP API"
-  default     = 8500
+  default = 8500
 }
 
 variable "dns_port" {
   description = "The port used to resolve DNS queries."
-  default     = 8600
+  default = 8600
 }
 
 //variable "ssh_key_name" {

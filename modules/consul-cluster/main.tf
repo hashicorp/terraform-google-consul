@@ -1,5 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # THESE TEMPLATES REQUIRE TERRAFORM VERSION 0.10.0 AND ABOVE
+# Why? Because we want the latest GCP updates available in https://github.com/terraform-providers/terraform-provider-google
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
@@ -61,7 +62,8 @@ resource "google_compute_instance_template" "consul_server_public" {
   network_interface {
     network = "${var.network_name}"
     access_config {
-      # The presence of this property assigns a public IP address to each Compute Instance.
+      # The presence of this property assigns a public IP address to each Compute Instance. We intentionally leave it
+      # blank so that an external IP address is selected automatically.
       nat_ip = ""
     }
   }
@@ -122,11 +124,12 @@ resource "google_compute_instance_template" "consul_server_private" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# UPDATE FIREWALL RULES TO ALLOW CONSUL-SPECIFIC TRAFFIC WITHIN CLUSTER
+# CREATE FIREWALL RULES
 # ---------------------------------------------------------------------------------------------------------------------
 
-# This Firewall Rule may be redundant depnding on the settings of your VPC Network, but if your Network is locked down,
-# this Rule will open up the appropriate ports.
+# Allow Consul-specific traffic within the cluster
+# - This Firewall Rule may be redundant depnding on the settings of your VPC Network, but if your Network is locked down,
+#   this Rule will open up the appropriate ports.
 resource "google_compute_firewall" "consul_server_allow" {
   name    = "${var.cluster_name}-rule-cluster"
   network = "${var.network_name}"
@@ -153,6 +156,51 @@ resource "google_compute_firewall" "consul_server_allow" {
   }
 
   source_tags = ["${var.cluster_tag_name}"]
+  target_tags = ["${var.cluster_tag_name}"]
+}
+
+# Specify which traffic is allowed into the Consul Cluster solely for HTTP API requests
+# - This Firewall Rule may be redundant depnding on the settings of your VPC Network, but if your Network is locked down,
+#   this Rule will open up the appropriate ports.
+# - Note that public access to your Consul Cluster will only be permitted if var.assign_public_ip_addresses is true.
+resource "google_compute_firewall" "external_allow_http_api" {
+  name    = "${var.cluster_name}-rule-external-api-access"
+  network = "${var.network_name}"
+
+  allow {
+    protocol = "tcp"
+    ports    = [
+      "${var.http_api_port}",
+    ]
+  }
+
+  source_ranges = "${var.allowed_inbound_cidr_blocks_http_api}"
+  target_tags = ["${var.cluster_tag_name}"]
+}
+
+# Specify which traffic is allowed into the Consul Cluster solely for DNS requests
+# - This Firewall Rule may be redundant depnding on the settings of your VPC Network, but if your Network is locked down,
+#   this Rule will open up the appropriate ports.
+# - Note that public access to your Consul Cluster will only be permitted if var.assign_public_ip_addresses is true.
+resource "google_compute_firewall" "external_allow_dns" {
+  name    = "${var.cluster_name}-rule-external-api-access"
+  network = "${var.network_name}"
+
+  allow {
+    protocol = "tcp"
+    ports    = [
+      "${var.dns_port}",
+    ]
+  }
+
+  allow {
+    protocol = "udp"
+    ports    = [
+      "${var.dns_port}",
+    ]
+  }
+
+  source_ranges = "${var.allowed_inbound_cidr_blocks_dns}"
   target_tags = ["${var.cluster_tag_name}"]
 }
 
