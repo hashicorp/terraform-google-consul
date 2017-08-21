@@ -33,7 +33,3 @@ output "consul_servers_instance_template_name" {
 output "consul_servers_instance_template_url" {
   value = "${module.consul_servers.instance_template_url}"
 }
-
-output "target_pool_url" {
-  value = "${module.load_balancer.target_pool_url}"
-}

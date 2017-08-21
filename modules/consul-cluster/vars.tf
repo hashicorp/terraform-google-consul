@@ -37,7 +37,7 @@ variable "startup_script" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "instance_group_target_pools" {
-  description = "To use a Load Balancer with the Consul cluster, you must populate this value. Specifically, this is the list of Target Pool URLs to which new Compute Instances in the Instance Group created by this module will be added. Note that updating the Target Pools attribute does not affect existing Compute Instances."
+  description = "To use a Load Balancer with the Consul cluster, you must populate this value. Specifically, this is the list of Target Pool URLs to which new Compute Instances in the Instance Group created by this module will be added. Note that updating the Target Pools attribute does not affect existing Compute Instances. Note also that use of a Load Balancer with Consul is generally discouraged; client should instead prefer to talk directly to the server where possible."
   type = "list"
   default = []
 }

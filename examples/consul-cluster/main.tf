@@ -39,9 +39,6 @@ module "consul_servers" {
   # module. Unfortunately, Google and Terraform do not yet support a stable way of performing a rolling update. For now
   # for production usage, set this to "NONE", and manually coordinate your Consul Server upgrades per Consul docs.
   instance_group_update_strategy = "RESTART"
-
-  # Remove this if you don't want a load balancer.
-  instance_group_target_pools = ["${module.load_balancer.target_pool_url}"]
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
@@ -89,21 +86,4 @@ data "template_file" "startup_script_client" {
   vars {
     cluster_tag_name = "${var.cluster_tag_name}"
   }
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# ADD CUSTOM RESOURCES AS NEEDED
-# You may wish to front the Consul Server cluster with a Load Balancer so that you can have a single endpoint for
-# accessing the Consul UI, assign a DNS Record or create other custom resources as your needs dicate.
-# ---------------------------------------------------------------------------------------------------------------------
-
-module "load_balancer" {
-  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
-  # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-external-regional-load-balancer?ref=v0.0.1"
-  source = "../../modules/consul-external-regional-load-balancer"
-
-  cluster_name = "${var.consul_server_cluster_name}"
-  cluster_tag_name = "${var.cluster_tag_name}"
-  compute_instance_group_name = "${module.consul_servers.instance_group_name}"
 }
