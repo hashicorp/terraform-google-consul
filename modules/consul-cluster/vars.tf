@@ -74,10 +74,22 @@ variable "allowed_inbound_cidr_blocks_http_api" {
   default = ["0.0.0.0/0"]
 }
 
+variable "allowed_inbound_tags_http_api" {
+  description = ""
+  type = "list"
+  default = []
+}
+
 variable "allowed_inbound_cidr_blocks_dns" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow TCP DNS and UDP DNS connections to Consul"
   type = "list"
   default = ["0.0.0.0/0"]
+}
+
+variable "allowed_inbound_tags_dns" {
+  description = ""
+  type = "list"
+  default = []
 }
 
 # Metadata
