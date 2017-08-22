@@ -30,14 +30,21 @@ module "consul_servers" {
   cluster_description = "Consul Server cluster"
   cluster_size = "${var.consul_server_cluster_size}"
   machine_type = "g1-small"
-  assign_public_ip_addresses = true
-  source_image = "consul"
   cluster_tag_name = "${var.consul_server_cluster_tag_name}"
   startup_script = "${data.template_file.startup_script_server.rendered}"
 
   # Grant API and DNS access to requests originating from the the Consul client cluster we create below.
   allowed_inbound_tags_http_api = ["${var.consul_client_cluster_tag_name}"]
   allowed_inbound_tags_dns = ["${var.consul_client_cluster_tag_name }"]
+
+  # WARNING! By specifying just the "family" name of the Image, Google will automatically use the latest Consul image.
+  # In production, you should specify the exact image name to make it clear which image the current Consul servers are
+  # deployed with.
+  source_image = "consul"
+
+  # WARNING! This makes the Consul cluster accessible from the public Internet, which is convenient for testing, but
+  # NOT for production usage. In production, set this to false.
+  assign_public_ip_addresses = true
 
   # WARNING! This update strategy will delete and re-create the entire Consul cluster when making some changes to this
   # module. Unfortunately, Google and Terraform do not yet support an automatic stable way of performing a rolling update.

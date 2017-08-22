@@ -38,9 +38,8 @@ variable "consul_client_cluster_tag_name" {
 
 variable "consul_server_cluster_size" {
   description = "The number of nodes to have in the Consul Server cluster. We strongly recommended that you use either 3 or 5."
-  default = 6
+  default = 3
 }
-
 
 variable "consul_client_cluster_size" {
   description = "The number of nodes to have in the Consul Client example cluster. Any number of nodes is permissible, though 3 is usually enough to test.."
