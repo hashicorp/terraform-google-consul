@@ -30,12 +30,12 @@ module "consul_servers" {
   cluster_description = "Consul Server cluster"
   cluster_size = "${var.consul_server_cluster_size}"
   machine_type = "n1-standard-1"
-  assign_public_ip_addresses = false
+  assign_public_ip_addresses = true
   source_image = "consul"
   cluster_tag_name = "${var.consul_server_cluster_tag_name}"
   startup_script = "${data.template_file.startup_script_server.rendered}"
 
-  # Grant access to the Consul client cluster
+  # Grant API and DNS access to requests originating from the the Consul client cluster we create below.
   allowed_inbound_tags_http_api = ["${var.consul_client_cluster_tag_name}"]
   allowed_inbound_tags_dns = ["${var.consul_client_cluster_tag_name }"]
 
@@ -75,7 +75,7 @@ module "consul_clients" {
   machine_type = "n1-standard-1"
   assign_public_ip_addresses = true
   source_image = "consul"
-  cluster_tag_name = "${var.consul_server_cluster_tag_name}"
+  cluster_tag_name = "${var.consul_client_cluster_tag_name}"
   startup_script = "${data.template_file.startup_script_client.rendered}"
 
   allowed_inbound_cidr_blocks_http_api = []
