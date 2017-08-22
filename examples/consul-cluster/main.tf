@@ -29,7 +29,7 @@ module "consul_servers" {
   cluster_name = "${var.consul_server_cluster_name}"
   cluster_description = "Consul Server cluster"
   cluster_size = "${var.consul_server_cluster_size}"
-  machine_type = "n1-standard-1"
+  machine_type = "g1-small"
   assign_public_ip_addresses = true
   source_image = "consul"
   cluster_tag_name = "${var.consul_server_cluster_tag_name}"
@@ -40,9 +40,9 @@ module "consul_servers" {
   allowed_inbound_tags_dns = ["${var.consul_client_cluster_tag_name }"]
 
   # WARNING! This update strategy will delete and re-create the entire Consul cluster when making some changes to this
-  # module. Unfortunately, Google and Terraform do not yet support a stable way of performing a rolling update. For now
-  # for production usage, set this to "NONE", and manually coordinate your Consul Server upgrades per Consul docs.
-  instance_group_update_strategy = "RESTART"
+  # module. Unfortunately, Google and Terraform do not yet support an automatic stable way of performing a rolling update.
+  # For now for production usage, set this to "NONE", and manually coordinate your Consul Server upgrades per Consul docs.
+  instance_group_update_strategy = "NONE"
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.

@@ -87,11 +87,14 @@ function get_all_consul_server_ips {
   local i
 
   for (( i=1; i<="$MAX_RETRIES"; i++ )); do
-    ips=($(get_consul_cluster_ips))
+    ips=($(get_consul_server_ips))
     if [[ "${#ips[@]}" -eq "$expected_num_servers" ]]; then
       log_info "Found all $expected_num_servers public IP addresses!"
       echo "${ips[@]}"
       return
+    elif [[ "${#ips[@]}" -gt "$expected_num_servers" ]]; then
+      log_error "Found ${#ips[@]} public IP addresses, but only expected $expected_num_servers. Your cluster may have members who have left. Consider destroying and re-creating the cluster so that all members are present."
+      exit 1
     else
       log_warn "Found ${#ips[@]} of $expected_num_servers public IP addresses. Will sleep for $SLEEP_BETWEEN_RETRIES_SEC seconds and try again."
       sleep "$SLEEP_BETWEEN_RETRIES_SEC"
@@ -133,13 +136,13 @@ function wait_for_all_consul_servers_to_register {
   exit 1
 }
 
-function get_consul_cluster_ips {
+function get_consul_server_ips {
   local cluster_tag_name
   local instances
 
   cluster_tag_name=$(get_required_terraform_output "consul_server_cluster_tag_name")
 
-  log_info "Fetching external IP addresses for Compute Instances with tag \"$cluster_tag_name\""
+  log_info "Fetching external IP addresses for Consul Server Compute Instances with tag \"$cluster_tag_name\""
 
   instances=$(gcloud compute instances list \
     --filter "tags.items~^$cluster_tag_name\$" \

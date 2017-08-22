@@ -64,7 +64,6 @@ support, send an email to [modules@gruntwork.io](mailto:modules@gruntwork.io?Sub
 Gruntwork can help with:
 
 * Setup, customization, and support for this Terraform Module.
-* Additional features such as automated cluster upgrades.
 * Terraform Module for other types of Google Cloud infrastructure.
 * Terraform Modules that meet compliance requirements, such as HIPAA.
 * Consulting & Training on Google Cloud, AWS, Terraform, and DevOps.
