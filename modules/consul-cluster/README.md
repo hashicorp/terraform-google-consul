@@ -191,38 +191,29 @@ We create separate Firewall Rules that allow:
 
 ## How do you roll out updates?
 
-If you want to deploy a new version of Consul across the cluster, the best way to do that is to:
+Unfortunately, this remains an open item. Unlike Amazon Web Services, Google Cloud does not allow you to control the
+manner in which Compute Instances in a Managed Instance Group are updated, except that you can specify that either
+all Instances should be immediately restarted when a Managed Instance Group's Instance Template is updated (by setting
+the [update_strategy](https://www.terraform.io/docs/providers/google/r/compute_instance_group_manager.html#update_strategy)
+of the Managed Instance Group to `RESTART`), or that nothing at all should happen (by setting the update_strategy to 
+`NONE`).
 
-1. Ensure that `instance_group_update_strategy` is set to `NONE`. This means that when you set the `source_image` property
-   to a new Google Image, Google won't actually update any of the Compute Instances.
-1. Set the `source_image` property to the ID of the new Google Image.
-1. Run `terraform apply`.
+While updating Consul, we must be mindful of always preseving a [quorum](https://www.consul.io/docs/guides/servers.html#removing-servers),
+so neither of the above options enables a safe update.
 
-This updates the Instance Template used by the Managed Instance Group, so any new Instances in the Managed Instance Group
-will have your new Image, but it does NOT actually deploy those new instances. To make that happen, you should do the following:
+One possible option may be the use of GCP's [Rolling Updates Feature](https://cloud.google.com/compute/docs/instance-groups/updating-managed-instance-groups)
+however this feature remains in Alpha and may not necessarily support our use case.
 
-1. Issue an API call to one of the old Instances in the Instance Group to have it leave gracefully. E.g.:
+The most likely solution will involve writing a script that makes use of the [abandon-instances](https://cloud.google.com/sdk/gcloud/reference/compute/instance-groups/managed/abandon-instances)
+and [resize](https://cloud.google.com/sdk/gcloud/reference/compute/instance-groups/managed/resize) GCP API calls. Using
+these primitives, we can "abandon" Compute Instances from a Compute Instance Group (thereby removing them from the Group
+but leaving them otherwise untouched), manually add new Instances with a new Instance Template, make Consul API calls
+to our abandoned Instances to leave the Group, validate that all new Instances are members of the cluster and then 
+manually terminate the abandoned Instances.  
 
-    ```
-    curl -X PUT <OLD_INSTANCE_IP>:8500/v1/agent/leave
-    ```
-    
-1. Once the instance has left the cluster, terminate it:
- 
-    ```
-    gcloud alpha compute instance-groups managed rolling-action start-update  consul-server-josh-ig --version template=consul-server-josh00502322d8f86fcd562d937f89
-    ```
+Needless to say, PRs are welcome!
 
-1. After a minute or two, the Instance Group should automatically launch a new Instance, with the new Image, to replace the old one.
-
-1. Wait for the new Instance to boot and join the cluster.
-
-1. Repeat these steps for each of the other old Instances in the ASG.
-   
-We will add a script in the future to automate this process (PRs are welcome!).
-
-
-
+TODO: Complete the rest of this README.
 
 ## What happens if a node crashes?
 

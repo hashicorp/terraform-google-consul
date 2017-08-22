@@ -72,7 +72,7 @@ module "consul_clients" {
   cluster_name = "${var.consul_client_cluster_name}"
   cluster_size = "${var.consul_client_cluster_size}"
   cluster_description = "Consul Clients cluster"
-  machine_type = "n1-standard-1"
+  machine_type = "g1-small"
   assign_public_ip_addresses = true
   source_image = "consul"
   cluster_tag_name = "${var.consul_client_cluster_tag_name}"
