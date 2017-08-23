@@ -64,7 +64,6 @@ support, send an email to [modules@gruntwork.io](mailto:modules@gruntwork.io?Sub
 Gruntwork can help with:
 
 * Setup, customization, and support for this Terraform Module.
-* Additional features such as automated cluster upgrades.
 * Terraform Module for other types of Google Cloud infrastructure.
 * Terraform Modules that meet compliance requirements, such as HIPAA.
 * Consulting & Training on Google Cloud, AWS, Terraform, and DevOps.
@@ -73,9 +72,8 @@ Gruntwork can help with:
 
 ## Code included in this Terraform Module:
 
-* [install-consul](/modules/install-consul): This module installs Consul using a
-  [Packer](https://www.packer.io/) template to create a Consul 
-  [Custom Image](https://cloud.google.com/compute/docs/images).
+* [install-consul](/modules/install-consul): This module installs Consul using a [Packer](https://www.packer.io/)
+  template to create a Consul [Custom Image](https://cloud.google.com/compute/docs/images).
 
 * [consul-cluster](/modules/consul-cluster): The module includes Terraform code to deploy a Consul Image across a [Managed
   Compute Instance Group](https://cloud.google.com/compute/docs/instance-groups/). 
@@ -87,10 +85,6 @@ Gruntwork can help with:
 * [install-dnsmasq module](/modules/install-dnsmasq): Install [Dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html)
   and configure it to forward requests for a specific domain to Consul. This allows you to use Consul as a DNS server
   for URLs such as `foo.service.consul`.
-
-* [consul-external-regional-load-balancer](/modules/consul-external-regional-load-balancer): This module creates a 
-  public-facing Load Balancer that fronts the Consul Server cluster. This is useful for testing purposes only. In production,
-  your Consul cluster should only be accessible from within your network. 
 
 ## How do I contribute to this Terraform Module?
 

@@ -14,6 +14,10 @@ output "firewall_rule_url" {
   value = "${module.consul_servers.firewall_rule_url}"
 }
 
+output "consul_server_cluster_tag_name" {
+  value = "${var.consul_server_cluster_tag_name}"
+}
+
 output "consul_servers_instance_group_name" {
   value = "${module.consul_servers.instance_group_name}"
 }
@@ -32,8 +36,4 @@ output "consul_servers_instance_template_name" {
 
 output "consul_servers_instance_template_url" {
   value = "${module.consul_servers.instance_template_url}"
-}
-
-output "target_pool_url" {
-  value = "${module.load_balancer.target_pool_url}"
 }

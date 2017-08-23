@@ -1,12 +1,11 @@
 # Consul Run Script
 
-This folder contains a script for configuring and running Consul on an [AWS](https://aws.amazon.com/) server. This 
-script has been tested on the following operating systems:
+This folder contains a script for configuring and running Consul on a [GCP](https://cloud.google.com/) Compute Instance. 
+This script has been tested on the following operating systems:
 
 * Ubuntu 16.04
-* Amazon Linux
 
-There is a good chance it will work on other flavors of Debian, CentOS, and RHEL as well.
+There is a good chance it will work on other flavors of Debian as well.
 
 
 
@@ -39,10 +38,9 @@ This will:
 
 1. Tell Supervisor to load the new configuration file, thereby starting Consul.
 
-We recommend using the `run-consul` command as part of [User 
-Data](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-shell-scripts), so that it executes
-when the EC2 Instance is first booting. After runing `run-consul` on that initial boot, the `supervisord` configuration 
-will automatically restart Consul if it crashes or the EC2 instance reboots.
+We recommend using the `run-consul` command as part of the [Startup Script](https://cloud.google.com/compute/docs/startupscript),
+so that it executes when the Compute Instance is first booting. After runing `run-consul` on that initial boot, the `supervisord`
+configuration  will automatically restart Consul if it crashes or the Compute instance reboots.
 
 See the [consul-cluster example](/examples/consul-cluster) for fully-working sample code.
 
@@ -53,24 +51,31 @@ See the [consul-cluster example](/examples/consul-cluster) for fully-working sam
 
 The `run-consul` script accepts the following arguments:
 
-* `server` (optional): If set, run in server mode. Exactly one of `--server` or `--client` must be set.
-* `client` (optional): If set, run in client mode. Exactly one of `--server` or `--client` must be set. 
-* `cluster-tag-key` (optional): Automatically form a cluster with Instances that have this tag key and the tag value
-  in `--cluster-tag-value`.
-* `cluster-tag-value` (optional): Automatically form a cluster with Instances that have the tag key in 
-  `--cluster-tag-key` and this tag value.
-* `config-dir` (optional): The path to the Consul config folder. Default is to take the absolute path of `../config`, 
+**Required:**
+
+* `server` If set, run in server mode. Exactly one of `--server` or `--client` must be set.
+* `client` If set, run in client mode. Exactly one of `--server` or `--client` must be set.
+
+**Optional:**
+ 
+* `cluster-tag-name` Automatically form a cluster with Instances that have the same value for this Compute Instance tag
+  name.
+* `raft-protocol` This controls the internal version of the Raft consensus protocol used for server communications. Must
+  be set to 3 in order to gain access to Autopilot features, with the exception of `cleanup_dead_servers`. Default is 3.
+* `config-dir` The path to the Consul config folder. Default is to take the absolute path of `../config`, 
   relative to the `run-consul` script itself.
-* `data-dir` (optional): The path to the Consul config folder. Default is to take the absolute path of `../data`, 
+* `data-dir` The path to the Consul config folder. Default is to take the absolute path of `../data`, 
   relative to the `run-consul` script itself.
-* `user` (optional): The user to run Consul as. Default is to use the owner of `config-dir`.
-* `skip-consul-config` (optional): If this flag is set, don't generate a Consul configuration file. This is useful if 
+* `log-dir` The path to the Consul log folder. Default is the absolute path of '../log', relative to this script.
+* `bin-dir` The path to the folder with Consul binary. Default is the absolute path of the parent folder of this script."
+* `user` The user to run Consul as. Default is to use the owner of `config-dir`.
+* `skip-consul-config` If this flag is set, don't generate a Consul configuration file. This is useful if 
   you have a custom configuration file and don't want to use any of of the default settings from `run-consul`. 
 
 Example:
 
 ```
-/opt/consul/bin/run-consul --server --cluster-tag-key consul-cluster --cluster-tag-value prod-cluster 
+/opt/consul/bin/run-consul --server --cluster-tag-name consul-server-prod 
 ```
 
 
@@ -79,7 +84,7 @@ Example:
 ## Consul configuration
 
 `run-consul` generates a configuration file for Consul called `default.json` that tries to figure out reasonable 
-defaults for a Consul cluster in AWS. Check out the [Consul Configuration Files 
+defaults for a Consul cluster in GCP. Check out the [Consul Configuration Files 
 documentation](https://www.consul.io/docs/agent/options.html#configuration-files) for what configuration settings are
 available.
   
@@ -88,42 +93,40 @@ available.
 
 `run-consul` sets the following configuration values by default:
   
-* [advertise_addr](https://www.consul.io/docs/agent/options.html#advertise_addr): Set to the EC2 Instance's private IP 
-  address, as fetched from [Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+* [advertise_addr](https://www.consul.io/docs/agent/options.html#advertise_addr): Set to the Compute Instance's private IP 
+  address.
 
-* [bind_addr](https://www.consul.io/docs/agent/options.html#bind_addr): Set to the EC2 Instance's private IP address, 
-  as fetched from [Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+* [bind_addr](https://www.consul.io/docs/agent/options.html#bind_addr): Set to the Compute Instance's private IP address.
 
 * [bootstrap_expect](https://www.consul.io/docs/agent/options.html#bootstrap_expect): If `--server` is set, 
-  set this config based on the EC2 Instance's tags (using the 
-  [describe-tags API](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-tags.html)): 
-    * If there is a `aws:autoscaling:groupName` tag, that means this EC2 Instance is part of an Auto Scaling Group 
-      (ASG), so set this config to the desired capacity of the ASG (fetched via the [describe-auto-scaling-groups 
-      API](https://docs.aws.amazon.com/cli/latest/reference/autoscaling/describe-auto-scaling-groups.html)). 
-    * Otherwise, log a warning, and set this to 1. This fallback is not recommended!     
+  set this config based on the [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata) tags: 
+    * Set this config to the value of the `cluster-size` tag.     
 
 * [client_addr](https://www.consul.io/docs/agent/options.html#client_addr): Set to 0.0.0.0 so you can access the client
-  and UI endpoint on each EC2 Instance from the outside.
+  and UI endpoint on each Compute Instance from the outside.
 
-* [datacenter](https://www.consul.io/docs/agent/options.html#datacenter): Set to the current AWS region (e.g. 
-  `us-east-1`), as fetched from [Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+* [datacenter](https://www.consul.io/docs/agent/options.html#datacenter): Set to the current Instance Zone (e.g. 
+  `us-west1-a`), as fetched from [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata).
+  Ideally, we would specify a Region instead of a single Zone, but Terraform does not yet support multi-zonal Managed
+  Instance Groups. 
 
-* [node_name](https://www.consul.io/docs/agent/options.html#node_name): Set to the instance id, as fetched from 
-  [Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+* [node_name](https://www.consul.io/docs/agent/options.html#node_name): Set to the instance name, as fetched from 
+  [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata). 
+  
 
-* [retry_join_ec2](https://www.consul.io/docs/agent/options.html#retry_join_ec2): Look up the EC2 Instances tags
-  (using the [describe-tags API](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-tags.html)) and set the
-  following keys for this setting:
-    * [tag_key](https://www.consul.io/docs/agent/options.html#tag_key): Set to the value of the `--cluster-tag-key`
-      argument.
-    * [tag_value](https://www.consul.io/docs/agent/options.html#tag_value): Set to the value this EC2 Instance has for
-      the `tag_key`. If the key is not set, then the `retry_join_ec2` setting will NOT be included in the config file.
-    * [region](https://www.consul.io/docs/agent/options.html#region): Set to the current AWS region (e.g. `us-east-1`), 
-      as fetched from [Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+* [raft-protocol](https://www.consul.io/docs/agent/options.html#raft_protocol) Set to the value of `--raft-protocol`.
+
+
+* [retry_join](https://www.consul.io/docs/agent/options.html#retry-join): Set the following keys for this setting:
+    * [provider](https://www.consul.io/docs/agent/options.html#provider-2): Set to `gce` for Google Compute Engine.
+    * [project_name](https://www.consul.io/docs/agent/options.html#project_name): Set to the name of the GCP Project where
+      the Consul Servers are located.
+    * [tag_value](https://www.consul.io/docs/agent/options.html#tag_value-2): Set to the value of the tag shared by all
+      Consul Server nodes.
       
 * [server](https://www.consul.io/docs/agent/options.html#server): Set to true if `--server` is set.
 
-* [ui](https://www.consul.io/docs/agent/options.html#ui): Set to true.
+* [ui](https://www.consul.io/docs/agent/options.html#ui): Set to true to make the UI available.
 
 
 ### Overriding the configuration
@@ -134,15 +137,15 @@ To override the default configuration, simply put your own configuration file in
 [merge them together in alphabetical order](https://www.consul.io/docs/agent/options.html#_config_dir), so that 
 settings in files that come later in the alphabet will override the earlier ones. 
 
-For example, to override the default `retry_join_ec2` settings, you could create a file called `tags.json` with the
+For example, to override the default `retry_join` settings, you could create a file called `tags.json` with the
 contents:
 
 ```json
 {
-  "retry_join_ec2": {
-    "tag_key": "custom-key",
-    "tag_value": "custom-value",
-    "region": "us-west-1"
+  "retry_join": {
+    "provider": "gce",
+    "project_name": "my-project",
+    "tag_value": "custom-value"
   }
 }
 ```
@@ -157,14 +160,8 @@ at all using the `--skip-consul-config` flag:
 
 ### Required permissions
 
-The `run-consul` script assumes it is running on an EC2 Instance with an [IAM 
-Role](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) that has the following permissions:
-
-* `ec2:DescribeInstances`
-* `ec2:DescribeTags`
-* `autoscaling:DescribeAutoScalingGroups`
-
-These permissions are automatically added by the [consul-cluster module](/modules/consul-cluster).
+The `run-consul` script assumes only that the Compute Instance can query its own metadata, a permission enabled by 
+default on all Compute Instances.
 
 
 

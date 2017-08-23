@@ -41,7 +41,7 @@ function print_usage {
   echo
   echo "Example:"
   echo
-  echo "  run-consul --server --instance-tag-name consul-xyz --config-dir /custom/path/to/consul/config"
+  echo "  run-consul --server --cluster-tag-name consul-xyz --config-dir /custom/path/to/consul/config"
 }
 
 function log {

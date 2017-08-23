@@ -65,10 +65,6 @@ function assert_not_empty {
   fi
 }
 
-function has_yum {
-  [[ -n "$(command -v yum)" ]]
-}
-
 function has_apt_get {
   [[ -n "$(command -v apt-get)" ]]
 }
@@ -82,7 +78,7 @@ function install_dnsmasq {
     sudo apt-get update -y
     sudo apt-get install -y dnsmasq
   else
-    log_error "Could not find apt-get or yum. Cannot install on this OS."
+    log_error "Could not find apt-get. Cannot install on this OS."
     exit 1
   fi
 }
