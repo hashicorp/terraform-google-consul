@@ -43,7 +43,7 @@ Note the following parameters:
   will change every time you run Terraform, you're using a fixed version of the repo.
 
 * `source_image`: Use this parameter to specify the ID of a Consul [Google Image](https://cloud.google.com/compute/docs/images)
-  to deploy on each server in the cluster. You should install Consul in this AMI using the scripts in the 
+  to deploy on each server in the cluster. You should install Consul in this Image using the scripts in the 
   [install-consul](/modules/install-consul) module.
   
 * `startup_script`: Use this parameter to specify a [Startup Script](https://cloud.google.com/compute/docs/startupscript) script that each
@@ -122,7 +122,7 @@ Finally, you can try opening up the Consul UI in your browser at the URL `http:/
 
 The easiest way to run [Consul agent](https://www.consul.io/docs/agent/basics.html) and have it connect to the Consul 
 cluster is to specify a tag used by the Computer Instance where the Consul agent is running in the `allowed_inbound_tags_http_api`
-property of the `consul-cluster` module. To grant DNS access, you can do the same with the `in the `allowed_inbound_tags_dns`
+property of the `consul-cluster` module. To grant DNS access, you can do the same with the in the `allowed_inbound_tags_dns`
 property.
 
 For example, imagine you deployed a Consul cluster as follows:
@@ -131,6 +131,7 @@ For example, imagine you deployed a Consul cluster as follows:
 
 ```hcl
 module "consul_cluster" {
+  # TODO: update this to the final URL
   source = "github.com/gruntwork-io/consul-gcp-module//modules/consul-cluster?ref=v0.0.1"
 
   # Add this tag to each node in the cluster
@@ -172,11 +173,16 @@ This module runs Consul on top of a [Zonal Managed Instance Group](https://cloud
 Typically, you should run the Instance Group with 3 or 5 Compute Instances spread across multiple [Zones](
 https://cloud.google.com/compute/docs/regions-zones/regions-zones). Unfortunately, due to a [Terraform limitation](
 https://github.com/terraform-providers/terraform-provider-google/issues/45), Managed Instance Groups can only be deployed
-to a single Zone.
+to a single Zone, not across a Region.
 
-
-Each of the Compute Instances should be running a Google IMage that has Consul installed via the [install-consul](/modules/install-consul)
+Each of the Compute Instances should be running a Google Image that has Consul installed via the [install-consul](/modules/install-consul)
 module. You pass in the name of the Image to run using the `source_image` input parameter.
+
+#### Compute Instance Tags
+
+This module allows you to specify a tag to add to each Compute Instance in the Managed Instance Group. We recommend using
+this tag with the [retry_join](https://www.consul.io/docs/agent/options.html?#retry-join) configuration to allow the
+Compute Instances to find each other and automatically form a cluster.
 
 
 ### Firewall Rules
@@ -198,8 +204,8 @@ the [update_strategy](https://www.terraform.io/docs/providers/google/r/compute_i
 of the Managed Instance Group to `RESTART`), or that nothing at all should happen (by setting the update_strategy to 
 `NONE`).
 
-While updating Consul, we must be mindful of always preseving a [quorum](https://www.consul.io/docs/guides/servers.html#removing-servers),
-so neither of the above options enables a safe update.
+While updating Consul, we must be mindful of always preserving a [quorum](https://www.consul.io/docs/guides/servers.html#removing-servers),
+but neither of the above options enables a safe update.
 
 One possible option may be the use of GCP's [Rolling Updates Feature](https://cloud.google.com/compute/docs/instance-groups/updating-managed-instance-groups)
 however this feature remains in Alpha and may not necessarily support our use case.
@@ -207,27 +213,20 @@ however this feature remains in Alpha and may not necessarily support our use ca
 The most likely solution will involve writing a script that makes use of the [abandon-instances](https://cloud.google.com/sdk/gcloud/reference/compute/instance-groups/managed/abandon-instances)
 and [resize](https://cloud.google.com/sdk/gcloud/reference/compute/instance-groups/managed/resize) GCP API calls. Using
 these primitives, we can "abandon" Compute Instances from a Compute Instance Group (thereby removing them from the Group
-but leaving them otherwise untouched), manually add new Instances with a new Instance Template, make Consul API calls
-to our abandoned Instances to leave the Group, validate that all new Instances are members of the cluster and then 
-manually terminate the abandoned Instances.  
+but leaving them otherwise untouched), manually add new Instances based on an updated Instance Template that will 
+automatically join the Consul cluster, make Consul API calls to our abandoned Instances to leave the Group, validate
+that all new Instances are members of the cluster and then manually terminate the abandoned Instances.  
 
 Needless to say, PRs are welcome!
-
-TODO: Complete the rest of this README.
 
 ## What happens if a node crashes?
 
 There are two ways a Consul node may go down:
  
 1. The Consul process may crash. In that case, `supervisor` should restart it automatically.
-1. The EC2 Instance running Consul dies. In that case, the Auto Scaling Group should launch a replacement automatically. 
-   Note that in this case, since the Consul agent did not exit gracefully, and the replacement will have a different ID,
-   you may have to manually clean out the old nodes using the [force-leave
-   command](https://www.consul.io/docs/commands/force-leave.html). We may add a script to do this 
-   automatically in the future. For more info, see the [Consul Outage 
-   documentation](https://www.consul.io/docs/guides/outage.html).
-
-
+1. The Compute Instance running Consul stops, crashes, or is otherwise deleted. In that case, the Managed Instance Group
+   will launch a replacement automatically.  Note that in this case, although the Consul agent did not exit gracefully,
+   the replacement Instance will have the same name and therefore no manual clean out of old nodes is necessary!
 
 
 ## Security
@@ -249,27 +248,28 @@ Consul can encrypt all of its network traffic. For instructions on enabling netw
 
 ### Encryption at rest
 
-The EC2 Instances in the cluster store all their data on the root EBS Volume. To enable encryption for the data at
-rest, you must enable encryption in your Consul AMI. If you're creating the AMI using Packer (e.g. as shown in
-the [consul-ami example](/examples/consul-ami)), you need to set the [encrypt_boot 
-parameter](https://www.packer.io/docs/builders/amazon-ebs.html#encrypt_boot) to `true`.  
+The Compute Instances in the cluster store all their data on the root disk volume. By default, [GCE encrypts all data at
+rest](https://cloud.google.com/compute/docs/disks/customer-supplied-encryption), a process managed by GCE without any 
+additional actions needed on your part. You can also provide your own encryption keys and GCE will use these to protect
+the Google-generated keys used to encrypt and decrypt your data.  
 
 
-### Dedicated instances
+### Firewall rules
 
-If you wish to use dedicated instances, you can set the `tenancy` parameter to `"dedicated"` in this module. 
+This module creates Firewall rules that allow inbound requests as follows:
 
+* **Consul**: For all the [ports used by Consul](https://www.consul.io/docs/agent/options.html#ports), all members of 
+  the Consul Server cluster will automatically accept inbound traffic based on a [tag](
+  https://cloud.google.com/compute/docs/vpc/add-remove-network-tags) shared by all cluster members.  
 
-### Security groups
-
-This module attaches a security group to each EC2 Instance that allows inbound requests as follows:
-
-* **Consul**: For all the [ports used by Consul](https://www.consul.io/docs/agent/options.html#ports), you can 
-  use the `allowed_inbound_cidr_blocks` parameter to control the list of 
-  [CIDR blocks](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) that will be allowed access.  
-
-* **SSH**: For the SSH port (default: 22), you can use the `allowed_ssh_cidr_blocks` parameter to control the list of   
-  [CIDR blocks](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) that will be allowed access. 
+* **External HTTP API Access**: For external access to the Consul Server cluster over the HTTP API port (default: 8500),
+  you can use the `allowed_inbound_cidr_blocks_http_api` parameter to control the list of [CIDR blocks](
+  https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing), and the `allowed_inbound_tags_http_api` to control the
+  list of tags that will be allowed access.
+  
+* **External DNS Access**: For external access to the Consul Server cluster via the DNS port (default: 8600),
+  you can use the `allowed_inbound_cidr_blocks_dns` parameter to control the list of CIDR blocks, and the 
+  `allowed_inbound_tags_dns` to control the list of tags that will be allowed access. 
   
 Note that all the ports mentioned above are configurable via the `xxx_port` variables (e.g. `server_rpc_port`). See
 [vars.tf](vars.tf) for the full list.  
@@ -278,11 +278,14 @@ Note that all the ports mentioned above are configurable via the `xxx_port` vari
 
 ### SSH access
 
-You can associate an [EC2 Key Pair](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) with each
-of the EC2 Instances in this cluster by specifying the Key Pair's name in the `ssh_key_name` variable. If you don't
-want to associate a Key Pair with these servers, set `ssh_key_name` to an empty string.
+You can SSH to the Compute Instances using the [conventional ways offered by GCE](
+https://cloud.google.com/compute/docs/instances/connecting-to-instance). Google [strongly recommends](
+https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys) that you connect to an Instance [from your web
+browser](https://cloud.google.com/compute/docs/instances/connecting-to-instance#sshinbrowser) or using the [gcloud
+command line tool](https://cloud.google.com/compute/docs/instances/connecting-to-instance#sshingcloud).
 
-
+If you must manually manage your SSH keys, use the `custom_metadata` property to specify accepted SSH keys in the format
+required by GCE. 
 
 
 
@@ -291,26 +294,29 @@ want to associate a Key Pair with these servers, set `ssh_key_name` to an empty 
 This module does NOT handle the following items, which you may want to provide on your own:
 
 * [Monitoring, alerting, log aggregation](#monitoring-alerting-log-aggregation)
-* [VPCs, subnets, route tables](#vpcs-subnets-route-tables)
+* [VPCs, subnetworks, route tables](#vpcs-subnetworks-route-tables)
 * [DNS entries](#dns-entries)
 
 
 ### Monitoring, alerting, log aggregation
 
-This module does not include anything for monitoring, alerting, or log aggregation. All ASGs and EC2 Instances come 
-with limited [CloudWatch](https://aws.amazon.com/cloudwatch/) metrics built-in, but beyond that, you will have to 
-provide your own solutions.
+This module does not include anything for monitoring, alerting, or log aggregation. All Compute Instance Groups and 
+Compute Instances come with the option to use [Google StackDriver](https://cloud.google.com/stackdriver/), GCP's monitoring,
+logging, and diagnostics platform that works with both GCP and AWS.
+
+If you wish to install the StackDriver monitoring agent or logging agent, pass the desired installation instructions to
+the `startup_script` property.
 
 
-### VPCs, subnets, route tables
+### VPCs, subnetworkss, route tables
 
-This module assumes you've already created your network topology (VPC, subnets, route tables, etc). You will need to 
-pass in the the relevant info about your network topology (e.g. `vpc_id`, `subnet_ids`) as input variables to this 
-module.
+This module assumes you've already created your network topology (VPC, subnetworkss, route tables, etc). By default,
+it will use the "default" network for the Project you select, but you may specify custom networks via the `network_name`
+property.
 
 
 ### DNS entries
 
-This module does not create any DNS entries for Consul (e.g. in Route 53).
+This module does not create any DNS entries for Consul (e.g. with Cloud DNS).
 
 

@@ -87,10 +87,6 @@ Gruntwork can help with:
   and configure it to forward requests for a specific domain to Consul. This allows you to use Consul as a DNS server
   for URLs such as `foo.service.consul`.
 
-* [consul-external-regional-load-balancer](/modules/consul-external-regional-load-balancer): This module creates a 
-  public-facing Load Balancer that fronts the Consul Server cluster. This is useful for testing purposes only. In production,
-  your Consul cluster should only be accessible from within your network. 
-
 ## How do I contribute to this Terraform Module?
 
 Contributions are very welcome! Check out the [Contribution Guidelines](/CONTRIBUTING.md) for instructions.
