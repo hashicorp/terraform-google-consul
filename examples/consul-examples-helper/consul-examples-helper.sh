@@ -101,7 +101,7 @@ function get_all_consul_server_ips {
     fi
   done
 
-  log_error "Failed to find the IP addresses for $expected_num_servers Consul server EC2 Instances after $MAX_RETRIES retries."
+  log_error "Failed to find the IP addresses for $expected_num_servers Consul server Compute Instances after $MAX_RETRIES retries."
   exit 1
 }
 

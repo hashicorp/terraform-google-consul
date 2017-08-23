@@ -33,9 +33,9 @@ to the `.consul` domain will be resolved via Consul:
 dig foo.service.consul
 ```
 
-We recommend running the `install-dnsmasq` script as part of a [Packer](https://www.packer.io/) template to create an
-[Amazon Machine Image (AMI)](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) (see the 
-[consul-ami example](/examples/consul-ami) for sample code). 
+We recommend running the `install-dnsmasq` script as part of a [Packer](https://www.packer.io/) template to create a
+[Google Image](https://cloud.google.com/compute/docs/images) (see the [consul-image example](/examples/consul-image) for
+sample code). 
 
 
 

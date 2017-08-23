@@ -84,7 +84,7 @@ Example:
 ## Consul configuration
 
 `run-consul` generates a configuration file for Consul called `default.json` that tries to figure out reasonable 
-defaults for a Consul cluster in AWS. Check out the [Consul Configuration Files 
+defaults for a Consul cluster in GCP. Check out the [Consul Configuration Files 
 documentation](https://www.consul.io/docs/agent/options.html#configuration-files) for what configuration settings are
 available.
   
@@ -114,6 +114,9 @@ available.
   [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata). 
   
 
+* [raft-protocol](https://www.consul.io/docs/agent/options.html#raft_protocol) Set to the value of `--raft-protocol`.
+
+
 * [retry_join](https://www.consul.io/docs/agent/options.html#retry-join): Set the following keys for this setting:
     * [provider](https://www.consul.io/docs/agent/options.html#provider-2): Set to `gce` for Google Compute Engine.
     * [project_name](https://www.consul.io/docs/agent/options.html#project_name): Set to the name of the GCP Project where
@@ -141,8 +144,8 @@ contents:
 {
   "retry_join": {
     "provider": "gce",
-    "project_name": "my-project"
-    "tag_value": "custom-value",
+    "project_name": "my-project",
+    "tag_value": "custom-value"
   }
 }
 ```

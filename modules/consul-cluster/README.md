@@ -17,17 +17,18 @@ module "consul_cluster" {
   # Use version v0.0.1 of the consul-cluster module
   source = "github.com/gruntwork-io/consul-gcp-module//modules/consul-cluster?ref=v0.0.1"
 
-  # Specify either the Google Image "family" or a specific Google Image. You should build this using the scripts in the
-  # install-consul module.
+  # Specify either the Google Image "family" or a specific Google Image. You should build this using the scripts
+  # in the install-consul module.
   source_image = "consul"
   
   # Add this tag to each node in the cluster
   cluster_tag_name = "consul-cluster-example"
   
-  # Configure and start Consul during boot. It will automatically form a cluster with all nodes that have that same tag. 
+  # Configure and start Consul during boot. It will automatically form a cluster with all nodes that have that
+  # same tag. 
   startup_script = <<-EOF
               #!/bin/bash
-              /opt/consul/bin/run-consul --server --cluster-tag-key consul-cluster
+              /opt/consul/bin/run-consul --server --cluster-tag-name consul-cluster
               EOF
   
   # ... See vars.tf for the other parameters you must define for the consul-cluster module
@@ -42,7 +43,7 @@ Note the following parameters:
   this repo. That way, instead of using the latest version of this module from the `master` branch, which 
   will change every time you run Terraform, you're using a fixed version of the repo.
 
-* `source_image`: Use this parameter to specify the ID of a Consul [Google Image](https://cloud.google.com/compute/docs/images)
+* `source_image`: Use this parameter to specify the name of the Consul [Google Image](https://cloud.google.com/compute/docs/images)
   to deploy on each server in the cluster. You should install Consul in this Image using the scripts in the 
   [install-consul](/modules/install-consul) module.
   
@@ -121,16 +122,17 @@ Finally, you can try opening up the Consul UI in your browser at the URL `http:/
 ### Using the Consul agent on another Compute Instance
 
 The easiest way to run [Consul agent](https://www.consul.io/docs/agent/basics.html) and have it connect to the Consul 
-cluster is to specify a tag used by the Computer Instance where the Consul agent is running in the `allowed_inbound_tags_http_api`
-property of the `consul-cluster` module. To grant DNS access, you can do the same with the in the `allowed_inbound_tags_dns`
-property.
+Server cluster is to note the [tag](https://cloud.google.com/compute/docs/vpc/add-remove-network-tags) used by a Compute
+Instance where the Consul agent is running, and specify it in the `allowed_inbound_tags_http_api` property of the 
+`consul-cluster` module. To grant DNS access, you can specify the same tag in the `allowed_inbound_tags_dns`
+property of the `consul-cluster` module.
 
-For example, imagine you deployed a Consul cluster as follows:
+For example, imagine you deployed a Consul Server cluster as follows:
 
 <!-- TODO: update this to the final URL -->
 
 ```hcl
-module "consul_cluster" {
+module "consul_server_cluster" {
   # TODO: update this to the final URL
   source = "github.com/gruntwork-io/consul-gcp-module//modules/consul-cluster?ref=v0.0.1"
 
@@ -180,9 +182,10 @@ module. You pass in the name of the Image to run using the `source_image` input 
 
 #### Compute Instance Tags
 
-This module allows you to specify a tag to add to each Compute Instance in the Managed Instance Group. We recommend using
-this tag with the [retry_join](https://www.consul.io/docs/agent/options.html?#retry-join) configuration to allow the
-Compute Instances to find each other and automatically form a cluster.
+This module allows you to specify a [tag](https://cloud.google.com/compute/docs/vpc/add-remove-network-tags) to add to
+each Compute Instance in the Managed Instance Group. We recommend using this tag with the [retry_join](
+https://www.consul.io/docs/agent/options.html?#retry-join) configuration to allow the Compute Instances to find each
+other and automatically form a cluster.
 
 
 ### Firewall Rules
@@ -191,8 +194,8 @@ We create separate Firewall Rules that allow:
  
 * All the inbound ports specified in the [Consul documentation](https://www.consul.io/docs/agent/options.html?#ports-used)
   for use within the Consul Cluster.
-* HTTP API requests from the given tags or CIDR Blocks
-* DNS requests from the given the tags or CIDR Blocks
+* HTTP API requests from GCP resources that have the given tags or any IP address within the given CIDR Blocks
+* DNS requests from GCP resources that have the given tags or any IP address within the given CIDR Blocks
 
 
 ## How do you roll out updates?
@@ -235,8 +238,7 @@ Here are some of the main security considerations to keep in mind when using thi
 
 1. [Encryption in transit](#encryption-in-transit)
 1. [Encryption at rest](#encryption-at-rest)
-1. [Dedicated instances](#dedicated-instances)
-1. [Security groups](#security-groups)
+1. [Firewall rules](#firewall-rules)
 1. [SSH access](#ssh-access)
 
 
@@ -278,7 +280,7 @@ Note that all the ports mentioned above are configurable via the `xxx_port` vari
 
 ### SSH access
 
-You can SSH to the Compute Instances using the [conventional ways offered by GCE](
+You can SSH to the Compute Instances using the [conventional methods offered by GCE](
 https://cloud.google.com/compute/docs/instances/connecting-to-instance). Google [strongly recommends](
 https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys) that you connect to an Instance [from your web
 browser](https://cloud.google.com/compute/docs/instances/connecting-to-instance#sshinbrowser) or using the [gcloud
