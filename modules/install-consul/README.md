@@ -1,16 +1,15 @@
 # Consul Install Script
 
 This folder contains a script for installing Consul and its dependencies. Use this script along with the
-[run-consul script](/modules/run-consul) to create a Consul [Amazon Machine Image 
-(AMI)](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) that can be deployed in 
-[AWS](https://aws.amazon.com/) across an Auto Scaling Group using the [consul-cluster module](/modules/consul-cluster).
+[run-consul script](/modules/run-consul) to create a Consul [Google Image](https://cloud.google.com/compute/docs/images)
+that can be deployed in [GCP](https://cloud.google.com) across a Managed Instance Scaling Group using the 
+[consul-cluster module](/modules/consul-cluster).
 
 This script has been tested on the following operating systems:
 
 * Ubuntu 16.04
-* Amazon Linux
 
-There is a good chance it will work on other flavors of Debian, CentOS, and RHEL as well.
+There is a good chance it will work on other flavors of Debian as well.
 
 
 
@@ -23,7 +22,7 @@ for all available tags) and run the `install-consul` script:
 
 ```
 git clone --branch <VERSION> https://github.com/gruntwork-io/consul-gcp-module.git
-consul-gcp-module/modules/install-consul/install-consul --version 0.8.0
+consul-gcp-module/modules/install-consul/install-consul --version 0.9.2
 ```
 
 The `install-consul` script will install Consul, its dependencies, and the [run-consul script](/modules/run-consul).
@@ -31,10 +30,9 @@ The `run-consul` script is also run when the server is booting to start Consul a
 join other nodes to form a cluster.
 
 We recommend running the `install-consul` script as part of a [Packer](https://www.packer.io/) template to create a
-Consul [Amazon Machine Image (AMI)](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) (see the 
-[consul-ami example](/examples/consul-ami) for a fully-working sample code). You can then deploy the AMI across an Auto 
-Scaling Group using the [consul-cluster module](/modules/consul-cluster) (see the [consul-cluster 
-example](/examples/consul-cluster) for fully-working sample code).
+Consul [Image](https://cloud.google.com/compute/docs/images) (see the [consul-image example](/examples/consul-image) for
+fully-working sample code). You can then deploy the Image across a Managed Instance Group using the [consul-cluster
+module](/modules/consul-cluster) (see the [consul-cluster example](/examples/consul-cluster) for fully-working sample code).
 
 
 
@@ -50,7 +48,7 @@ The `install-consul` script accepts the following arguments:
 Example:
 
 ```
-install-consul --version 0.8.0
+install-consul --version 0.9.2
 ```
 
 
@@ -89,7 +87,7 @@ Install the following:
 ### Install supervisord
 
 Install [supervisord](http://supervisord.org/). We use it as a cross-platform supervisor to ensure Consul is started
-whenever the system boots and restarted if the Consul process crashes.
+whenever the system boots and restarted if the Consul process crashes. 
 
 
 ### Follow-up tasks
@@ -107,5 +105,5 @@ After the `install-consul` script finishes running, you may wish to do the follo
 
 We needed an easy way to install these scripts that satisfied a number of requirements, including working on a variety 
 of operating systems and supported versioning. Our current solution is to use `git`, but this may change in the future.
-See [Package Managers](/_docs/package-managers.md) for a full discussion of the requirements, trade-offs, and why we
-picked `git`.
+See [Package Managers](https://github.com/gruntwork-io/consul-aws-blueprint/blob/master/_docs/package-managers.md) for a
+full discussion of the requirements, trade-offs, and why we picked `git`.

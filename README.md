@@ -72,9 +72,8 @@ Gruntwork can help with:
 
 ## Code included in this Terraform Module:
 
-* [install-consul](/modules/install-consul): This module installs Consul using a
-  [Packer](https://www.packer.io/) template to create a Consul 
-  [Custom Image](https://cloud.google.com/compute/docs/images).
+* [install-consul](/modules/install-consul): This module installs Consul using a [Packer](https://www.packer.io/)
+  template to create a Consul [Custom Image](https://cloud.google.com/compute/docs/images).
 
 * [consul-cluster](/modules/consul-cluster): The module includes Terraform code to deploy a Consul Image across a [Managed
   Compute Instance Group](https://cloud.google.com/compute/docs/instance-groups/). 
