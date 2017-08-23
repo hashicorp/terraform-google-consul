@@ -31,6 +31,14 @@ variable "consul_client_cluster_tag_name" {
   description = "A tag that will uniquely identify the Consul Clients. In this example, the Consul Server cluster uses this tag to identify the Consul Client servers that should have query permissions."
 }
 
+variable "consul_server_source_image" {
+  description = "The Google Image used to launch each node in the Consul Server cluster."
+}
+
+variable "consul_client_source_image" {
+  description = "The Google Image used to launch each node in the Consul Client cluster."
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
