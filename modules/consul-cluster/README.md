@@ -308,9 +308,9 @@ If you wish to install the StackDriver monitoring agent or logging agent, pass t
 the `startup_script` property.
 
 
-### VPCs, subnetworkss, route tables
+### VPCs, subnetworks, route tables
 
-This module assumes you've already created your network topology (VPC, subnetworkss, route tables, etc). By default,
+This module assumes you've already created your network topology (VPC, subnetworks, route tables, etc). By default,
 it will use the "default" network for the Project you select, but you may specify custom networks via the `network_name`
 property.
 
