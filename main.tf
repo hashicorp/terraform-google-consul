@@ -64,7 +64,7 @@ module "consul_servers" {
 # Render the Startup Script that will run on each Consul Server Instance on boot.
 # This script will configure and start Consul.
 data "template_file" "startup_script_server" {
-  template = "${file("${path.module}/startup-script-server.sh")}"
+  template = "${file("${path.module}/examples/root/startup-script-server.sh")}"
 
   vars {
     cluster_tag_name = "${var.consul_server_cluster_tag_name}"
@@ -112,7 +112,7 @@ module "consul_clients" {
 # Render the Startup Script that will run on each Consul Server Instance on boot.
 # This script will configure and start Consul.
 data "template_file" "startup_script_client" {
-  template = "${file("${path.module}/startup-script-client.sh")}"
+  template = "${file("${path.module}/examples/root/startup-script-client.sh")}"
 
   vars {
     cluster_tag_name = "${var.consul_server_cluster_tag_name}"
