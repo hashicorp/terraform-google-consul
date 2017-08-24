@@ -22,10 +22,26 @@ output "instance_template_metadata_fingerprint" {
   value = "${element(concat(google_compute_instance_template.consul_server_public.*.metadata_fingerprint, google_compute_instance_template.consul_server_private.*.metadata_fingerprint), 0)}"
 }
 
-output "firewall_rule_url" {
+output "firewall_rule_intracluster_url" {
   value = "${google_compute_firewall.allow_intracluster_consul.self_link}"
 }
 
-output "firewall_rule_name" {
+output "firewall_rule_intracluster_name" {
   value = "${google_compute_firewall.allow_intracluster_consul.name}"
+}
+
+output "firewall_rule_inbound_http_url" {
+  value = "${google_compute_firewall.allow_inboud_http_api.self_link}"
+}
+
+output "firewall_rule_inbound_http_name" {
+  value = "${google_compute_firewall.allow_inboud_http_api.name}"
+}
+
+output "firewall_rule_inbound_dns_url" {
+  value = "${google_compute_firewall.allow_inbound_dns.self_link}"
+}
+
+output "firewall_rule_inbound_dns_name" {
+  value = "${google_compute_firewall.allow_inbound_dns.name}"
 }
