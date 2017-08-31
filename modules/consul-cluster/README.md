@@ -3,7 +3,7 @@
 This folder contains a [Terraform](https://www.terraform.io/) module to deploy a 
 [Consul](https://www.consul.io/) cluster in [GCP](https://cloud.google.com/) on top of a Zonal Manged Instance
 Group. This module is designed to deploy a [Google Image](https://cloud.google.com/compute/docs/images) that has Consul
-installed via the [install-consul](/modules/install-consul) module in this Module.
+installed via the [install-consul](https://github.com/gruntwork-io/terraform-google-consul/modules/install-consul) module in this Module.
 
 
 
@@ -45,16 +45,16 @@ Note the following parameters:
 
 * `source_image`: Use this parameter to specify the name of the Consul [Google Image](https://cloud.google.com/compute/docs/images)
   to deploy on each server in the cluster. You should install Consul in this Image using the scripts in the 
-  [install-consul](/modules/install-consul) module.
+  [install-consul](https://github.com/gruntwork-io/terraform-google-consul/modules/install-consul) module.
   
 * `startup_script`: Use this parameter to specify a [Startup Script](https://cloud.google.com/compute/docs/startupscript) script that each
-  server will run during boot. This is where you can use the [run-consul script](/modules/run-consul) to configure and 
-  run Consul. The `run-consul` script is one of the scripts installed by the [install-consul](/modules/install-consul) 
+  server will run during boot. This is where you can use the [run-consul script](https://github.com/gruntwork-io/terraform-google-consul/modules/run-consul) to configure and 
+  run Consul. The `run-consul` script is one of the scripts installed by the [install-consul](https://github.com/gruntwork-io/terraform-google-consul/modules/install-consul) 
   module. 
 
 You can find the other parameters in [vars.tf](vars.tf).
 
-Check out the [consul-cluster example](/examples/consul-cluster) for fully-working sample code. 
+Check out the [consul-cluster example](https://github.com/gruntwork-io/terraform-google-consul/examples/consul-cluster) for fully-working sample code. 
 
 
 
@@ -65,12 +65,12 @@ Check out the [consul-cluster example](/examples/consul-cluster) for fully-worki
 
 If you want to connect to the cluster from your own computer, the easiest way is to use the [HTTP 
 API](https://www.consul.io/docs/agent/http.html). Note that this only works if the Consul cluster is running with 
-`assign_public_ip_addresses` set to `true` (as in the [consul-cluster example](/examples/consul-cluster)), which is OK
+`assign_public_ip_addresses` set to `true` (as in the [consul-cluster example](https://github.com/gruntwork-io/terraform-google-consul/examples/consul-cluster)), which is OK
 for testing and experimentation, but NOT recommended for production usage.
 
 To use the HTTP API, you first need to get the public IP address of one of the Consul Servers. You can find Consul 
-servers by using Compute Instance tags. If you're running the [consul-cluster example](/examples/consul-cluster), the 
-[consul-examples-helper.sh script](/examples/consul-examples-helper/consul-examples-helper.sh) will do the tag lookup 
+servers by using Compute Instance tags. If you're running the [consul-cluster example](https://github.com/gruntwork-io/terraform-google-consul/examples/consul-cluster), the 
+[consul-examples-helper.sh script](https://github.com/gruntwork-io/terraform-google-consul/examples/consul-examples-helper/consul-examples-helper.sh) will do the tag lookup 
 for you automatically (note, you must have the [Google Cloud SDK](https://cloud.google.com/sdk/) and the 
 [Consul agent](https://www.consul.io/) installed locally):
 
@@ -116,7 +116,7 @@ bar
 
 Finally, you can try opening up the Consul UI in your browser at the URL `http://11.22.33.44:8500/ui/`.
 
-![Consul UI](/_docs/consul-ui-screenshot.png)
+![Consul UI](https://github.com/gruntwork-io/terraform-google-consul/_docs/consul-ui-screenshot.png)
 
 
 ### Using the Consul agent on another Compute Instance
@@ -161,7 +161,7 @@ entries).
 
 This module creates the following architecture:
 
-![Consul architecture](/_docs/architecture.png)
+![Consul architecture](https://github.com/gruntwork-io/terraform-google-consul/_docs/architecture.png)
 
 This architecture consists of the following resources:
 
@@ -177,7 +177,7 @@ https://cloud.google.com/compute/docs/regions-zones/regions-zones). Unfortunatel
 https://github.com/terraform-providers/terraform-provider-google/issues/45), Managed Instance Groups can only be deployed
 to a single Zone, not across a Region.
 
-Each of the Compute Instances should be running a Google Image that has Consul installed via the [install-consul](/modules/install-consul)
+Each of the Compute Instances should be running a Google Image that has Consul installed via the [install-consul](https://github.com/gruntwork-io/terraform-google-consul/modules/install-consul)
 module. You pass in the name of the Image to run using the `source_image` input parameter.
 
 #### Compute Instance Tags
@@ -245,7 +245,7 @@ Here are some of the main security considerations to keep in mind when using thi
 ### Encryption in transit
 
 Consul can encrypt all of its network traffic. For instructions on enabling network encryption, have a look at the
-[How do you handle encryption documentation](/modules/run-consul#how-do-you-handle-encryption).
+[How do you handle encryption documentation](https://github.com/gruntwork-io/terraform-google-consul/modules/run-consul#how-do-you-handle-encryption).
 
 
 ### Encryption at rest

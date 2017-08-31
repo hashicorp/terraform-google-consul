@@ -17,7 +17,7 @@ There is a good chance it will work on other flavors of Debian as well.
 
 ## Quick start
 
-To install Dnsmasq, use `git` to clone this repository at a specific tag (see the [releases page](../../../../releases) 
+To install Dnsmasq, use `git` to clone this repository at a specific tag (see the [releases page](https://github.com/gruntwork-io/terraform-google-consul/releases) 
 for all available tags) and run the `install-dnsmasq` script:
 
 ```
@@ -34,7 +34,7 @@ dig foo.service.consul
 ```
 
 We recommend running the `install-dnsmasq` script as part of a [Packer](https://www.packer.io/) template to create a
-[Google Image](https://cloud.google.com/compute/docs/images) (see the [consul-image example](/examples/consul-image) for
+[Google Image](https://cloud.google.com/compute/docs/images) (see the [consul-image example](https://github.com/gruntwork-io/terraform-google-consul/examples/consul-image) for
 sample code). 
 
 

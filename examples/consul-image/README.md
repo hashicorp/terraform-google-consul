@@ -1,7 +1,7 @@
 # Consul Google Image
 
-This folder shows an example of how to use the [install-consul](/modules/install-consul) and 
-[install-dnsmasq](/modules/install-dnsmasq) modules with [Packer](https://www.packer.io/) to create [Custom Images](
+This folder shows an example of how to use the [install-consul](https://github.com/gruntwork-io/terraform-google-consul/modules/install-consul) and 
+[install-dnsmasq](https://github.com/gruntwork-io/terraform-google-consul/modules/install-dnsmasq) modules with [Packer](https://www.packer.io/) to create [Custom Images](
 https://cloud.google.com/compute/docs/images) that have Consul and Dnsmasq installed on 
 top of Ubuntu 16.04 LTS. At this time, Ubuntu 16.04 LTS is the only supported Linux distribution.
 
@@ -9,10 +9,10 @@ These Images will have [Consul](https://www.consul.io/) installed and configured
 boot-up. They also have [Dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) installed and configured to use 
 Consul for DNS lookups of the `.consul` domain (e.g. `foo.service.consul`) (see [registering 
 services](https://www.consul.io/intro/getting-started/services.html) for instructions on how to register your services
-in Consul). To see how to deploy this Image, check out the [consul-cluster example](/examples/consul-cluster). 
+in Consul). To see how to deploy this Image, check out the [consul-cluster example](https://github.com/gruntwork-io/terraform-google-consul/examples/consul-cluster). 
 
 For more info on Consul installation and configuration, check out the 
-[install-consul](/modules/install-consul) and [install-dnsmasq](/modules/install-dnsmasq) documentation.
+[install-consul](https://github.com/gruntwork-io/terraform-google-consul/modules/install-consul) and [install-dnsmasq](https://github.com/gruntwork-io/terraform-google-consul/modules/install-dnsmasq) documentation.
 
 
 
@@ -28,7 +28,7 @@ To build the Consul Image:
 1. Run `packer build consul.json`.
 
 When the build finishes, it will output the ID of the new Custom Image. To see how to deploy one of these Images, check
-out the  [consul-cluster example](/examples/consul-cluster).
+out the  [consul-cluster example](https://github.com/gruntwork-io/terraform-google-consul/examples/consul-cluster).
 
 
 
@@ -73,7 +73,7 @@ Your code should look more like this:
 ```
 
 You should replace `<MODULE_VERSION>` in the code above with the version of this Module that you want to use (see
-the [Releases Page](../../releases) for all available versions). That's because for production usage, you should always
+the [Releases Page](https://github.com/gruntwork-io/terraform-google-consul/releases) for all available versions). That's because for production usage, you should always
 use a fixed, known version of this Module, downloaded from the official Git repo. On the other hand, when you're 
 just experimenting with the Module, it's OK to use a local checkout of the Module, uploaded from your own 
 computer.
