@@ -29,7 +29,7 @@ We also recommend updating the automated tests *before* updating any code (see [
 Development](https://en.wikipedia.org/wiki/Test-driven_development)). That means you add or update a test case, 
 verify that it's failing with a clear error message, and *then* make the code changes to get that test to pass. This 
 ensures the tests stay up to date and verify all the functionality in this Module, including whatever new 
-functionality you're adding in your contribution. Check out the [tests](/tests) folder for instructions on running the 
+functionality you're adding in your contribution. Check out the [tests](https://github.com/gruntwork-io/terraform-google-consul/tests) folder for instructions on running the 
 automated tests. 
 
 ## Update the code
@@ -83,4 +83,4 @@ to include the following:
 ## Merge and release   
 
 The maintainers for this repo will review your code and provide feedback. If everything looks good, they will merge the
-code and release a new version, which you'll be able to find in the [releases page](../../releases).
+code and release a new version, which you'll be able to find in the [releases page](https://github.com/gruntwork-io/terraform-google-consul/releases).
