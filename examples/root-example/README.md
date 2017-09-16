@@ -6,7 +6,7 @@ Compute Instance Groups: one with Consul server nodes, which are responsible for
 quorum](https://www.consul.io/docs/internals/consensus.html), and one with client nodes, which  would typically run 
 alongside your apps:
 
-![Consul architecture](https://github.com/hashicorp/terraform-google-consul/_docs/architecture.png)
+![Consul architecture](https://github.com/hashicorp/terraform-google-consul/_docs/architecture.png?raw=true)
 
 You will need to create a [Custom Image](https://cloud.google.com/compute/docs/images) 
 that has Consul installed, which you can do using the [consul-image example](https://github.com/hashicorp/terraform-google-consul/examples/consul-image)). Note that to keep 

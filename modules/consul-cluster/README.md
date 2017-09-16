@@ -116,7 +116,7 @@ bar
 
 Finally, you can try opening up the Consul UI in your browser at the URL `http://11.22.33.44:8500/ui/`.
 
-![Consul UI](https://github.com/hashicorp/terraform-google-consul/_docs/consul-ui-screenshot.png)
+![Consul UI](https://github.com/hashicorp/terraform-google-consul/_docs/consul-ui-screenshot.png?raw=true)
 
 
 ### Using the Consul agent on another Compute Instance
@@ -161,7 +161,7 @@ entries).
 
 This module creates the following architecture:
 
-![Consul architecture](https://github.com/hashicorp/terraform-google-consul/_docs/architecture.png)
+![Consul architecture](https://github.com/hashicorp/terraform-google-consul/_docs/architecture.png?raw=true)
 
 This architecture consists of the following resources:
 
