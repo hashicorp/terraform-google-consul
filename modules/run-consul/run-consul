@@ -31,7 +31,7 @@ function print_usage {
   echo -e "  --cluster-tag-name\tAutomatically form a cluster with Instances that have the same value for this Compute Instance tag name."
   echo -e "  --raft-protocol\tThis controls the internal version of the Raft consensus protocol used for server "
   echo -e "                 \tcommunications. Must be set to 3 in order to gain access to Autopilot features, with the"
-  echo -e "                 \texception of cleanup_dead_servers. Default: 3"
+  echo -e "                 \texception of cleanup_dead_servers. Default: $DEFAULT_RAFT_PROTOCOL"
   echo -e "  --config-dir\t\tThe path to the Consul config folder. Default is the absolute path of '../config', relative to this script."
   echo -e "  --data-dir\t\tThe path to the Consul data folder. Default is the absolute path of '../data', relative to this script."
   echo -e "  --log-dir\t\tThe path to the Consul log folder. Default is the absolute path of '../log', relative to this script."

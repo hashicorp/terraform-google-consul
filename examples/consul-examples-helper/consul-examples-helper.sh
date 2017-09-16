@@ -77,31 +77,37 @@ function join {
   printf "%s$separator" "${values[@]}" | sed "s/$separator$//"
 }
 
-function get_all_consul_server_ips {
+function get_all_consul_server_property_values {
+  local server_property_name="$1"
+
+  local gcp_project
+  local gcp_zone
+  local cluster_tag_name
   local expected_num_servers
-  expected_num_servers=$(get_required_terraform_output "num_servers")
 
-  log_info "Looking up public IP addresses for $expected_num_servers Consul server Google Compute Instances."
+  gcp_project=$(get_required_terraform_output "gcp_project")
+  gcp_zone=$(get_required_terraform_output "gcp_zone")
+  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name")
+  expected_num_servers=$(get_required_terraform_output "cluster_size")
 
-  local ips
+  log_info "Looking up $server_property_name for $expected_num_servers Consul server Compute Instances."
+
+  local vals
   local i
 
   for (( i=1; i<="$MAX_RETRIES"; i++ )); do
-    ips=($(get_consul_server_ips))
-    if [[ "${#ips[@]}" -eq "$expected_num_servers" ]]; then
-      log_info "Found all $expected_num_servers public IP addresses!"
-      echo "${ips[@]}"
+    vals=($(get_consul_server_property_values "$gcp_project" "$gcp_zone" "$cluster_tag_name" "$server_property_name"))
+    if [[ "${#vals[@]}" -eq "$expected_num_servers" ]]; then
+      log_info "Found $server_property_name for all $expected_num_servers expected Consul servers!"
+      echo "${vals[@]}"
       return
-    elif [[ "${#ips[@]}" -gt "$expected_num_servers" ]]; then
-      log_error "Found ${#ips[@]} public IP addresses, but only expected $expected_num_servers. Your cluster may have members who have left. Consider destroying and re-creating the cluster so that all members are present."
-      exit 1
     else
-      log_warn "Found ${#ips[@]} of $expected_num_servers public IP addresses. Will sleep for $SLEEP_BETWEEN_RETRIES_SEC seconds and try again."
+      log_warn "Found $server_property_name for ${#vals[@]} of $expected_num_servers Consul servers. Will sleep for $SLEEP_BETWEEN_RETRIES_SEC seconds and try again."
       sleep "$SLEEP_BETWEEN_RETRIES_SEC"
     fi
   done
 
-  log_error "Failed to find the IP addresses for $expected_num_servers Consul server Compute Instances after $MAX_RETRIES retries."
+  log_error "Failed to find the $server_property_name for $expected_num_servers Consul server Compute Instances after $MAX_RETRIES retries."
   exit 1
 }
 
@@ -110,7 +116,7 @@ function wait_for_all_consul_servers_to_register {
   local readonly server_ip="${server_ips[0]}"
 
   local expected_num_servers
-  expected_num_servers=$(get_required_terraform_output "num_servers")
+  expected_num_servers=$(get_required_terraform_output "cluster_size")
 
   log_info "Waiting for $expected_num_servers Consul servers to register in the cluster"
 
@@ -136,19 +142,28 @@ function wait_for_all_consul_servers_to_register {
   exit 1
 }
 
-function get_consul_server_ips {
-  local cluster_tag_name
+function get_consul_server_property_values {
+  local readonly gcp_project="$1"
+  local readonly gcp_zone="$2"
+  local readonly cluster_tag_name="$3"
+  local readonly property_name="$4"
   local instances
 
-  cluster_tag_name=$(get_required_terraform_output "consul_server_cluster_tag_name")
+  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name")
 
   log_info "Fetching external IP addresses for Consul Server Compute Instances with tag \"$cluster_tag_name\""
 
   instances=$(gcloud compute instances list \
+    --project "$gcp_project"\
+    --filter "zone : $gcp_zone" \
     --filter "tags.items~^$cluster_tag_name\$" \
-    --format 'value(EXTERNAL_IP)')
+    --format "value($property_name)")
 
   echo "$instances"
+}
+
+function get_all_consul_server_ips {
+  get_all_consul_server_property_values "EXTERNAL_IP"
 }
 
 function print_instructions {

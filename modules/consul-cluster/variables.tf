@@ -69,25 +69,25 @@ variable "instance_group_update_strategy" {
 }
 
 variable "allowed_inbound_cidr_blocks_http_api" {
-  description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul"
+  description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul."
   type = "list"
   default = ["0.0.0.0/0"]
 }
 
 variable "allowed_inbound_tags_http_api" {
-  description = ""
+  description = "A list of tags from which the Compute Instances will allow API connections to Consul."
   type = "list"
   default = []
 }
 
 variable "allowed_inbound_cidr_blocks_dns" {
-  description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow TCP DNS and UDP DNS connections to Consul"
+  description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow TCP DNS and UDP DNS connections to Consul."
   type = "list"
   default = ["0.0.0.0/0"]
 }
 
 variable "allowed_inbound_tags_dns" {
-  description = ""
+  description = "A list of tags from which the Compute Instances will allow TCP DNS and UDP DNS connections to Consul."
   type = "list"
   default = []
 }
@@ -136,6 +136,8 @@ variable "dns_port" {
   description = "The port used to resolve DNS queries."
   default = 8600
 }
+
+# Disk Settings
 
 variable "root_volume_disk_size_gb" {
   description = "The size, in GB, of the root disk volume on each Consul node."

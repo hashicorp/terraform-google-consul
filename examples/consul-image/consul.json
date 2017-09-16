@@ -3,7 +3,7 @@
   "variables": {
     "project_id": null,
     "zone": null,
-    "consul_version": "0.9.2"
+    "consul_version": "0.9.3"
   },
   "builders": [{
     "type": "googlecompute",
@@ -16,13 +16,13 @@
   }],
   "provisioners": [{
     "type": "file",
-    "source": "{{template_dir}}/../../../consul-gcp-module",
+    "source": "{{template_dir}}/../../../terraform-google-consul",
     "destination": "/tmp"
   },{
     "type": "shell",
     "inline": [
-      "/tmp/consul-gcp-module/modules/install-consul/install-consul --version {{user `consul_version`}}",
-      "/tmp/consul-gcp-module/modules/install-dnsmasq/install-dnsmasq"
+      "/tmp/terraform-google-consul/modules/install-consul/install-consul --version {{user `consul_version`}}",
+      "/tmp/terraform-google-consul/modules/install-dnsmasq/install-dnsmasq"
     ],
     "pause_before": "30s"
   }]
