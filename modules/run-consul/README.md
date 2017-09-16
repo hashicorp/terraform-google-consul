@@ -13,7 +13,7 @@ There is a good chance it will work on other flavors of Debian as well.
 ## Quick start
 
 This script assumes you installed it, plus all of its dependencies (including Consul itself), using the [install-consul 
-module](https://github.com/gruntwork-io/terraform-google-consul/modules/install-consul). The default install path is `/opt/consul/bin`, so to start Consul in server mode, 
+module](https://github.com/hashicorp/terraform-google-consul/modules/install-consul). The default install path is `/opt/consul/bin`, so to start Consul in server mode, 
 you run:
 
 ```
@@ -42,7 +42,7 @@ We recommend using the `run-consul` command as part of the [Startup Script](http
 so that it executes when the Compute Instance is first booting. After runing `run-consul` on that initial boot, the `supervisord`
 configuration  will automatically restart Consul if it crashes or the Compute instance reboots.
 
-See the [consul-cluster example](https://github.com/gruntwork-io/terraform-google-consul/examples/consul-cluster) for fully-working sample code.
+See the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/examples/consul-cluster) for fully-working sample code.
 
 
 
