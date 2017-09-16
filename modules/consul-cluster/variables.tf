@@ -137,6 +137,8 @@ variable "dns_port" {
   default = 8600
 }
 
+# Disk Settings
+
 variable "root_volume_disk_size_gb" {
   description = "The size, in GB, of the root disk volume on each Consul node."
   default = 30

@@ -1,4 +1,4 @@
-# Consul Terraform Module for Google Cloud Platform (GCP)
+# Consul for Google Cloud Platform (GCP)
 
 This repo contains a Terraform Module for how to deploy a [Consul](https://www.consul.io/) cluster on 
 [GCP](https://cloud.google.com/) using [Terraform](https://www.terraform.io/). Consul is a distributed, highly-available 
