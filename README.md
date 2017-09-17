@@ -15,9 +15,12 @@ run alongside your apps:
 
 Each Module has the following folder structure:
 
-* [modules](https://github.com/hashicorp/terraform-google-consul/tree/master/modules): This folder contains the reusable code for this Module, broken down into one or more submodules.
-* [examples](https://github.com/hashicorp/terraform-google-consul/tree/master/examples): This folder contains examples of how to use the submodules.
-* [test](https://github.com/hashicorp/terraform-google-consul/tree/master/test): Automated tests for the submodules and examples.
+* [modules](https://github.com/hashicorp/terraform-google-consul/tree/master/modules): This folder contains the reusable
+  code for this Module, broken down into one or more submodules.
+* [examples](https://github.com/hashicorp/terraform-google-consul/tree/master/examples): This folder contains examples
+  of how to use the submodules.
+* [test](https://github.com/hashicorp/terraform-google-consul/tree/master/test): Automated tests for the submodules and
+   examples.
 
 To deploy Consul servers using this Module:
 
@@ -45,15 +48,8 @@ To deploy Consul clients using this Module:
 
 ## What's a Terraform Module?
 
-A Terraform Module is a canonical, reusable, best-practices definition for how to run a single piece of infrastructure, 
-such as a database or server cluster. Each Terraform Module is created using [Terraform](https://www.terraform.io/), and
-includes automated tests, examples, and documentation. It is maintained both by the open source community and 
-companies that provide commercial support. 
-
-Instead of figuring out the details of how to run a piece of infrastructure from scratch, you can reuse 
-existing code that has been proven in production. And instead of maintaining all that infrastructure code yourself, 
-you can leverage the work of the Terraform Module community to pick up infrastructure improvements through
-a version number bump.
+A Terraform Module refers to a self-contained packages of Terraform configurations that are managed as a group. This repo
+is a Terraform Module and contains many "submodules" which can be composed together to create useful infrastructure patterns.
  
  
  
