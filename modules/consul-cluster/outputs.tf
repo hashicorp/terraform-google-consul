@@ -2,6 +2,14 @@ output "gcp_zone" {
   value = "${var.gcp_zone}"
 }
 
+output "cluster_name" {
+  value = "${var.cluster_name}"
+}
+
+output "cluster_tag_name" {
+  value = "${var.cluster_tag_name}"
+}
+
 output "instance_group_url" {
   value = "${google_compute_instance_group_manager.consul_server.self_link}"
 }
