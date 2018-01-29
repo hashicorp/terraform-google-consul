@@ -157,7 +157,7 @@ resource "google_compute_firewall" "allow_intracluster_consul" {
 #   this Rule will open up the appropriate ports.
 # - Note that public access to your Consul Cluster will only be permitted if var.assign_public_ip_addresses is true.
 # - This Firewall Rule is only created if at least one source tag or source CIDR block is specified.
-resource "google_compute_firewall" "allow_inboud_http_api" {
+resource "google_compute_firewall" "allow_inbound_http_api" {
   count = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
 
   name    = "${var.cluster_name}-rule-external-api-access"
