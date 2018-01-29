@@ -8,23 +8,14 @@ terraform {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE A GCE INSTANCE GROUP TO RUN CONSUL SERVER
-# Ideally, we would run a "regional" Managed Instance Group that spans many Zones, but the Terraform GCP provider has
-# not yet implemented https://github.com/terraform-providers/terraform-provider-google/issues/45, so we settle for a
-# single-zone Managed Instance Group.
+# CREATE A GCE REGION GROUP TO RUN CONSUL SERVER
 # ---------------------------------------------------------------------------------------------------------------------
-
-# Create the single-zone Managed Instance Group where Consul Server will live.
-resource "google_compute_instance_group_manager" "consul_server" {
+resource "google_compute_region_instance_group_manager" "consul_server" {
   name = "${var.cluster_name}-ig"
 
   base_instance_name = "${var.cluster_name}"
   instance_template  = "${data.template_file.compute_instance_template_self_link.rendered}"
-  zone               = "${var.gcp_zone}"
-
-  # Consul Server is a stateful cluster, so the update strategy used to roll out a new GCE Instance Template must be
-  # a rolling update. But since Terraform does not yet support ROLLING_UPDATE, such updates must be manually rolled out.
-  update_strategy = "${var.instance_group_update_strategy}"
+  region             = "${var.gcp_region}"
 
   target_pools = ["${var.instance_group_target_pools}"]
   target_size  = "${var.cluster_size}"
