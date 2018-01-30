@@ -1,7 +1,7 @@
 # Consul Cluster
 
 This folder contains a [Terraform](https://www.terraform.io/) module to deploy a 
-[Consul](https://www.consul.io/) cluster in [GCP](https://cloud.google.com/) on top of a Zonal Manged Instance
+[Consul](https://www.consul.io/) cluster in [GCP](https://cloud.google.com/) on top of a Regional Manged Instance
 Group. This module is designed to deploy a [Google Image](https://cloud.google.com/compute/docs/images) that has Consul
 installed via the [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul) module in this Module.
 

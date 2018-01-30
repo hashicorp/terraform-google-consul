@@ -3,9 +3,9 @@ output "gcp_project" {
   value = "${var.gcp_project}"
 }
 
-output "gcp_zone" {
-  description = "The GCP Zone where all resources are deployed."
-  value = "${module.consul_servers.gcp_zone}"
+output "gcp_region" {
+  description = "The GCP Region where all resources are deployed."
+  value = "${module.consul_servers.gcp_region}"
 }
 
 output "cluster_size" {
