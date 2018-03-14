@@ -58,7 +58,7 @@ variable "network_name" {
 }
 
 variable "subnetwork_name" {
-  description = "The name of the VPC Subnetwork where all resources should be created"
+  description = "The name of the VPC Subnetwork where all resources should be created. Defaults to the default subnetwork for the network and region."
   default = ""
 }
 
