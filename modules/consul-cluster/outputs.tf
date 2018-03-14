@@ -39,17 +39,17 @@ output "firewall_rule_intracluster_name" {
 }
 
 output "firewall_rule_inbound_http_url" {
-  value = "${google_compute_firewall.allow_inboud_http_api.self_link}"
+  value = "${join("", google_compute_firewall.allow_inboud_http_api.*.self_link)}"
 }
 
 output "firewall_rule_inbound_http_name" {
-  value = "${google_compute_firewall.allow_inboud_http_api.name}"
+  value = "${join("", google_compute_firewall.allow_inboud_http_api.*.name)}"
 }
 
 output "firewall_rule_inbound_dns_url" {
-  value = "${google_compute_firewall.allow_inbound_dns.self_link}"
+  value = "${join("", google_compute_firewall.allow_inbound_dns.*.self_link)}"
 }
 
 output "firewall_rule_inbound_dns_name" {
-  value = "${google_compute_firewall.allow_inbound_dns.name}"
+  value = "${join("", google_compute_firewall.allow_inbound_dns.*.name)}"
 }
