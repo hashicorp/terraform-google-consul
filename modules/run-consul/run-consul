@@ -191,7 +191,7 @@ function generate_consul_config {
   "server": $server,
   "ui": true,
   "raft_protocol": $raft_protocol,
-  "encrypt": $encrypt
+  "encrypt": "$encrypt"
 }
 EOF
   chown "$user:$user" "$config_path"
