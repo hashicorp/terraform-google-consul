@@ -181,7 +181,7 @@ function generate_consul_config {
 
   local encrypt_config=""
   if [[ "$encrypt" != "" ]]; then
-    encrypt_config="\"encrypt\": $encrypt,"
+    encrypt_config="\"encrypt\": \"$encrypt\","
   fi
 
   log_info "Creating default Consul config file in $config_path"
