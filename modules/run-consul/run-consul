@@ -150,6 +150,7 @@ function generate_consul_config {
   local readonly user="$4"
   local readonly cluster_tag_name="$5"
   local readonly cluster_size_instance_metadata_key_name="$6"
+  local readonly encrypt="$7"
   local readonly config_path="$config_dir/$CONSUL_CONFIG_FILE"
 
   local instance_ip_address=""
@@ -189,7 +190,8 @@ function generate_consul_config {
   $retry_join_json
   "server": $server,
   "ui": true,
-  "raft_protocol": $raft_protocol
+  "raft_protocol": $raft_protocol,
+  "encrypt": $encrypt
 }
 EOF
   chown "$user:$user" "$config_path"
@@ -240,6 +242,7 @@ function run {
   local bin_dir=""
   local user=""
   local skip_consul_config="false"
+  local encrypt=""
   local all_args=()
 
   while [[ $# > 0 ]]; do
@@ -285,6 +288,11 @@ function run {
       --user)
         assert_not_empty "$key" "$2"
         user="$2"
+        shift
+        ;;
+      --encrypt)
+        assert_not_empty "$key" "$2"
+        encrypt="$2"
         shift
         ;;
       --skip-consul-config)
@@ -341,7 +349,8 @@ function run {
         "$config_dir" \
         "$user" \
         "$cluster_tag_name" \
-        "$CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME"
+        "$CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME" \
+        "$encrypt"
   fi
 
   generate_supervisor_config "$SUPERVISOR_CONFIG_PATH" "$config_dir" "$data_dir" "$log_dir" "$bin_dir" "$user"
