@@ -179,6 +179,11 @@ function generate_consul_config {
     bootstrap_expect="\"bootstrap_expect\": $cluster_size,"
   fi
 
+  local encrypt_config=""
+  if [[ "$encrypt" != "" ]]; then
+    encrypt_config="\"encrypt\": $encrypt,"
+  fi
+
   log_info "Creating default Consul config file in $config_path"
   cat > "$config_path" <<EOF
 {
@@ -191,8 +196,8 @@ function generate_consul_config {
   $retry_join_json
   "server": $server,
   "ui": true,
-  "raft_protocol": $raft_protocol,
-  "encrypt": "$encrypt"
+  $encrypt_config
+  "raft_protocol": $raft_protocol
 }
 EOF
   chown "$user:$user" "$config_path"
