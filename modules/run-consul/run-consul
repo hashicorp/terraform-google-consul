@@ -213,6 +213,9 @@ function generate_supervisor_config {
   local readonly consul_bin_dir="$5"
   local readonly consul_user="$6"
 
+  local consul_user_home_dir=""
+  consul_user_home_dir="$(get_owner_home_dir $consul_user)"
+
   log_info "Creating Supervisor config file to run Consul in $supervisor_config_path"
   cat > "$supervisor_config_path" <<EOF
 [program:consul]
@@ -224,6 +227,9 @@ autostart=true
 autorestart=true
 stopsignal=INT
 user=$consul_user
+# Per Supervisord docs (http://supervisord.org/configuration.html), when supervisord runs a process it does not start a
+# login shell and does not change environment variables like USER or HOME, so we must pass this in manually.
+environment=HOME="$consul_user_home_dir"
 EOF
 }
 
@@ -237,6 +243,20 @@ function start_consul {
 function get_owner_of_path {
   local readonly path="$1"
   ls -ld "$path" | awk '{print $3}'
+}
+
+function get_owner_home_dir {
+  local readonly user="$1"
+
+  local home_dir=""
+  home_dir=$(sudo su - $user -c 'echo $HOME')
+
+  if [[ "$home_dir" == "/" ]]; then
+    log_error "No \$HOME directory is set for user $user. This may cause unpredictable behavior with Consul in GCP. Exiting."
+    exit 1
+  fi
+
+  echo "$home_dir"
 }
 
 function run {
