@@ -114,7 +114,7 @@ function create_consul_user {
     echo "User $username already exists. Will not create again."
   else
     log_info "Creating user named $username"
-    sudo useradd "$username"
+    sudo useradd --create-home "$username"
   fi
 }
 
