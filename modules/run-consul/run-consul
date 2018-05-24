@@ -3,6 +3,9 @@
 
 set -e
 
+# In bash, we can't distinguish between the empty string, and no value at all, so we create our own unambiguous empty string.
+readonly EMPTY_VAL="__EMPTY__"
+
 readonly CONSUL_CONFIG_FILE="default.json"
 readonly SUPERVISOR_CONFIG_PATH="/etc/supervisor/conf.d/run-consul.conf"
 
@@ -38,7 +41,7 @@ function print_usage {
   echo -e "  --bin-dir\t\tThe path to the folder with Consul binary. Default is the absolute path of the parent folder of this script."
   echo -e "  --user\t\tThe user to run Consul as. Default is to use the owner of --config-dir."
   echo -e "  --skip-consul-config\tIf this flag is set, don't generate a Consul configuration file. Default is false."
-  echo -e "  --encrypt\t\tConsul encryption key. Default is empty string, which means no encryption key is used."
+  echo -e "  --encrypt-key\t\tConsul encryption key. Default is empty string, which means no encryption key is used."
   echo
   echo "Example:"
   echo
@@ -151,37 +154,36 @@ function generate_consul_config {
   local readonly user="$4"
   local readonly cluster_tag_name="$5"
   local readonly cluster_size_instance_metadata_key_name="$6"
-  local readonly encrypt="$7"
+  local readonly encrypt_key="$7"
   local readonly config_path="$config_dir/$CONSUL_CONFIG_FILE"
 
   local instance_ip_address=""
   local instance_name=""
   local project_id=""
+  local retry_join_key_val=""
+  local bootstrap_expect_key_val=""
+  local encrypt_key_val=""
 
   instance_ip_address=$(get_instance_ip_address)
   instance_name=$(get_instance_name)
   instance_zone=$(get_instance_zone)
   project_id=$(get_instance_project_id)
 
-  local retry_join_json=""
   if [[ -z "$cluster_tag_name" ]]; then
     log_warn "The --cluster-tag-name property is empty. Will not automatically try to form a cluster based on Cluster Tag Name."
   else
-    retry_join_json="\"retry_join\": [\"provider=gce project_name=$project_id tag_value=$cluster_tag_name\"],"
+    retry_join_key_val="\"retry_join\": [\"provider=gce project_name=$project_id tag_value=$cluster_tag_name\"],"
   fi
-
-  local bootstrap_expect=""
 
   if [[ "$server" == "true" ]]; then
     local cluster_size=""
 
     cluster_size=$(get_instance_custom_metadata_value "$cluster_size_instance_metadata_key_name")
-    bootstrap_expect="\"bootstrap_expect\": $cluster_size,"
+    bootstrap_expect_key_val="\"bootstrap_expect\": $cluster_size,"
   fi
 
-  local encrypt_config=""
-  if [[ "$encrypt" != "" ]]; then
-    encrypt_config="\"encrypt\": \"$encrypt\","
+  if [[ "$encrypt_key" != "$EMPTY_VAL" ]]; then
+    encrypt_key_val="\"encrypt\": \"$encrypt_key\","
   fi
 
   log_info "Creating default Consul config file in $config_path"
@@ -189,14 +191,14 @@ function generate_consul_config {
 {
   "advertise_addr": "$instance_ip_address",
   "bind_addr": "$instance_ip_address",
-  $bootstrap_expect
+  $bootstrap_expect_key_val
   "client_addr": "0.0.0.0",
   "datacenter": "$instance_zone",
   "node_name": "$instance_name",
-  $retry_join_json
+  $retry_join_key_val
   "server": $server,
   "ui": true,
-  $encrypt_config
+  $encrypt_key_val
   "raft_protocol": $raft_protocol
 }
 EOF
@@ -248,7 +250,7 @@ function run {
   local bin_dir=""
   local user=""
   local skip_consul_config="false"
-  local encrypt=""
+  local encrypt_key="$EMPTY_VAL"
   local all_args=()
 
   while [[ $# > 0 ]]; do
@@ -296,8 +298,8 @@ function run {
         user="$2"
         shift
         ;;
-      --encrypt)
-        encrypt="$2"
+      --encrypt-key)
+        encrypt_key="$2"
         shift
         ;;
       --skip-consul-config)
@@ -355,7 +357,7 @@ function run {
         "$user" \
         "$cluster_tag_name" \
         "$CLUSTER_SIZE_INSTANCE_METADATA_KEY_NAME" \
-        "$encrypt"
+        "$encrypt_key"
   fi
 
   generate_supervisor_config "$SUPERVISOR_CONFIG_PATH" "$config_dir" "$data_dir" "$log_dir" "$bin_dir" "$user"
