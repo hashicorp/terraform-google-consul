@@ -15,29 +15,29 @@ readonly MAX_RETRIES=30
 readonly SLEEP_BETWEEN_RETRIES_SEC=10
 
 function log {
-  local readonly level="$1"
-  local readonly message="$2"
-  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local -r level="$1"
+  local -r message="$2"
+  local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
   >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
 }
 
 function log_info {
-  local readonly message="$1"
+  local -r message="$1"
   log "INFO" "$message"
 }
 
 function log_warn {
-  local readonly message="$1"
+  local -r message="$1"
   log "WARN" "$message"
 }
 
 function log_error {
-  local readonly message="$1"
+  local -r message="$1"
   log "ERROR" "$message"
 }
 
 function assert_is_installed {
-  local readonly name="$1"
+  local -r name="$1"
 
   if [[ ! $(command -v ${name}) ]]; then
     log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
@@ -46,13 +46,14 @@ function assert_is_installed {
 }
 
 function get_required_terraform_output {
-  local readonly output_name="$1"
+  local -r output_name="$1"
   local output_value
 
   output_value=$(terraform output -no-color "$output_name")
 
   if [[ -z "$output_value" ]]; then
-    log_error "Unable to find a value for Terraform output $output_name"
+    log_error "Unable to find a value for Terraform output \"$output_name\"."
+    log_error "Are you running this command from the same folder from which you ran \"terraform apply\"?"
     exit 1
   fi
 
@@ -70,9 +71,9 @@ function get_required_terraform_output {
 #   Returns: "A, B, C"
 #
 function join {
-  local readonly separator="$1"
+  local -r separator="$1"
   shift
-  local readonly values=("$@")
+  local -r values=("$@")
 
   printf "%s$separator" "${values[@]}" | sed "s/$separator$//"
 }
@@ -85,10 +86,10 @@ function get_all_consul_server_property_values {
   local cluster_tag_name
   local expected_num_servers
 
-  gcp_project=$(get_required_terraform_output "gcp_project")
-  gcp_zone=$(get_required_terraform_output "gcp_zone")
-  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name")
-  expected_num_servers=$(get_required_terraform_output "cluster_size")
+  gcp_project=$(get_required_terraform_output "gcp_project") || exit 1
+  gcp_zone=$(get_required_terraform_output "gcp_zone") || exit 1
+  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name") || exit 1
+  expected_num_servers=$(get_required_terraform_output "cluster_size") || exit 1
 
   log_info "Looking up $server_property_name for $expected_num_servers Consul server Compute Instances."
 
@@ -112,11 +113,11 @@ function get_all_consul_server_property_values {
 }
 
 function wait_for_all_consul_servers_to_register {
-  local readonly server_ips=($@)
-  local readonly server_ip="${server_ips[0]}"
+  local -r server_ips=($@)
+  local -r server_ip="${server_ips[0]}"
 
   local expected_num_servers
-  expected_num_servers=$(get_required_terraform_output "cluster_size")
+  expected_num_servers=$(get_required_terraform_output "cluster_size") || exit 1
 
   log_info "Waiting for $expected_num_servers Consul servers to register in the cluster"
 
@@ -124,9 +125,9 @@ function wait_for_all_consul_servers_to_register {
     log_info "Running 'consul members' command against server at IP address $server_ip"
     # Intentionally use local and readonly here so that this script doesn't exit if the consul members or grep commands
     # exit with an error.
-    local readonly members=$(consul members -http-addr="$server_ip:8500")
-    local readonly server_members=$(echo "$members" | grep "server")
-    local readonly num_servers=$(echo "$server_members" | wc -l | tr -d ' ')
+    local members=$(consul members -http-addr="$server_ip:8500")
+    local server_members=$(echo "$members" | grep "server")
+    local num_servers=$(echo "$server_members" | wc -l | tr -d ' ')
 
     if [[ "$num_servers" -eq "$expected_num_servers" ]]; then
       log_info "All $expected_num_servers Consul servers have registered in the cluster!"
@@ -143,13 +144,11 @@ function wait_for_all_consul_servers_to_register {
 }
 
 function get_consul_server_property_values {
-  local readonly gcp_project="$1"
-  local readonly gcp_zone="$2"
-  local readonly cluster_tag_name="$3"
-  local readonly property_name="$4"
+  local -r gcp_project="$1"
+  local -r gcp_zone="$2"
+  local -r cluster_tag_name="$3"
+  local -r property_name="$4"
   local instances
-
-  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name")
 
   log_info "Fetching external IP addresses for Consul Server Compute Instances with tag \"$cluster_tag_name\""
 
@@ -167,8 +166,8 @@ function get_all_consul_server_ips {
 }
 
 function print_instructions {
-  local readonly server_ips=($@)
-  local readonly server_ip="${server_ips[0]}"
+  local -r server_ips=($@)
+  local -r server_ip="${server_ips[0]}"
 
   local instructions=()
   instructions+=("\nYour Consul servers are running at the following IP addresses:\n\n${server_ips[@]/#/    }\n")

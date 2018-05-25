@@ -6,10 +6,15 @@
 
 set -e
 
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Include general-purpose bash functions from https://github.com/gruntwork-io/bash-commons. Assumes these were installed
+# separately from this script, for example, using "cd /opt/gruntwork && git clone https://github.com/gruntwork-io/bash-commons".
+source "/opt/gruntwork/bash-commons/assert.sh"
+source "/opt/gruntwork/bash-commons/log.sh"
+
 readonly DEFAULT_INSTALL_PATH="/opt/consul"
 readonly DEFAULT_CONSUL_USER="consul"
-
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SYSTEM_BIN_DIR="/usr/local/bin"
 
 readonly SUPERVISOR_DIR="/etc/supervisor"
@@ -23,48 +28,18 @@ function print_usage {
   echo
   echo "This script can be used to install Consul and its dependencies. This script has been tested with Ubuntu 16.04."
   echo
-  echo "Options:"
+  echo "Required Arguments:"
   echo
-  echo -e "  --version\t\tThe version of Consul to install. Required."
+  echo -e "  --version\t\tThe version of Consul to install. Do not include a \"v\" in the version number"
+  echo
+  echo "Optional Arguments:"
+  echo
   echo -e "  --path\t\tThe path where Consul should be installed. Optional. Default: $DEFAULT_INSTALL_PATH."
   echo -e "  --user\t\tThe user who will own the Consul install directories. Optional. Default: $DEFAULT_CONSUL_USER."
   echo
   echo "Example:"
   echo
-  echo "  install-consul --version 0.8.0"
-}
-
-function log {
-  local readonly level="$1"
-  local readonly message="$2"
-  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
-}
-
-function log_info {
-  local readonly message="$1"
-  log "INFO" "$message"
-}
-
-function log_warn {
-  local readonly message="$1"
-  log "WARN" "$message"
-}
-
-function log_error {
-  local readonly message="$1"
-  log "ERROR" "$message"
-}
-
-function assert_not_empty {
-  local readonly arg_name="$1"
-  local readonly arg_value="$2"
-
-  if [[ -z "$arg_value" ]]; then
-    log_error "The value for '$arg_name' cannot be empty"
-    print_usage
-    exit 1
-  fi
+  echo "  install-consul --version 1.1.0"
 }
 
 # Install steps are based on: http://unix.stackexchange.com/a/291098/215969
@@ -103,12 +78,12 @@ function install_dependencies {
 }
 
 function user_exists {
-  local readonly username="$1"
+  local -r username="$1"
   id "$username" >/dev/null 2>&1
 }
 
 function create_consul_user {
-  local readonly username="$1"
+  local -r username="$1"
 
   if $(user_exists "$username"); then
     echo "User $username already exists. Will not create again."
@@ -119,8 +94,8 @@ function create_consul_user {
 }
 
 function create_consul_install_paths {
-  local readonly path="$1"
-  local readonly username="$2"
+  local -r path="$1"
+  local -r username="$2"
 
   log_info "Creating install dirs for Consul at $path"
   sudo mkdir -p "$path"
@@ -134,15 +109,15 @@ function create_consul_install_paths {
 }
 
 function install_binaries {
-  local readonly version="$1"
-  local readonly path="$2"
-  local readonly username="$3"
+  local -r version="$1"
+  local -r path="$2"
+  local -r username="$3"
 
-  local readonly url="https://releases.hashicorp.com/consul/${version}/consul_${version}_linux_amd64.zip"
-  local readonly download_path="/tmp/consul_${version}_linux_amd64.zip"
-  local readonly bin_dir="$path/bin"
-  local readonly consul_dest_path="$bin_dir/consul"
-  local readonly run_consul_dest_path="$bin_dir/run-consul"
+  local -r url="https://releases.hashicorp.com/consul/${version}/consul_${version}_linux_amd64.zip"
+  local -r download_path="/tmp/consul_${version}_linux_amd64.zip"
+  local -r bin_dir="$path/bin"
+  local -r consul_dest_path="$bin_dir/consul"
+  local -r run_consul_dest_path="$bin_dir/run-consul"
 
   log_info "Downloading Consul $version from $url to $download_path"
   curl -o "$download_path" "$url"
@@ -153,7 +128,7 @@ function install_binaries {
   sudo chown "$username:$username" "$consul_dest_path"
   sudo chmod a+x "$consul_dest_path"
 
-  local readonly symlink_path="$SYSTEM_BIN_DIR/consul"
+  local -r symlink_path="$SYSTEM_BIN_DIR/consul"
   if [[ -f "$symlink_path" ]]; then
     log_info "Symlink $symlink_path already exists. Will not add again."
   else

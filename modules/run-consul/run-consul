@@ -3,6 +3,12 @@
 
 set -e
 
+# Include general-purpose bash functions from https://github.com/gruntwork-io/bash-commons. Assumes these were installed
+# separately from this script, for example, using "cd /opt/gruntwork && git clone https://github.com/gruntwork-io/bash-commons".
+source "/opt/gruntwork/bash-commons/assert.sh"
+source "/opt/gruntwork/bash-commons/log.sh"
+source "/opt/gruntwork/bash-commons/string.sh"
+
 # In bash, we can't distinguish between the empty string, and no value at all, so we create our own unambiguous empty string.
 readonly EMPTY_VAL="__EMPTY__"
 
@@ -48,58 +54,9 @@ function print_usage {
   echo "  run-consul --server --cluster-tag-name consul-xyz --config-dir /custom/path/to/consul/config"
 }
 
-function log {
-  local readonly level="$1"
-  local readonly message="$2"
-  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
-}
-
-function log_info {
-  local readonly message="$1"
-  log "INFO" "$message"
-}
-
-function log_warn {
-  local readonly message="$1"
-  log "WARN" "$message"
-}
-
-function log_error {
-  local readonly message="$1"
-  log "ERROR" "$message"
-}
-
-# Based on code from: http://stackoverflow.com/a/16623897/483528
-function strip_prefix {
-  local readonly str="$1"
-  local readonly prefix="$2"
-  echo "${str#$prefix}"
-}
-
-function assert_is_installed {
-  local readonly name="$1"
-
-  if [[ ! $(command -v ${name}) ]]; then
-    log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
-    exit 1
-  fi
-}
-
-function assert_not_empty {
-  local readonly arg_name="$1"
-  local readonly arg_value="$2"
-
-  if [[ -z "$arg_value" ]]; then
-    log_error "The value for '$arg_name' cannot be empty"
-    print_usage
-    exit 1
-  fi
-}
-
 # Get the value at a specific Instance Metadata path.
 function get_instance_metadata_value {
-  local readonly path="$1"
+  local -r path="$1"
 
   log_info "Looking up Metadata value at $COMPUTE_INSTANCE_METADATA_URL/$path"
   curl --silent --show-error --location --header "$GOOGLE_CLOUD_METADATA_REQUEST_HEADER" "$COMPUTE_INSTANCE_METADATA_URL/$path"
@@ -107,7 +64,7 @@ function get_instance_metadata_value {
 
 # Get the value of the given Custom Metadata Key
 function get_instance_custom_metadata_value {
-  local readonly key="$1"
+  local -r key="$1"
 
   log_info "Looking up Custom Instance Metadata value for key \"$key\""
   get_instance_metadata_value "instance/attributes/$key"
@@ -148,14 +105,14 @@ function get_instance_ip_address {
 }
 
 function generate_consul_config {
-  local readonly server="$1"
-  local readonly raft_protocol="$2"
-  local readonly config_dir="$3"
-  local readonly user="$4"
-  local readonly cluster_tag_name="$5"
-  local readonly cluster_size_instance_metadata_key_name="$6"
-  local readonly encrypt_key="$7"
-  local readonly config_path="$config_dir/$CONSUL_CONFIG_FILE"
+  local -r server="$1"
+  local -r raft_protocol="$2"
+  local -r config_dir="$3"
+  local -r user="$4"
+  local -r cluster_tag_name="$5"
+  local -r cluster_size_instance_metadata_key_name="$6"
+  local -r encrypt_key="$7"
+  local -r config_path="$config_dir/$CONSUL_CONFIG_FILE"
 
   local instance_ip_address=""
   local instance_name=""
@@ -206,12 +163,12 @@ EOF
 }
 
 function generate_supervisor_config {
-  local readonly supervisor_config_path="$1"
-  local readonly consul_config_dir="$2"
-  local readonly consul_data_dir="$3"
-  local readonly consul_log_dir="$4"
-  local readonly consul_bin_dir="$5"
-  local readonly consul_user="$6"
+  local -r supervisor_config_path="$1"
+  local -r consul_config_dir="$2"
+  local -r consul_data_dir="$3"
+  local -r consul_log_dir="$4"
+  local -r consul_bin_dir="$5"
+  local -r consul_user="$6"
 
   local consul_user_home_dir=""
   consul_user_home_dir="$(get_owner_home_dir $consul_user)"
@@ -241,12 +198,12 @@ function start_consul {
 
 # Based on: http://unix.stackexchange.com/a/7732/215969
 function get_owner_of_path {
-  local readonly path="$1"
+  local -r path="$1"
   ls -ld "$path" | awk '{print $3}'
 }
 
 function get_owner_home_dir {
-  local readonly user="$1"
+  local -r user="$1"
 
   local home_dir=""
   home_dir=$(sudo su - $user -c 'echo $HOME')
