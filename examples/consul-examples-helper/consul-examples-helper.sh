@@ -125,9 +125,9 @@ function wait_for_all_consul_servers_to_register {
     log_info "Running 'consul members' command against server at IP address $server_ip"
     # Intentionally use local and readonly here so that this script doesn't exit if the consul members or grep commands
     # exit with an error.
-    local -r members=$(consul members -http-addr="$server_ip:8500")
-    local -r server_members=$(echo "$members" | grep "server")
-    local -r num_servers=$(echo "$server_members" | wc -l | tr -d ' ')
+    local members=$(consul members -http-addr="$server_ip:8500")
+    local server_members=$(echo "$members" | grep "server")
+    local num_servers=$(echo "$server_members" | wc -l | tr -d ' ')
 
     if [[ "$num_servers" -eq "$expected_num_servers" ]]; then
       log_info "All $expected_num_servers Consul servers have registered in the cluster!"
