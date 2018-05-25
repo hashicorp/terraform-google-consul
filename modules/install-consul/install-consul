@@ -23,15 +23,18 @@ function print_usage {
   echo
   echo "This script can be used to install Consul and its dependencies. This script has been tested with Ubuntu 16.04."
   echo
-  echo "Options:"
+  echo "Required Arguments:"
   echo
-  echo -e "  --version\t\tThe version of Consul to install. Required."
+  echo -e "  --version\t\tThe version of Consul to install. Do not include a \"v\" in the version number"
+  echo
+  echo "Optional Arguments:"
+  echo
   echo -e "  --path\t\tThe path where Consul should be installed. Optional. Default: $DEFAULT_INSTALL_PATH."
   echo -e "  --user\t\tThe user who will own the Consul install directories. Optional. Default: $DEFAULT_CONSUL_USER."
   echo
   echo "Example:"
   echo
-  echo "  install-consul --version 0.8.0"
+  echo "  install-consul --version 1.1.0"
 }
 
 function log {
