@@ -150,8 +150,6 @@ function get_consul_server_property_values {
   local -r property_name="$4"
   local instances
 
-  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name") || exit 1
-
   log_info "Fetching external IP addresses for Consul Server Compute Instances with tag \"$cluster_tag_name\""
 
   instances=$(gcloud compute instances list \
