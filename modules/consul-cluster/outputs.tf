@@ -39,11 +39,11 @@ output "firewall_rule_intracluster_name" {
 }
 
 output "firewall_rule_inbound_http_url" {
-  value = "${element(concat(google_compute_firewall.allow_inboud_http_api.*.self_link, list("")), 0)}"
+  value = "${element(concat(google_compute_firewall.allow_inbound_http_api.*.self_link, list("")), 0)}"
 }
 
 output "firewall_rule_inbound_http_name" {
-  value = "${element(concat(google_compute_firewall.allow_inboud_http_api.*.name, list("")), 0)}"
+  value = "${element(concat(google_compute_firewall.allow_inbound_http_api.*.name, list("")), 0)}"
 }
 
 output "firewall_rule_inbound_dns_url" {
