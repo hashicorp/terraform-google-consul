@@ -6,10 +6,15 @@
 
 set -e
 
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Include general-purpose bash functions from https://github.com/gruntwork-io/bash-commons. Assumes these were installed
+# separately from this script, for example, using "cd /opt/gruntwork && git clone https://github.com/gruntwork-io/bash-commons".
+source "/opt/gruntwork/bash-commons/assert.sh"
+source "/opt/gruntwork/bash-commons/log.sh"
+
 readonly DEFAULT_INSTALL_PATH="/opt/consul"
 readonly DEFAULT_CONSUL_USER="consul"
-
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SYSTEM_BIN_DIR="/usr/local/bin"
 
 readonly SUPERVISOR_DIR="/etc/supervisor"
@@ -35,39 +40,6 @@ function print_usage {
   echo "Example:"
   echo
   echo "  install-consul --version 1.1.0"
-}
-
-function log {
-  local readonly level="$1"
-  local readonly message="$2"
-  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
-}
-
-function log_info {
-  local readonly message="$1"
-  log "INFO" "$message"
-}
-
-function log_warn {
-  local readonly message="$1"
-  log "WARN" "$message"
-}
-
-function log_error {
-  local readonly message="$1"
-  log "ERROR" "$message"
-}
-
-function assert_not_empty {
-  local readonly arg_name="$1"
-  local readonly arg_value="$2"
-
-  if [[ -z "$arg_value" ]]; then
-    log_error "The value for '$arg_name' cannot be empty"
-    print_usage
-    exit 1
-  fi
 }
 
 # Install steps are based on: http://unix.stackexchange.com/a/291098/215969

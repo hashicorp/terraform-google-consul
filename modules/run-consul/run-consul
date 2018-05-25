@@ -3,6 +3,12 @@
 
 set -e
 
+# Include general-purpose bash functions from https://github.com/gruntwork-io/bash-commons. Assumes these were installed
+# separately from this script, for example, using "cd /opt/gruntwork && git clone https://github.com/gruntwork-io/bash-commons".
+source "/opt/gruntwork/bash-commons/assert.sh"
+source "/opt/gruntwork/bash-commons/log.sh"
+source "/opt/gruntwork/bash-commons/string.sh"
+
 # In bash, we can't distinguish between the empty string, and no value at all, so we create our own unambiguous empty string.
 readonly EMPTY_VAL="__EMPTY__"
 
@@ -46,55 +52,6 @@ function print_usage {
   echo "Example:"
   echo
   echo "  run-consul --server --cluster-tag-name consul-xyz --config-dir /custom/path/to/consul/config"
-}
-
-function log {
-  local readonly level="$1"
-  local readonly message="$2"
-  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
-}
-
-function log_info {
-  local readonly message="$1"
-  log "INFO" "$message"
-}
-
-function log_warn {
-  local readonly message="$1"
-  log "WARN" "$message"
-}
-
-function log_error {
-  local readonly message="$1"
-  log "ERROR" "$message"
-}
-
-# Based on code from: http://stackoverflow.com/a/16623897/483528
-function strip_prefix {
-  local readonly str="$1"
-  local readonly prefix="$2"
-  echo "${str#$prefix}"
-}
-
-function assert_is_installed {
-  local readonly name="$1"
-
-  if [[ ! $(command -v ${name}) ]]; then
-    log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
-    exit 1
-  fi
-}
-
-function assert_not_empty {
-  local readonly arg_name="$1"
-  local readonly arg_value="$2"
-
-  if [[ -z "$arg_value" ]]; then
-    log_error "The value for '$arg_name' cannot be empty"
-    print_usage
-    exit 1
-  fi
 }
 
 # Get the value at a specific Instance Metadata path.
