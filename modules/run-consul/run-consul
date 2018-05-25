@@ -56,7 +56,7 @@ function print_usage {
 
 # Get the value at a specific Instance Metadata path.
 function get_instance_metadata_value {
-  local readonly path="$1"
+  local -r path="$1"
 
   log_info "Looking up Metadata value at $COMPUTE_INSTANCE_METADATA_URL/$path"
   curl --silent --show-error --location --header "$GOOGLE_CLOUD_METADATA_REQUEST_HEADER" "$COMPUTE_INSTANCE_METADATA_URL/$path"
@@ -64,7 +64,7 @@ function get_instance_metadata_value {
 
 # Get the value of the given Custom Metadata Key
 function get_instance_custom_metadata_value {
-  local readonly key="$1"
+  local -r key="$1"
 
   log_info "Looking up Custom Instance Metadata value for key \"$key\""
   get_instance_metadata_value "instance/attributes/$key"
@@ -105,14 +105,14 @@ function get_instance_ip_address {
 }
 
 function generate_consul_config {
-  local readonly server="$1"
-  local readonly raft_protocol="$2"
-  local readonly config_dir="$3"
-  local readonly user="$4"
-  local readonly cluster_tag_name="$5"
-  local readonly cluster_size_instance_metadata_key_name="$6"
-  local readonly encrypt_key="$7"
-  local readonly config_path="$config_dir/$CONSUL_CONFIG_FILE"
+  local -r server="$1"
+  local -r raft_protocol="$2"
+  local -r config_dir="$3"
+  local -r user="$4"
+  local -r cluster_tag_name="$5"
+  local -r cluster_size_instance_metadata_key_name="$6"
+  local -r encrypt_key="$7"
+  local -r config_path="$config_dir/$CONSUL_CONFIG_FILE"
 
   local instance_ip_address=""
   local instance_name=""
@@ -163,12 +163,12 @@ EOF
 }
 
 function generate_supervisor_config {
-  local readonly supervisor_config_path="$1"
-  local readonly consul_config_dir="$2"
-  local readonly consul_data_dir="$3"
-  local readonly consul_log_dir="$4"
-  local readonly consul_bin_dir="$5"
-  local readonly consul_user="$6"
+  local -r supervisor_config_path="$1"
+  local -r consul_config_dir="$2"
+  local -r consul_data_dir="$3"
+  local -r consul_log_dir="$4"
+  local -r consul_bin_dir="$5"
+  local -r consul_user="$6"
 
   local consul_user_home_dir=""
   consul_user_home_dir="$(get_owner_home_dir $consul_user)"
@@ -198,12 +198,12 @@ function start_consul {
 
 # Based on: http://unix.stackexchange.com/a/7732/215969
 function get_owner_of_path {
-  local readonly path="$1"
+  local -r path="$1"
   ls -ld "$path" | awk '{print $3}'
 }
 
 function get_owner_home_dir {
-  local readonly user="$1"
+  local -r user="$1"
 
   local home_dir=""
   home_dir=$(sudo su - $user -c 'echo $HOME')
