@@ -72,5 +72,4 @@ Your code should look more like this:
 }
 ```
 
-You should replace `<MODULE_VERSION>` in the code above with the version tag of this Module that you want to use. That's because for production usage, you should always use a fixed, known version of this Module, downloaded from the official Git repo. On the other hand, when you're just experimenting with the Module, it's OK to use a local checkout of the Module, uploaded from your own
-computer.
+Get the version tag from the Consul [releases page](https://releases.hashicorp.com/consul/). You should replace `<MODULE_VERSION>` in the code above with the version tag of the module that you want to use. For production usage, you should always use a fixed, known version of this module, downloaded from the official Git repo. If you're just experimenting with the module, it's OK to use a local checkout of the module, uploaded from your own computer.

@@ -21,7 +21,7 @@ To install Consul, use `git clone --branch` to clone this repository at a specif
 
 ```
 git clone --branch <MODULE_VERSION> https://github.com/hashicorp/terraform-google-consul.git
-terraform-google-consul/modules/install-consul/install-consul --version 1.0.6
+terraform-google-consul/modules/install-consul/install-consul --version 1.10.0
 ```
 
 The `install-consul` script will install Consul, its dependencies, and the [run-consul script](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul).
@@ -47,7 +47,7 @@ The `install-consul` script accepts the following arguments:
 Example:
 
 ```
-install-consul --version 1.0.6
+install-consul --version 1.10.0
 ```
 
 
