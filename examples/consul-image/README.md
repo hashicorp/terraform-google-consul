@@ -72,4 +72,4 @@ Your code should look more like this:
 }
 ```
 
-Get the version tag from the Consul [releases page](https://releases.hashicorp.com/consul/). You should replace `<MODULE_VERSION>` in the code above with the version tag of the module that you want to use. For production usage, you should always use a fixed, known version of this module, downloaded from the official Git repo. If you're just experimenting with the module, it's OK to use a local checkout of the module, uploaded from your own computer.
+Get the version tag for this module from the [releases page](https://github.com/hashicorp/terraform-google-consul/releases) on Github. You should replace `<MODULE_VERSION>` in the code above with the version tag of the module that you want to use. For production usage, you should always use a fixed, known version of this module, downloaded from the official Git repo. If you're just experimenting with the module, it's OK to use a local checkout of the module, uploaded from your own computer.
