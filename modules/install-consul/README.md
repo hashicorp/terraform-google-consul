@@ -2,7 +2,7 @@
 
 This folder contains a script for installing Consul and its dependencies. Use this script along with the
 [run-consul script](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul) to create a Consul [Google Image](https://cloud.google.com/compute/docs/images)
-that can be deployed in [GCP](https://cloud.google.com) across a Managed Instance Scaling Group using the 
+that can be deployed in [GCP](https://cloud.google.com) across a Managed Instance Scaling Group using the
 [consul-cluster module](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/consul-cluster).
 
 This script has been tested on the following operating systems:
@@ -17,16 +17,15 @@ There is a good chance it will work on other flavors of Debian as well.
 
 <!-- TODO: update the clone URL to the final URL when this Module is released -->
 
-To install Consul, use `git` to clone this repository at a specific tag (see the [releases page](https://github.com/hashicorp/terraform-google-consul/tree/master/releases) 
-for all available tags) and run the `install-consul` script:
+To install Consul, use `git clone --branch` to clone this repository at a specific tag run the `install-consul` script:
 
 ```
-git clone --branch <VERSION> https://github.com/gruntwork-io/consul-gcp-module.git
-consul-gcp-module/modules/install-consul/install-consul --version 0.9.2
+git clone --branch <MODULE_VERSION> https://github.com/hashicorp/terraform-google-consul.git
+terraform-google-consul/modules/install-consul/install-consul --version 1.10.0
 ```
 
 The `install-consul` script will install Consul, its dependencies, and the [run-consul script](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul).
-The `run-consul` script is also run when the server is booting to start Consul and configure it to automatically 
+The `run-consul` script is also run when the server is booting to start Consul and configure it to automatically
 join other nodes to form a cluster.
 
 We recommend running the `install-consul` script as part of a [Packer](https://www.packer.io/) template to create a
@@ -41,14 +40,14 @@ module](https://github.com/hashicorp/terraform-google-consul/tree/master/modules
 
 The `install-consul` script accepts the following arguments:
 
-* `version VERSION`: Install Consul version VERSION. Required. 
+* `version VERSION`: Install Consul version VERSION. Required.
 * `path DIR`: Install Consul into folder DIR. Optional.
 * `user USER`: The install dirs will be owned by user USER. Optional.
 
 Example:
 
 ```
-install-consul --version 0.9.2
+install-consul --version 1.10.0
 ```
 
 
@@ -78,16 +77,16 @@ Create an OS user named `consul`. Create the following folders, all owned by use
 
 Install the following:
 
-* `consul`: Download the Consul zip file from the [downloads page](https://www.consul.io/downloads.html) (the version 
+* `consul`: Download the Consul zip file from the [downloads page](https://www.consul.io/downloads.html) (the version
   number is configurable via the `--version` argument), and extract the `consul` binary into `/opt/consul/bin`. Add a
   symlink to the `consul` binary in `/usr/local/bin`.
-* `run-consul`: Copy the [run-consul script](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul) into `/opt/consul/bin`. 
+* `run-consul`: Copy the [run-consul script](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul) into `/opt/consul/bin`.
 
 
 ### Install supervisord
 
 Install [supervisord](http://supervisord.org/). We use it as a cross-platform supervisor to ensure Consul is started
-whenever the system boots and restarted if the Consul process crashes. 
+whenever the system boots and restarted if the Consul process crashes.
 
 
 ### Follow-up tasks
@@ -98,12 +97,12 @@ After the `install-consul` script finishes running, you may wish to do the follo
    `/opt/consul/config`).
 1. If `/usr/local/bin` isn't already part of `PATH`, you should add it so you can run the `consul` command without
    specifying the full path.
-   
+
 
 
 ## Why use Git to install this code?
 
-We needed an easy way to install these scripts that satisfied a number of requirements, including working on a variety 
+We needed an easy way to install these scripts that satisfied a number of requirements, including working on a variety
 of operating systems and supported versioning. Our current solution is to use `git`, but this may change in the future.
 See [Package Managers](https://github.com/hashicorp/terraform-google-consul/tree/master/blob/master/_docs/package-managers.md) for a
 full discussion of the requirements, trade-offs, and why we picked `git`.
