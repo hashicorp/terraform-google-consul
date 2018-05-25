@@ -52,7 +52,8 @@ function get_required_terraform_output {
   output_value=$(terraform output -no-color "$output_name")
 
   if [[ -z "$output_value" ]]; then
-    log_error "Unable to find a value for Terraform output $output_name"
+    log_error "Unable to find a value for Terraform output \"$output_name\"."
+    log_error "Are you running this command from the same folder from which you ran \"terraform apply\"?"
     exit 1
   fi
 
@@ -85,10 +86,10 @@ function get_all_consul_server_property_values {
   local cluster_tag_name
   local expected_num_servers
 
-  gcp_project=$(get_required_terraform_output "gcp_project")
-  gcp_zone=$(get_required_terraform_output "gcp_zone")
-  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name")
-  expected_num_servers=$(get_required_terraform_output "cluster_size")
+  gcp_project=$(get_required_terraform_output "gcp_project") || exit 1
+  gcp_zone=$(get_required_terraform_output "gcp_zone") || exit 1
+  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name") || exit 1
+  expected_num_servers=$(get_required_terraform_output "cluster_size") || exit 1
 
   log_info "Looking up $server_property_name for $expected_num_servers Consul server Compute Instances."
 
@@ -116,7 +117,7 @@ function wait_for_all_consul_servers_to_register {
   local readonly server_ip="${server_ips[0]}"
 
   local expected_num_servers
-  expected_num_servers=$(get_required_terraform_output "cluster_size")
+  expected_num_servers=$(get_required_terraform_output "cluster_size") || exit 1
 
   log_info "Waiting for $expected_num_servers Consul servers to register in the cluster"
 
@@ -149,7 +150,7 @@ function get_consul_server_property_values {
   local readonly property_name="$4"
   local instances
 
-  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name")
+  cluster_tag_name=$(get_required_terraform_output "cluster_tag_name") || exit 1
 
   log_info "Fetching external IP addresses for Consul Server Compute Instances with tag \"$cluster_tag_name\""
 
