@@ -105,10 +105,8 @@ available.
 * [client_addr](https://www.consul.io/docs/agent/options.html#client_addr): Set to 0.0.0.0 so you can access the client
   and UI endpoint on each Compute Instance from the outside.
 
-* [datacenter](https://www.consul.io/docs/agent/options.html#datacenter): Set to the current Instance Zone (e.g. 
-  `us-west1-a`), as fetched from [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata).
-  Ideally, we would specify a Region instead of a single Zone, but Terraform does not yet support multi-zonal Managed
-  Instance Groups. 
+* [datacenter](https://www.consul.io/docs/agent/options.html#datacenter): Set to the current Instance Region (e.g. 
+  `us-west1`), as fetched from [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata).
 
 * [node_name](https://www.consul.io/docs/agent/options.html#node_name): Set to the instance name, as fetched from 
   [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata). 

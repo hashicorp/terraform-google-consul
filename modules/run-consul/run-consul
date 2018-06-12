@@ -76,13 +76,15 @@ function get_instance_project_id {
   get_instance_metadata_value "project/project-id"
 }
 
-# Get the GCE Zone in which this Compute Instance currently resides
-function get_instance_zone {
-  log_info "Looking up Zone of the current Compute Instance"
+# Get the GCE Region in which this Compute Instance currently resides
+function get_instance_region {
+  log_info "Looking up Region of the current Compute Instance"
 
   # The value returned for zone will be of the form "projects/121238320500/zones/us-west1-a" so we need to split the string
   # by "/" and return the 4th string.
-  get_instance_metadata_value "instance/zone" | cut -d'/' -f4
+  # Then we split again by '-' and return the first two fields.
+  # from 'europe-west1-b' to 'europe-west1'
+  get_instance_metadata_value "instance/zone" | cut -d'/' -f4 | awk -F'-' '{ print $1"-"$2 }'
 }
 
 # Get the ID of the current Compute Instance
@@ -123,7 +125,7 @@ function generate_consul_config {
 
   instance_ip_address=$(get_instance_ip_address)
   instance_name=$(get_instance_name)
-  instance_zone=$(get_instance_zone)
+  instance_region=$(get_instance_region)
   project_id=$(get_instance_project_id)
 
   if [[ -z "$cluster_tag_name" ]]; then
@@ -150,7 +152,7 @@ function generate_consul_config {
   "bind_addr": "$instance_ip_address",
   $bootstrap_expect_key_val
   "client_addr": "0.0.0.0",
-  "datacenter": "$instance_zone",
+  "datacenter": "$instance_region",
   "node_name": "$instance_name",
   $retry_join_key_val
   "server": $server,
