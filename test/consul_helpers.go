@@ -55,7 +55,6 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, RepoRoot, examplesFolder)
 
 	test_structure.RunTestStage(t, "setup_image", func() {
-
 		// Get the Project Id to use
 		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
 
