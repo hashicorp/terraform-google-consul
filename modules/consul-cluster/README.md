@@ -129,12 +129,9 @@ property of the `consul-cluster` module.
 
 For example, imagine you deployed a Consul Server cluster as follows:
 
-<!-- TODO: update this to the final URL -->
-
 ```hcl
 module "consul_server_cluster" {
-  # TODO: update this to the final URL
-  source = "github.com/gruntwork-io/consul-gcp-module//modules/consul-cluster?ref=v0.0.1"
+  source = "github.com/hashicorp/terraform-google-consul//modules/consul-cluster?ref=v0.0.1
 
   # Add this tag to each node in the cluster
   allowed_inbound_tags_http_api = "consul-client-example"
@@ -339,5 +336,3 @@ and `subnetwork_name` properties.
 ### DNS entries
 
 This module does not create any DNS entries for Consul (e.g. with Cloud DNS).
-
-
