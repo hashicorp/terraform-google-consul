@@ -34,7 +34,7 @@ const ConsulClusterExampleVarServerClusterSize = "consul_server_cluster_size"
 const ConsulClusterExampleVarClientClusterSize = "consul_client_cluster_size"
 
 const ConsulClusterExampleDefaultNumServers = 3
-const ConsulClusterExampleDefaultNumClients = 6
+const ConsulClusterExampleDefaultNumClients = 4
 
 const ConsulClusterExampleOutputServerInstanceGroupName = "instance_group_name"
 const ConsulClusterExampleOutputClientInstanceGroupName = "client_instance_group_name"
@@ -57,7 +57,7 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 	test_structure.RunTestStage(t, "setup_image", func() {
 
 		// Get the Project Id to use
-		//	gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
+		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
 
 		// Pick a random GCP zone to test in. This helps ensure your code works in all regions.
 		gcpZone := gcp.GetRandomZone(t, nil, nil)
@@ -65,8 +65,8 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		test_structure.SaveString(t, exampleFolder, SavedGCPZone, gcpZone)
 
 		// Make sure the Packer build completes successfully
-		//imageID := buildImage(t, packerTemplatePath, packerBuildName, gcpProjectID, gcpZone)
-		test_structure.SaveArtifactID(t, exampleFolder, "consul-2018-08-13-112631")
+		imageID := buildImage(t, packerTemplatePath, packerBuildName, gcpProjectID, gcpZone)
+		test_structure.SaveArtifactID(t, exampleFolder, imageID)
 	})
 
 	defer test_structure.RunTestStage(t, "teardown", func() {
@@ -74,10 +74,10 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		terraform.Destroy(t, terraformOptions)
 
 		// Get the Project Id to use
-		//gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
+		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
 
-		//imageID := test_structure.LoadArtifactID(t, exampleFolder)
-		//defer gcp.DeleteImage(t, gcpProjectID, imageID)
+		imageID := test_structure.LoadArtifactID(t, exampleFolder)
+		defer gcp.DeleteImage(t, gcpProjectID, imageID)
 	})
 
 	test_structure.RunTestStage(t, "deploy", func() {
@@ -117,13 +117,10 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		gcpZone := test_structure.LoadString(t, exampleFolder, SavedGCPZone)
 		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
 
-		// Sleep for a bit to allow the instances to be added to the managed instance group
-
 		// Check the Consul servers
 		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputServerInstanceGroupName, terraformOptions, gcpProjectID, gcpZone)
 
 		// Check the Consul clients
-		// TODO - for some reason the client cluster instances are not responding on 8500 at the moment
 		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpZone)
 	})
 }
@@ -131,13 +128,12 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 // Check that the Consul cluster comes up within a reasonable time period and can respond to requests
 func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terratestOptions *terraform.Options, projectID string, zone string) {
 	groupName := terraform.OutputRequired(t, terratestOptions, groupNameOutputVar)
-	//nodeIPAddress := getIPAddressOfManagedInstance(t, projectID, zone, groupName)
 
 	// It can take a few minutes for the managed instance group to boot up
 	maxRetries := 30
 	timeBetweenRetries := 5 * time.Second
 
-	// Check once per second that the ELB returns a proper response to make sure there is no downtime during deployment
+	// Check every 5 seconds until an instance has joined the managed instance group
 	nodeIPAddress := retry.DoWithRetry(t, fmt.Sprintf("Waiting for instances in group %s", groupName), maxRetries, timeBetweenRetries, func() (string, error) {
 		ip, err := getIPAddressOfManagedInstance(t, projectID, zone, groupName)
 
@@ -178,7 +174,7 @@ func testConsulCluster(t *testing.T, nodeIPAddress string) {
 		}
 
 		if leader == "" {
-			return "", errors.New("Consul cluster returned an empty leader response, so a leader must not have been elected yet.")
+			return "", errors.New("Consul cluster returned an empty leader response, so a leader must not have been elected yet")
 		}
 
 		return leader, nil
