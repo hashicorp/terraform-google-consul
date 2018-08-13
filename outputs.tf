@@ -9,23 +9,28 @@ output "gcp_zone" {
 }
 
 output "cluster_size" {
-  description = "The number of servers inthe Consul Server cluster."
+  description = "The number of servers in the Consul Server cluster."
   value = "${var.consul_server_cluster_size}"
 }
 
 output "cluster_tag_name" {
-  description = "The tag assigned to each  Consul Server node that is used to discover other Consul Server nodes."
+  description = "The tag assigned to each Consul Server node that is used to discover other Consul Server nodes."
   value = "${var.consul_server_cluster_tag_name}"
 }
 
 output "instance_group_name" {
-  description = "The name of the Managed Instance Group that conatains the Consul Server cluster."
+  description = "The name of the Managed Instance Group that contains the Consul Server cluster."
   value = "${module.consul_servers.instance_group_name}"
 }
 
 output "instance_group_url" {
-  description = "The URL of the Managed Instance Group that conatains the Consul Server cluster."
+  description = "The URL of the Managed Instance Group that contains the Consul Server cluster."
   value = "${module.consul_servers.instance_group_url}"
+}
+
+output "client_instance_group_name" {
+  description = "The name of the Managed Instance Group that contains the Consul Client cluster."
+  value = "${module.consul_clients.instance_group_name}"
 }
 
 output "instance_template_metadata_fingerprint" {
