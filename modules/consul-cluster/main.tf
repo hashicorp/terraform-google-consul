@@ -72,7 +72,8 @@ resource "google_compute_instance_template" "consul_server_public" {
   }
 
   service_account {
-    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+    email   = "${var.service_account_email}"
+    scopes  = ["userinfo-email", "compute-ro", "storage-ro"]
   }
 
   # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
@@ -116,7 +117,8 @@ resource "google_compute_instance_template" "consul_server_private" {
   }
 
   service_account {
-    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+    email   = "${var.service_account_email}"
+    scopes  = ["userinfo-email", "compute-ro", "storage-ro"]
   }
 
   # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
