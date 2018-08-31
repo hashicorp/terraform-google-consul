@@ -23,7 +23,7 @@
 
 [[constraint]]
   name = "github.com/gruntwork-io/terratest"
-  version = "0.9.15"
+  version = "0.10.1"
 
 [[constraint]]
   name = "github.com/hashicorp/consul"
