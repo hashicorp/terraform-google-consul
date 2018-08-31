@@ -91,7 +91,10 @@ module "consul_clients" {
   cluster_tag_name = "${var.consul_client_cluster_tag_name}"
   startup_script = "${data.template_file.startup_script_client.rendered}"
 
+  allowed_inbound_cidr_blocks_http_api = []
   allowed_inbound_tags_http_api = []
+
+  allowed_inbound_cidr_blocks_dns = []
   allowed_inbound_tags_dns = []
 
   machine_type = "g1-small"
