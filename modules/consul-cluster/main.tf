@@ -73,8 +73,8 @@ resource "google_compute_instance_template" "consul_server_public" {
 
   service_account {
     email   = "${var.service_account_email}"
-    scopes  = ["${concat (
-      list (
+    scopes  = ["${concat(
+      list(
         "userinfo-email", 
         "compute-ro", 
         "${var.storage_access}"
@@ -126,8 +126,8 @@ resource "google_compute_instance_template" "consul_server_private" {
 
   service_account {
     email   = "${var.service_account_email}"
-    scopes  = ["${concat (
-      list (
+    scopes  = ["${concat(
+      list(
         "userinfo-email", 
         "compute-ro", 
         "${var.storage_access}"
