@@ -38,7 +38,7 @@ variable "startup_script" {
 
 variable "storage_access" {
   description = "Used to set the access permissions for GCE storage"
-  default = "storage-ro"
+  default = ""
 }
 
 variable "instance_group_target_pools" {
