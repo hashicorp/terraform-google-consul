@@ -79,7 +79,7 @@ resource "google_compute_instance_template" "consul_server_public" {
         "compute-ro", 
         "${var.storage_access}"
       )
-      var.service_account_scopes
+      ${var.service_account_scopes}
     )}"]
 
   }
@@ -132,7 +132,7 @@ resource "google_compute_instance_template" "consul_server_private" {
         "compute-ro", 
         "${var.storage_access}"
       )
-      var.service_account_scopes
+      ${var.service_account_scopes}
     )}"]
   }
 
