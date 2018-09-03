@@ -6,7 +6,7 @@ works as expected using a helper library called [Terratest](https://github.com/g
 
 
 
-## WARNING WARNING WARNING
+## WARNING: These Tests May Cost You Money!
 
 **Note #1**: Many of these tests create real resources in a GCP account and then try to clean those resources up at 
 the end of a test run. That means these tests may cost you money to run! When adding tests, please be considerate of 
@@ -58,4 +58,3 @@ To run a specific test called `TestFoo`:
 cd test
 go test -v -timeout 60m -run TestFoo
 ```
-  
