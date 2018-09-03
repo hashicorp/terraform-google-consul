@@ -9,7 +9,7 @@ import (
 
 // Get the IP address from a randomly chosen VM Instance in an Managed Instance Group
 // of the given name in the given region.
-func getIPAddressOfManagedInstance(t *testing.T, projectID string, zone string, groupName string) (string, error) {
+func getRandomPublicIPFromInstanceGroup(t *testing.T, projectID string, zone string, groupName string) (string, error) {
 	instanceIds := gcp.GetInstanceIdsForInstanceGroup(t, projectID, zone, groupName)
 
 	if len(instanceIds) == 0 {

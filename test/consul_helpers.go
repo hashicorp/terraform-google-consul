@@ -20,7 +20,9 @@ import (
 const RepoRoot = "../"
 
 const ConsulClusterExampleVarProject = "gcp_project"
+const ConsulClusterExampleVarRegion = "gcp_region"
 const ConsulClusterExampleVarZone = "gcp_zone"
+
 const ConsulClusterExampleVarServerClusterName = "consul_server_cluster_name"
 const ConsulClusterExampleVarClientClusterName = "consul_client_cluster_name"
 
@@ -38,6 +40,9 @@ const ConsulClusterExampleDefaultNumClients = 4
 
 const ConsulClusterExampleOutputServerInstanceGroupName = "instance_group_name"
 const ConsulClusterExampleOutputClientInstanceGroupName = "client_instance_group_name"
+
+const ConsulClusterAllowedInboundCidrBlockHttpApi = "allowed_inbound_cidr_blocks_http_api"
+const ConsulClusterAllowedInboundCidrBlockDns = "allowed_inbound_cidr_blocks_dns"
 
 // SavedGCPZone represents the key to use when saving the GCP zone.
 const SavedGCPZone = "GCPZone"
@@ -58,7 +63,7 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		// Get the Project Id to use
 		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
 
-		// Pick a random GCP zone to test in. This helps ensure your code works in all regions.
+		// Pick a random GCP zone to test in. This helps ensure your code works in all regions and zones.
 		gcpZone := gcp.GetRandomZone(t, nil, nil)
 
 		test_structure.SaveString(t, exampleFolder, SavedGCPZone, gcpZone)
@@ -85,6 +90,7 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		serverClusterName := fmt.Sprintf("consul-server-cluster-%s", uniqueID)
 		clientClusterName := fmt.Sprintf("consul-client-cluster-%s", uniqueID)
 		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
+		gcpRegionID := gcp.GetGoogleRegionFromEnvVar()
 		gcpZone := test_structure.LoadString(t, exampleFolder, SavedGCPZone)
 		imageID := test_structure.LoadArtifactID(t, exampleFolder)
 
@@ -92,6 +98,7 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 			TerraformDir: exampleFolder,
 			Vars: map[string]interface{}{
 				ConsulClusterExampleVarProject:              gcpProjectID,
+				ConsulClusterExampleVarRegion:               gcpRegionID,
 				ConsulClusterExampleVarZone:                 gcpZone,
 				ConsulClusterExampleVarServerClusterName:    serverClusterName,
 				ConsulClusterExampleVarClientClusterName:    clientClusterName,
@@ -101,10 +108,9 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 				ConsulClusterExampleVarClientSourceImage:    imageID,
 				ConsulClusterExampleVarServerClusterSize:    ConsulClusterExampleDefaultNumServers,
 				ConsulClusterExampleVarClientClusterSize:    ConsulClusterExampleDefaultNumClients,
+				ConsulClusterAllowedInboundCidrBlockHttpApi: "0.0.0.0/0",
+				ConsulClusterAllowedInboundCidrBlockDns:     "0.0.0.0/0",
 			},
-			//EnvVars: map[string]string{
-			//	GoogleProjectIDEnvVar: gcpProjectID,
-			//},
 		}
 		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
 
@@ -134,7 +140,7 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 
 	// Check every 5 seconds until an instance has joined the managed instance group
 	nodeIPAddress := retry.DoWithRetry(t, fmt.Sprintf("Waiting for instances in group %s", groupName), maxRetries, timeBetweenRetries, func() (string, error) {
-		ip, err := getIPAddressOfManagedInstance(t, projectID, zone, groupName)
+		ip, err := getRandomPublicIPFromInstanceGroup(t, projectID, zone, groupName)
 
 		if err != nil {
 			return "", err
