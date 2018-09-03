@@ -76,7 +76,7 @@ variable "instance_group_update_strategy" {
 variable "allowed_inbound_cidr_blocks_http_api" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul."
   type = "list"
-  default = ["0.0.0.0/0"]
+  default = []
 }
 
 variable "allowed_inbound_tags_http_api" {
@@ -88,7 +88,7 @@ variable "allowed_inbound_tags_http_api" {
 variable "allowed_inbound_cidr_blocks_dns" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow TCP DNS and UDP DNS connections to Consul."
   type = "list"
-  default = ["0.0.0.0/0"]
+  default = []
 }
 
 variable "allowed_inbound_tags_dns" {
