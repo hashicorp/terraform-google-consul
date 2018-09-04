@@ -36,6 +36,17 @@ variable "startup_script" {
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "service_account_scopes" {
+  description = "A list of service account scopes that will be added to the Compute Instance Template in addition to the scopes automatically added by this module."
+  type = "list"
+  default = []
+}
+
+variable "storage_access" {
+  description = "Used to set the access permissions for GCE storage"
+  default = "storage-ro"
+}
+
 variable "instance_group_target_pools" {
   description = "To use a Load Balancer with the Consul cluster, you must populate this value. Specifically, this is the list of Target Pool URLs to which new Compute Instances in the Instance Group created by this module will be added. Note that updating the Target Pools attribute does not affect existing Compute Instances. Note also that use of a Load Balancer with Consul is generally discouraged; client should instead prefer to talk directly to the server where possible."
   type = "list"
@@ -66,6 +77,11 @@ variable "custom_tags" {
   description = "A list of tags that will be added to the Compute Instance Template in addition to the tags automatically added by this module."
   type = "list"
   default = []
+}
+
+variable "service_account_email" {
+  description = "The email of the service account for the instance template. If none is provided the google cloud provider project service account is used."
+  default     = ""
 }
 
 variable "instance_group_update_strategy" {
