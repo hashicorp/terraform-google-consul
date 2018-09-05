@@ -42,8 +42,8 @@ variable "service_account_scopes" {
   default = []
 }
 
-variable "storage_access" {
-  description = "Used to set the access permissions for GCE storage"
+variable "storage_access_scope" {
+  description = "Used to set the access permissions for Google Cloud Storage. As of September 2018, this must be one of ['', 'storage-ro', 'storage-rw', 'storage-full']"
   default = "storage-ro"
 }
 
