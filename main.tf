@@ -34,7 +34,10 @@ module "consul_servers" {
 
   # Grant API and DNS access to requests originating from the the Consul client cluster we create below.
   allowed_inbound_tags_http_api = ["${var.consul_server_cluster_tag_name}"]
+  allowed_inbound_cidr_blocks_http_api = "${var.consul_server_allowed_inbound_cidr_blocks_http_api}"
+
   allowed_inbound_tags_dns = ["${var.consul_server_cluster_tag_name }"]
+  allowed_inbound_cidr_blocks_dns = "${var.consul_server_allowed_inbound_cidr_blocks_dns}"
 
   # WARNING! These configuration values are suitable for testing, but for production, see https://www.consul.io/docs/guides/performance.html
   # Production recommendations:
@@ -92,7 +95,10 @@ module "consul_clients" {
   startup_script = "${data.template_file.startup_script_client.rendered}"
 
   allowed_inbound_tags_http_api = ["${var.consul_client_cluster_tag_name}"]
+  allowed_inbound_cidr_blocks_http_api = "${var.consul_client_allowed_inbound_cidr_blocks_http_api}"
+
   allowed_inbound_tags_dns = ["${var.consul_client_cluster_tag_name }"]
+  allowed_inbound_cidr_blocks_dns = "${var.consul_client_allowed_inbound_cidr_blocks_dns}"
 
   machine_type = "g1-small"
   root_volume_disk_type = "pd-standard"

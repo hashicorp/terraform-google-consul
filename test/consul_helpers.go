@@ -16,38 +16,41 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
-// RepoRoot represents the root of the project.
-const RepoRoot = "../"
+var (
+	// RepoRoot represents the root of the project.
+	RepoRoot = "../"
 
-const ConsulClusterExampleVarProject = "gcp_project"
-const ConsulClusterExampleVarRegion = "gcp_region"
-const ConsulClusterExampleVarZone = "gcp_zone"
+	ConsulClusterExampleVarProject = "gcp_project"
+	ConsulClusterExampleVarRegion  = "gcp_region"
+	ConsulClusterExampleVarZone    = "gcp_zone"
 
-const ConsulClusterExampleVarServerClusterName = "consul_server_cluster_name"
-const ConsulClusterExampleVarClientClusterName = "consul_client_cluster_name"
+	ConsulClusterExampleVarServerClusterName = "consul_server_cluster_name"
+	ConsulClusterExampleVarClientClusterName = "consul_client_cluster_name"
 
-const ConsulClusterExampleVarServerClusterTagName = "consul_server_cluster_tag_name"
-const ConsulClusterExampleVarClientClusterTagName = "consul_client_cluster_tag_name"
+	ConsulClusterExampleVarServerClusterTagName = "consul_server_cluster_tag_name"
+	ConsulClusterExampleVarClientClusterTagName = "consul_client_cluster_tag_name"
 
-const ConsulClusterExampleVarServerSourceImage = "consul_server_source_image"
-const ConsulClusterExampleVarClientSourceImage = "consul_client_source_image"
+	ConsulClusterExampleVarServerSourceImage = "consul_server_source_image"
+	ConsulClusterExampleVarClientSourceImage = "consul_client_source_image"
 
-const ConsulClusterExampleVarServerClusterSize = "consul_server_cluster_size"
-const ConsulClusterExampleVarClientClusterSize = "consul_client_cluster_size"
+	ConsulClusterExampleVarServerClusterSize = "consul_server_cluster_size"
+	ConsulClusterExampleVarClientClusterSize = "consul_client_cluster_size"
 
-const ConsulClusterExampleDefaultNumServers = 3
-const ConsulClusterExampleDefaultNumClients = 4
+	ConsulClusterExampleDefaultNumServers = 3
+	ConsulClusterExampleDefaultNumClients = 4
 
-const ConsulClusterExampleOutputServerInstanceGroupName = "instance_group_name"
-const ConsulClusterExampleOutputClientInstanceGroupName = "client_instance_group_name"
+	ConsulClusterExampleOutputServerInstanceGroupName = "instance_group_name"
+	ConsulClusterExampleOutputClientInstanceGroupName = "client_instance_group_name"
 
-const ConsulClusterAllowedInboundCidrBlockHttpApi = "allowed_inbound_cidr_blocks_http_api"
-const ConsulClusterAllowedInboundCidrBlockDns = "allowed_inbound_cidr_blocks_dns"
+	ConsulClusterServerAllowedInboundCidrBlockHttpApi = "consul_server_allowed_inbound_cidr_blocks_http_api"
+	ConsulClusterServerAllowedInboundCidrBlockDns     = "consul_server_allowed_inbound_cidr_blocks_dns"
 
-// SavedGCPZone represents the key to use when saving the GCP zone.
-const SavedGCPZone = "GCPZone"
+	ConsulClusterClientAllowedInboundCidrBlockHttpApi = "consul_client_allowed_inbound_cidr_blocks_http_api"
+	ConsulClusterClientAllowedInboundCidrBlockDns     = "consul_client_allowed_inbound_cidr_blocks_dns"
 
-const GoogleProjectIDEnvVar = "GOOGLE_CLOUD_PROJECT_ID"
+	// SavedGCPZone represents the key to use when saving the GCP zone.
+	SavedGCPZone = "GCPZone"
+)
 
 // Test the consul-cluster example by:
 //
@@ -97,19 +100,21 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		terraformOptions := &terraform.Options{
 			TerraformDir: exampleFolder,
 			Vars: map[string]interface{}{
-				ConsulClusterExampleVarProject:              gcpProjectID,
-				ConsulClusterExampleVarRegion:               gcpRegionID,
-				ConsulClusterExampleVarZone:                 gcpZone,
-				ConsulClusterExampleVarServerClusterName:    serverClusterName,
-				ConsulClusterExampleVarClientClusterName:    clientClusterName,
-				ConsulClusterExampleVarServerClusterTagName: serverClusterName,
-				ConsulClusterExampleVarClientClusterTagName: clientClusterName,
-				ConsulClusterExampleVarServerSourceImage:    imageID,
-				ConsulClusterExampleVarClientSourceImage:    imageID,
-				ConsulClusterExampleVarServerClusterSize:    ConsulClusterExampleDefaultNumServers,
-				ConsulClusterExampleVarClientClusterSize:    ConsulClusterExampleDefaultNumClients,
-				ConsulClusterAllowedInboundCidrBlockHttpApi: "0.0.0.0/0",
-				ConsulClusterAllowedInboundCidrBlockDns:     "0.0.0.0/0",
+				ConsulClusterExampleVarProject:                    gcpProjectID,
+				ConsulClusterExampleVarRegion:                     gcpRegionID,
+				ConsulClusterExampleVarZone:                       gcpZone,
+				ConsulClusterExampleVarServerClusterName:          serverClusterName,
+				ConsulClusterExampleVarClientClusterName:          clientClusterName,
+				ConsulClusterExampleVarServerClusterTagName:       serverClusterName,
+				ConsulClusterExampleVarClientClusterTagName:       clientClusterName,
+				ConsulClusterExampleVarServerSourceImage:          imageID,
+				ConsulClusterExampleVarClientSourceImage:          imageID,
+				ConsulClusterExampleVarServerClusterSize:          ConsulClusterExampleDefaultNumServers,
+				ConsulClusterExampleVarClientClusterSize:          ConsulClusterExampleDefaultNumClients,
+				ConsulClusterServerAllowedInboundCidrBlockHttpApi: []string{"0.0.0.0/0"},
+				ConsulClusterServerAllowedInboundCidrBlockDns:     []string{"0.0.0.0/0"},
+				ConsulClusterClientAllowedInboundCidrBlockHttpApi: []string{"0.0.0.0/0"},
+				ConsulClusterClientAllowedInboundCidrBlockDns:     []string{"0.0.0.0/0"},
 			},
 		}
 		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
