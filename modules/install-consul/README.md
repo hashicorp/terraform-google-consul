@@ -15,8 +15,6 @@ There is a good chance it will work on other flavors of Debian as well.
 
 ## Quick start
 
-<!-- TODO: update the clone URL to the final URL when this Module is released -->
-
 To install Consul, use `git clone --branch` to clone this repository at a specific tag run the `install-consul` script:
 
 ```
