@@ -11,10 +11,6 @@ variable "gcp_region" {
   description = "The region in which all GCP resources will be launched."
 }
 
-variable "gcp_zone" {
-  description = "The region in which all GCP resources will be launched."
-}
-
 variable "consul_server_cluster_name" {
   description = "The name of the Consul Server cluster. All resources will be namespaced by this value. E.g. consul-server-prod"
 }
@@ -46,34 +42,34 @@ variable "consul_client_source_image" {
 
 variable "consul_server_cluster_size" {
   description = "The number of nodes to have in the Consul Server cluster. We strongly recommended that you use either 3 or 5."
-  default = 3
+  default     = 3
 }
 
 variable "consul_client_cluster_size" {
   description = "The number of nodes to have in the Consul Client example cluster. Any number of nodes is permissible, though 3 is usually enough to test.."
-  default = 3
+  default     = 3
 }
 
 variable "consul_server_allowed_inbound_cidr_blocks_http_api" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul."
-  type = "list"
-  default = []
+  type        = "list"
+  default     = ["0.0.0.0/0"]
 }
 
 variable "consul_server_allowed_inbound_cidr_blocks_dns" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow TCP DNS and UDP DNS connections to Consul."
-  type = "list"
-  default = []
+  type        = "list"
+  default     = []
 }
 
 variable "consul_client_allowed_inbound_cidr_blocks_http_api" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul."
-  type = "list"
-  default = []
+  type        = "list"
+  default     = ["0.0.0.0/0"]
 }
 
 variable "consul_client_allowed_inbound_cidr_blocks_dns" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow TCP DNS and UDP DNS connections to Consul."
-  type = "list"
-  default = []
+  type        = "list"
+  default     = []
 }
