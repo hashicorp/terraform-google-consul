@@ -53,7 +53,7 @@ variable "consul_client_cluster_size" {
 variable "consul_server_allowed_inbound_cidr_blocks_http_api" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul."
   type        = "list"
-  default     = []
+  default     = ["0.0.0.0/0"]
 }
 
 variable "consul_server_allowed_inbound_cidr_blocks_dns" {
@@ -65,7 +65,7 @@ variable "consul_server_allowed_inbound_cidr_blocks_dns" {
 variable "consul_client_allowed_inbound_cidr_blocks_http_api" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul."
   type        = "list"
-  default     = []
+  default     = ["0.0.0.0/0"]
 }
 
 variable "consul_client_allowed_inbound_cidr_blocks_dns" {
