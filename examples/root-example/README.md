@@ -36,3 +36,12 @@ To deploy a Consul Cluster:
    print out the IP addresses of the Consul servers and some example commands you can run to interact with the cluster:
    `../consul-examples-helper/consul-examples-helper.sh`.
 
+### WARNING: This example exposes your cluster to the public Internet!
+
+This example enables your Consul Client and Consul Server to be accessible from `0.0.0.0/0` (any IP address) by default.
+This is not an acceptable security posture in a production setting! In a production setting, you should set the
+`allowed_inbound_cidr_blocks_http_api` property of the [consul-cluster](
+https://github.com/hashicorp/terraform-google-consul/tree/master/modules/consul-cluster) module to either an empty list
+or a limited range of IP addresses.
+
+Note that for access within GCP, using the `allowed_inbound_tags_http_api` module property is preferred.
