@@ -31,7 +31,7 @@ module "consul_cluster" {
               /opt/consul/bin/run-consul --server --cluster-tag-name consul-cluster
               EOF
   
-  # ... See vars.tf for the other parameters you must define for the consul-cluster module
+  # ... See variables.tf for the other parameters you must define for the consul-cluster module
 }
 ```
 
@@ -52,9 +52,9 @@ Note the following parameters:
   run Consul. The `run-consul` script is one of the scripts installed by the [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul) 
   module. 
 
-You can find the other parameters in [vars.tf](vars.tf).
+You can find the other parameters in [variables.tf](variables.tf).
 
-Check out the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-cluster) for fully-working sample code. 
+Check out the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example) for fully-working sample code.
 
 
 
@@ -65,11 +65,11 @@ Check out the [consul-cluster example](https://github.com/hashicorp/terraform-go
 
 If you want to connect to the cluster from your own computer, the easiest way is to use the [HTTP 
 API](https://www.consul.io/docs/agent/http.html). Note that this only works if the Consul cluster is running with 
-`assign_public_ip_addresses` set to `true` (as in the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-cluster)), which is OK
+`assign_public_ip_addresses` set to `true` (as in the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example)), which is OK
 for testing and experimentation, but NOT recommended for production usage.
 
 To use the HTTP API, you first need to get the public IP address of one of the Consul Servers. You can find Consul 
-servers by using Compute Instance tags. If you're running the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-cluster), the 
+servers by using Compute Instance tags. If you're running the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example), the
 [consul-examples-helper.sh script](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-examples-helper/consul-examples-helper.sh) will do the tag lookup 
 for you automatically (note, you must have the [Google Cloud SDK](https://cloud.google.com/sdk/) and the 
 [Consul agent](https://www.consul.io/) installed locally):
@@ -290,7 +290,7 @@ This module creates Firewall rules that allow inbound requests as follows:
   `allowed_inbound_tags_dns` to control the list of tags that will be allowed access. 
   
 Note that all the ports mentioned above are configurable via the `xxx_port` variables (e.g. `server_rpc_port`). See
-[vars.tf](vars.tf) for the full list.  
+[variables.tf](variables.tf) for the full list.
   
   
 

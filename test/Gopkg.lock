@@ -67,6 +67,7 @@
     "service/ec2",
     "service/iam",
     "service/kms",
+    "service/rds",
     "service/s3",
     "service/s3/s3iface",
     "service/s3/s3manager",
@@ -97,6 +98,14 @@
   pruneopts = ""
   revision = "5cf292cae48347c2490ac1a58fe36735fb78df7e"
   version = "v1.38.2"
+
+[[projects]]
+  digest = "1:c07de423ca37dc2765396d6971599ab652a339538084b9b58c9f7fc533b28525"
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  pruneopts = ""
+  revision = "d523deb1b23d913de5bdada721a6071e71283618"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:3dd078fda7500c341bc26cfbc6c6a34614f295a2457149fc1045cab767cbcf18"
@@ -130,7 +139,7 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:715d6e1def190e0cc80a52f21287306216da25195d6903a4b9f6a6602715a765"
+  digest = "1:ead1aeb63c3f72cc9d21d7b997d6671486fbae5d1fafaad28e135f9f46798e22"
   name = "github.com/gruntwork-io/terratest"
   packages = [
     "modules/aws",
@@ -147,8 +156,8 @@
     "modules/test-structure",
   ]
   pruneopts = ""
-  revision = "d800338b3e88d65e5a434ec9a6ab1242270edda6"
-  version = "v0.10.0"
+  revision = "a15ba014670eba35acd60b1c0f295d43bf150a84"
+  version = "v0.10.3"
 
 [[projects]]
   digest = "1:5190b0c9b2d3c491838653056455f1e9406e039ee91ec768849f3e5ab441f06a"
@@ -216,6 +225,14 @@
   pruneopts = ""
   revision = "b7b89250c468c06871d3837bee02e2d5c155ae19"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:f4e342db3763ae1eb90200b8c26a0c2428500be9adf7afba91826c9ac4faaeb9"
+  name = "github.com/robmorgan/terratest"
+  packages = ["modules/random"]
+  pruneopts = ""
+  revision = "b9eaa580d17795b28ac89173b066d951c6feb3c4"
+  version = "v0.9.1"
 
 [[projects]]
   digest = "1:8778190ba18941ba540ea3a065bfe3e6c4126ab16aa2f8a240076ef51af9ab75"
@@ -341,6 +358,7 @@
   name = "google.golang.org/appengine"
   packages = [
     ".",
+    "cloudsql",
     "internal",
     "internal/app_identity",
     "internal/base",
@@ -415,6 +433,7 @@
     "github.com/gruntwork-io/terratest/modules/terraform",
     "github.com/gruntwork-io/terratest/modules/test-structure",
     "github.com/hashicorp/consul/api",
+    "github.com/robmorgan/terratest/modules/random",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

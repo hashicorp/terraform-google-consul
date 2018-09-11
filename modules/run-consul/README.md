@@ -42,7 +42,7 @@ We recommend using the `run-consul` command as part of the [Startup Script](http
 so that it executes when the Compute Instance is first booting. After runing `run-consul` on that initial boot, the `supervisord`
 configuration  will automatically restart Consul if it crashes or the Compute instance reboots.
 
-See the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-cluster) for fully-working sample code.
+See the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example) for fully-working sample code.
 
 
 
