@@ -15,12 +15,12 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 # Create the single-zone Managed Instance Group where Consul Server will live.
-resource "google_compute_instance_group_manager" "consul_server" {
+resource "google_compute_region_instance_group_manager" "consul_server" {
   name = "${var.cluster_name}-ig"
 
   base_instance_name = "${var.cluster_name}"
   instance_template  = "${data.template_file.compute_instance_template_self_link.rendered}"
-  zone               = "${var.gcp_zone}"
+  region             = "${var.gcp_region}"
 
   # Consul Server is a stateful cluster, so the update strategy used to roll out a new GCE Instance Template must be
   # a rolling update. But since Terraform does not yet support ROLLING_UPDATE, such updates must be manually rolled out.
@@ -43,14 +43,14 @@ resource "google_compute_instance_template" "consul_server_public" {
   instance_description = "${var.cluster_description}"
   machine_type         = "${var.machine_type}"
 
-  tags = "${concat(list(var.cluster_tag_name), var.custom_tags)}"
+  tags                    = "${concat(list(var.cluster_tag_name), var.custom_tags)}"
   metadata_startup_script = "${var.startup_script}"
-  metadata = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
+  metadata                = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
 
   scheduling {
     automatic_restart   = true
     on_host_maintenance = "MIGRATE"
-    preemptible = false
+    preemptible         = false
   }
 
   disk {
@@ -64,6 +64,7 @@ resource "google_compute_instance_template" "consul_server_public" {
   network_interface {
     network    = "${var.subnetwork_name != "" ? "" : var.network_name}"
     subnetwork = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
+
     access_config {
       # The presence of this property assigns a public IP address to each Compute Instance. We intentionally leave it
       # blank so that an external IP address is selected automatically.
@@ -72,8 +73,9 @@ resource "google_compute_instance_template" "consul_server_public" {
   }
 
   service_account {
-    email   = "${var.service_account_email}"
-    scopes  = ["${concat(
+    email = "${var.service_account_email}"
+
+    scopes = ["${concat(
       list(
         "userinfo-email", 
         "compute-ro", 
@@ -81,7 +83,6 @@ resource "google_compute_instance_template" "consul_server_public" {
       ),
       var.service_account_scopes
     )}"]
-
   }
 
   # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
@@ -101,16 +102,16 @@ resource "google_compute_instance_template" "consul_server_private" {
   description = "${var.cluster_description}"
 
   instance_description = "${var.cluster_description}"
-  machine_type = "${var.machine_type}"
+  machine_type         = "${var.machine_type}"
 
-  tags = ["${concat(list(var.cluster_tag_name), var.custom_tags)}"]
+  tags                    = ["${concat(list(var.cluster_tag_name), var.custom_tags)}"]
   metadata_startup_script = "${var.startup_script}"
-  metadata = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
+  metadata                = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
 
   scheduling {
     automatic_restart   = true
     on_host_maintenance = "MIGRATE"
-    preemptible = false
+    preemptible         = false
   }
 
   disk {
@@ -120,13 +121,14 @@ resource "google_compute_instance_template" "consul_server_private" {
   }
 
   network_interface {
-    network =    "${var.subnetwork_name != "" ? "" : var.network_name}"
+    network    = "${var.subnetwork_name != "" ? "" : var.network_name}"
     subnetwork = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
   }
 
   service_account {
-    email   = "${var.service_account_email}"
-    scopes  = ["${concat(
+    email = "${var.service_account_email}"
+
+    scopes = ["${concat(
       list(
         "userinfo-email", 
         "compute-ro", 
@@ -157,22 +159,24 @@ resource "google_compute_firewall" "allow_intracluster_consul" {
 
   allow {
     protocol = "tcp"
-    ports    = [
+
+    ports = [
       "${var.server_rpc_port}",
       "${var.cli_rpc_port}",
       "${var.serf_lan_port}",
       "${var.serf_wan_port}",
       "${var.http_api_port}",
-      "${var.dns_port}"
+      "${var.dns_port}",
     ]
   }
 
   allow {
     protocol = "udp"
-    ports    = [
+
+    ports = [
       "${var.serf_lan_port}",
       "${var.serf_wan_port}",
-      "${var.dns_port}"
+      "${var.dns_port}",
     ]
   }
 
@@ -193,14 +197,15 @@ resource "google_compute_firewall" "allow_inbound_http_api" {
 
   allow {
     protocol = "tcp"
-    ports    = [
+
+    ports = [
       "${var.http_api_port}",
     ]
   }
 
   source_ranges = "${var.allowed_inbound_cidr_blocks_http_api}"
-  source_tags = ["${var.allowed_inbound_tags_http_api}"]
-  target_tags = ["${var.cluster_tag_name}"]
+  source_tags   = ["${var.allowed_inbound_tags_http_api}"]
+  target_tags   = ["${var.cluster_tag_name}"]
 }
 
 # Specify which traffic is allowed into the Consul Cluster solely for DNS requests
@@ -216,21 +221,23 @@ resource "google_compute_firewall" "allow_inbound_dns" {
 
   allow {
     protocol = "tcp"
-    ports    = [
+
+    ports = [
       "${var.dns_port}",
     ]
   }
 
   allow {
     protocol = "udp"
-    ports    = [
+
+    ports = [
       "${var.dns_port}",
     ]
   }
 
   source_ranges = "${var.allowed_inbound_cidr_blocks_dns}"
-  source_tags = ["${var.allowed_inbound_tags_dns}"]
-  target_tags = ["${var.cluster_tag_name}"]
+  source_tags   = ["${var.allowed_inbound_tags_dns}"]
+  target_tags   = ["${var.cluster_tag_name}"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

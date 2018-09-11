@@ -1,5 +1,5 @@
-output "gcp_zone" {
-  value = "${var.gcp_zone}"
+output "gcp_region" {
+  value = "${var.gcp_region}"
 }
 
 output "cluster_name" {
@@ -11,11 +11,11 @@ output "cluster_tag_name" {
 }
 
 output "instance_group_url" {
-  value = "${google_compute_instance_group_manager.consul_server.self_link}"
+  value = "${google_compute_region_instance_group_manager.consul_server.self_link}"
 }
 
 output "instance_group_name" {
-  value = "${google_compute_instance_group_manager.consul_server.name}"
+  value = "${google_compute_region_instance_group_manager.consul_server.name}"
 }
 
 output "instance_template_url" {

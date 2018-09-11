@@ -7,8 +7,8 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "google" {
-  project     = "${var.gcp_project}"
-  region      = "${var.gcp_region}"
+  project = "${var.gcp_project}"
+  region  = "${var.gcp_region}"
 }
 
 terraform {
@@ -25,18 +25,18 @@ module "consul_servers" {
   # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-cluster?ref=v0.0.1"
   source = "./modules/consul-cluster"
 
-  gcp_zone = "${var.gcp_zone}"
-  cluster_name = "${var.consul_server_cluster_name}"
+  gcp_region          = "${var.gcp_region}"
+  cluster_name        = "${var.consul_server_cluster_name}"
   cluster_description = "Consul Server cluster"
-  cluster_size = "${var.consul_server_cluster_size}"
-  cluster_tag_name = "${var.consul_server_cluster_tag_name}"
-  startup_script = "${data.template_file.startup_script_server.rendered}"
+  cluster_size        = "${var.consul_server_cluster_size}"
+  cluster_tag_name    = "${var.consul_server_cluster_tag_name}"
+  startup_script      = "${data.template_file.startup_script_server.rendered}"
 
   # Grant API and DNS access to requests originating from the the Consul client cluster we create below.
-  allowed_inbound_tags_http_api = ["${var.consul_server_cluster_tag_name}"]
+  allowed_inbound_tags_http_api        = ["${var.consul_server_cluster_tag_name}"]
   allowed_inbound_cidr_blocks_http_api = "${var.consul_server_allowed_inbound_cidr_blocks_http_api}"
 
-  allowed_inbound_tags_dns = ["${var.consul_server_cluster_tag_name }"]
+  allowed_inbound_tags_dns        = ["${var.consul_server_cluster_tag_name }"]
   allowed_inbound_cidr_blocks_dns = "${var.consul_server_allowed_inbound_cidr_blocks_dns}"
 
   # WARNING! These configuration values are suitable for testing, but for production, see https://www.consul.io/docs/guides/performance.html
@@ -46,7 +46,8 @@ module "consul_servers" {
   # - root_volume_disk_type: pd-ssd or local-ssd (for write-heavy workloads, use SSDs for the best write throughput)
   # - root_volume_disk_size_gb: Consul's data set is persisted, so this depends on the size of your expected data set
   machine_type = "g1-small"
-  root_volume_disk_type = "pd-standard"
+
+  root_volume_disk_type    = "pd-standard"
   root_volume_disk_size_gb = "15"
 
   # WARNING! By specifying just the "family" name of the Image, Google will automatically use the latest Consul image.
@@ -87,21 +88,21 @@ module "consul_clients" {
   # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-cluster?ref=v0.0.1"
   source = "./modules/consul-cluster"
 
-  gcp_zone = "${var.gcp_zone}"
-  cluster_name = "${var.consul_client_cluster_name}"
+  gcp_region          = "${var.gcp_region}"
+  cluster_name        = "${var.consul_client_cluster_name}"
   cluster_description = "Consul Clients cluster"
-  cluster_size = "${var.consul_client_cluster_size}"
-  cluster_tag_name = "${var.consul_client_cluster_tag_name}"
-  startup_script = "${data.template_file.startup_script_client.rendered}"
+  cluster_size        = "${var.consul_client_cluster_size}"
+  cluster_tag_name    = "${var.consul_client_cluster_tag_name}"
+  startup_script      = "${data.template_file.startup_script_client.rendered}"
 
-  allowed_inbound_tags_http_api = ["${var.consul_client_cluster_tag_name}"]
+  allowed_inbound_tags_http_api        = ["${var.consul_client_cluster_tag_name}"]
   allowed_inbound_cidr_blocks_http_api = "${var.consul_client_allowed_inbound_cidr_blocks_http_api}"
 
-  allowed_inbound_tags_dns = ["${var.consul_client_cluster_tag_name }"]
+  allowed_inbound_tags_dns        = ["${var.consul_client_cluster_tag_name }"]
   allowed_inbound_cidr_blocks_dns = "${var.consul_client_allowed_inbound_cidr_blocks_dns}"
 
-  machine_type = "g1-small"
-  root_volume_disk_type = "pd-standard"
+  machine_type             = "g1-small"
+  root_volume_disk_type    = "pd-standard"
   root_volume_disk_size_gb = "15"
 
   assign_public_ip_addresses = true
@@ -109,7 +110,8 @@ module "consul_clients" {
   source_image = "${var.consul_client_source_image}"
 
   # Our Consul Clients are completely stateless, so we are free to destroy and re-create them as needed.
-  instance_group_update_strategy = "RESTART"
+  # Todo: Research this further
+  instance_group_update_strategy = "NONE"
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
