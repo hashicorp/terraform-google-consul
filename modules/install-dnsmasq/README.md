@@ -17,7 +17,7 @@ There is a good chance it will work on other flavors of Debian as well.
 
 ## Quick start
 
-To install Dnsmasq, use `git` to clone this repository at a specific tag (see the [releases page](https://github.com/hashicorp/terraform-google-consul/tree/master/releases) 
+To install Dnsmasq, use `git` to clone this repository at a specific tag (see the [releases page](https://github.com/hashicorp/terraform-google-consul/releases)
 for all available tags) and run the `install-dnsmasq` script:
 
 ```

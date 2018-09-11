@@ -31,7 +31,7 @@ To deploy Consul servers using this Module:
 1. Deploy that Image across a Compute Instance Group using the Terraform [consul-cluster module](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/consul-cluster) 
    and execute the [run-consul script](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul) with the `--server` flag during boot on each 
    Instance in the Compute Instance Group to form the Consul cluster. Here is [an example Terraform 
-   configuration](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-cluster#quick-start) to provision a Consul cluster.
+   configuration](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example#quick-start) to provision a Consul cluster.
 
 To deploy Consul clients using this Module:
  
@@ -91,7 +91,7 @@ Contributions are very welcome! Check out the [Contribution Guidelines](https://
 ## How is this Terraform Module versioned?
 
 This Terraform Module follows the principles of [Semantic Versioning](http://semver.org/). You can find each new release, 
-along with the changelog, in the [Releases Page](https://github.com/hashicorp/terraform-google-consul/tree/master/releases). 
+along with the changelog, in the [Releases Page](https://github.com/hashicorp/terraform-google-consul/releases).
 
 During initial development, the major version will be 0 (e.g., `0.x.y`), which indicates the code does not yet have a 
 stable API. Once we hit `1.0.0`, we will make every effort to maintain a backwards compatible API and use the MAJOR, 

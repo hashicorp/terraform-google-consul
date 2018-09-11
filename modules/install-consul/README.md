@@ -29,7 +29,7 @@ join other nodes to form a cluster.
 We recommend running the `install-consul` script as part of a [Packer](https://www.packer.io/) template to create a
 Consul [Image](https://cloud.google.com/compute/docs/images) (see the [consul-image example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-image) for
 fully-working sample code). You can then deploy the Image across a Managed Instance Group using the [consul-cluster
-module](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/consul-cluster) (see the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-cluster) for fully-working sample code).
+module](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/consul-cluster) (see the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example) for fully-working sample code).
 
 
 
@@ -102,5 +102,5 @@ After the `install-consul` script finishes running, you may wish to do the follo
 
 We needed an easy way to install these scripts that satisfied a number of requirements, including working on a variety
 of operating systems and supported versioning. Our current solution is to use `git`, but this may change in the future.
-See [Package Managers](https://github.com/hashicorp/terraform-google-consul/tree/master/blob/master/_docs/package-managers.md) for a
+See [Package Managers](https://github.com/hashicorp/terraform-aws-consul/blob/master/_docs/package-managers.md) for a
 full discussion of the requirements, trade-offs, and why we picked `git`.
