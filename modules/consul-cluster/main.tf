@@ -16,6 +16,7 @@ terraform {
 
 # Create the single-zone Managed Instance Group where Consul Server will live.
 resource "google_compute_region_instance_group_manager" "consul_server" {
+  project = "${var.project}"
   name = "${var.cluster_name}-ig"
 
   base_instance_name = "${var.cluster_name}"
@@ -35,6 +36,7 @@ resource "google_compute_region_instance_group_manager" "consul_server" {
 # Create the Instance Template that will be used to populate the Managed Instance Group.
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is true.
 resource "google_compute_instance_template" "consul_server_public" {
+  project = "${var.project}"
   count = "${var.assign_public_ip_addresses}"
 
   name_prefix = "${var.cluster_name}"
@@ -96,6 +98,7 @@ resource "google_compute_instance_template" "consul_server_public" {
 # Create the Instance Template that will be used to populate the Managed Instance Group.
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is false.
 resource "google_compute_instance_template" "consul_server_private" {
+  project = "${var.project}"
   count = "${1 - var.assign_public_ip_addresses}"
 
   name_prefix = "${var.cluster_name}"
@@ -156,6 +159,7 @@ resource "google_compute_instance_template" "consul_server_private" {
 # - This Firewall Rule may be redundant depnding on the settings of your VPC Network, but if your Network is locked down,
 #   this Rule will open up the appropriate ports.
 resource "google_compute_firewall" "allow_intracluster_consul" {
+  project = "${var.project}"
   name    = "${var.cluster_name}-rule-cluster"
   network = "${var.network_name}"
 
@@ -192,6 +196,7 @@ resource "google_compute_firewall" "allow_intracluster_consul" {
 # - Note that public access to your Consul Cluster will only be permitted if var.assign_public_ip_addresses is true.
 # - This Firewall Rule is only created if at least one source tag or source CIDR block is specified.
 resource "google_compute_firewall" "allow_inbound_http_api" {
+  project = "${var.project}"
   count = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
 
   name    = "${var.cluster_name}-rule-external-api-access"
@@ -216,6 +221,7 @@ resource "google_compute_firewall" "allow_inbound_http_api" {
 # - Note that public access to your Consul Cluster will only be permitted if var.assign_public_ip_addresses is true.
 # - This Firewall Rule is only created if at least one source tag or source CIDR block is specified.
 resource "google_compute_firewall" "allow_inbound_dns" {
+  project = "${var.project}"
   count = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
 
   name    = "${var.cluster_name}-rule-external-dns-access"
