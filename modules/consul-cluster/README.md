@@ -166,13 +166,11 @@ This architecture consists of the following resources:
 * [Firewall Rules](#firewall-rules)
 
 
-### Zonal Managed Instance Group
+### Regional Managed Instance Group
 
-This module runs Consul on top of a [Zonal Managed Instance Group](https://cloud.google.com/compute/docs/instance-groups/)
-Typically, you should run the Instance Group with 3 or 5 Compute Instances spread across multiple [Zones](
-https://cloud.google.com/compute/docs/regions-zones/regions-zones). Unfortunately, due to a [Terraform limitation](
-https://github.com/terraform-providers/terraform-provider-google/issues/45), Managed Instance Groups can only be deployed
-to a single Zone, not across a Region.
+This module runs Consul on top of a [Regional Managed Instance Group](https://cloud.google.com/compute/docs/instance-groups/)
+, which spreads Compute Instances across multiple [Zones](
+https://cloud.google.com/compute/docs/regions-zones/regions-zones) for High Availability.
 
 Each of the Compute Instances should be running a Google Image that has Consul installed via the [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul)
 module. You pass in the name of the Image to run using the `source_image` input parameter.
