@@ -11,6 +11,11 @@ variable "gcp_region" {
   description = "All GCP resources will be launched in this Region."
 }
 
+variable "gcp_zones" {
+  description = "All zones you want to deploy to within the specified region"
+  type = "list"
+}
+
 variable "cluster_name" {
   description = "The name of the Consul cluster (e.g. consul-stage). This variable is used to namespace all resources created by this module."
 }
