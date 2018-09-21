@@ -66,6 +66,7 @@ resource "google_compute_instance_template" "consul_server_public" {
   network_interface {
     network    = "${var.subnetwork_name != "" ? "" : var.network_name}"
     subnetwork = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
+    subnetwork_project = "${var.project != "" ? var.project : ""}"
 
     access_config {
       # The presence of this property assigns a public IP address to each Compute Instance. We intentionally leave it
@@ -128,6 +129,7 @@ resource "google_compute_instance_template" "consul_server_private" {
   network_interface {
     network    = "${var.subnetwork_name != "" ? "" : var.network_name}"
     subnetwork = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
+    subnetwork_project = "${var.project != "" ? var.project : ""}"
   }
 
   service_account {
