@@ -23,7 +23,9 @@
 
 [[constraint]]
   name = "github.com/gruntwork-io/terratest"
-  version = "0.10.1"
+  branch = "tweaks"
+  # TODO: Update to latest terratest
+  #version = "0.10.1"
 
 [[constraint]]
   name = "github.com/hashicorp/consul"

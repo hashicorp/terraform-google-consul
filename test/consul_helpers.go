@@ -87,8 +87,8 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 
 		projectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
 		imageName := test_structure.LoadArtifactID(t, exampleFolder)
-		image := gcp.NewImage(t, projectID, imageName)
-		defer image.DeleteImage(t, projectID)
+		image := gcp.FetchImage(t, projectID, imageName)
+		defer image.DeleteImage(t)
 	})
 
 	test_structure.RunTestStage(t, "deploy", func() {
@@ -151,9 +151,9 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 
 	// Check every 5 seconds until an instance has joined the managed instance group
 	ip := retry.DoWithRetry(t, fmt.Sprintf("Waiting for instances in group %s", groupName), maxRetries, timeBetweenRetries, func() (string, error) {
-		instanceGroup := gcp.NewRegionalInstanceGroup(t, projectID, region, groupName)
+		instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
 
-		instance, err := instanceGroup.GetRandomInstanceE(t, projectID)
+		instance, err := instanceGroup.GetRandomInstanceE(t)
 		if err != nil {
 			return "", err
 		}
