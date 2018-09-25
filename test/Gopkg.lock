@@ -139,8 +139,7 @@
   version = "v2.0.0"
 
 [[projects]]
-  branch = "tweaks"
-  digest = "1:aaacfd70934fe1056484cfe9a85d61f3117c4bf22b31ece5bb6da57fe5e7fb8a"
+  digest = "1:2baf15efdbbc64f229e85fe90fec91efb5a2142442cc031191f0535806974e5d"
   name = "github.com/gruntwork-io/terratest"
   packages = [
     "modules/aws",
@@ -157,7 +156,8 @@
     "modules/test-structure",
   ]
   pruneopts = ""
-  revision = "55d9a7bfbf7537e8c1a2b7749669bba0e6d38941"
+  revision = "24df87283747f0572bbd678f4a4c64f7c272fba8"
+  version = "v0.11.0"
 
 [[projects]]
   digest = "1:790006e2de43ec72a7537ca2cc3c40948d58342221e1ede2abaa1cfba876c43f"
@@ -225,14 +225,6 @@
   pruneopts = ""
   revision = "b7b89250c468c06871d3837bee02e2d5c155ae19"
   version = "v1.0.0"
-
-[[projects]]
-  digest = "1:f4e342db3763ae1eb90200b8c26a0c2428500be9adf7afba91826c9ac4faaeb9"
-  name = "github.com/robmorgan/terratest"
-  packages = ["modules/random"]
-  pruneopts = ""
-  revision = "b9eaa580d17795b28ac89173b066d951c6feb3c4"
-  version = "v0.9.1"
 
 [[projects]]
   digest = "1:8c8ec859c77fccd10a347b7219b597c4c21c448949e8bdf3fc3e6f4c78f952b4"
@@ -434,7 +426,6 @@
     "github.com/gruntwork-io/terratest/modules/terraform",
     "github.com/gruntwork-io/terratest/modules/test-structure",
     "github.com/hashicorp/consul/api",
-    "github.com/robmorgan/terratest/modules/random",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
