@@ -48,8 +48,10 @@ var (
 	ConsulClusterClientAllowedInboundCidrBlockHttpApi = "consul_client_allowed_inbound_cidr_blocks_http_api"
 	ConsulClusterClientAllowedInboundCidrBlockDns     = "consul_client_allowed_inbound_cidr_blocks_dns"
 
-	// SavedGCPZone represents the key to use when saving the GCP zone.
-	SavedGCPZone = "GCPZone"
+	// Terratest var names
+	GcpProjectIdVarName = "GCPProjectID"
+	GcpRegionVarName    = "GCPRegion"
+	GcpZoneVarName      = "GCPZone"
 )
 
 // Test the consul-cluster example by:
@@ -64,12 +66,15 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 
 	test_structure.RunTestStage(t, "setup_image", func() {
 		// Get the Project Id to use
-		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
+		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar(t)
 
-		// Pick a random GCP zone to test in. This helps ensure your code works in all regions and zones.
-		gcpZone := gcp.GetRandomZone(t, nil, nil)
+		// Pick a random GCP region to test in. This helps ensure your code works in all regions and zones.
+		gcpRegion := gcp.GetRandomRegion(t, gcpProjectID, nil, nil)
+		gcpZone := gcp.GetRandomZoneForRegion(t, gcpProjectID, gcpRegion)
 
-		test_structure.SaveString(t, exampleFolder, SavedGCPZone, gcpZone)
+		test_structure.SaveString(t, exampleFolder, GcpProjectIdVarName, gcpProjectID)
+		test_structure.SaveString(t, exampleFolder, GcpRegionVarName, gcpRegion)
+		test_structure.SaveString(t, exampleFolder, GcpZoneVarName, gcpZone)
 
 		// Make sure the Packer build completes successfully
 		imageID := buildImage(t, packerTemplatePath, packerBuildName, gcpProjectID, gcpZone)
@@ -80,28 +85,28 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
 		terraform.Destroy(t, terraformOptions)
 
-		// Get the Project Id to use
-		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
-
-		imageID := test_structure.LoadArtifactID(t, exampleFolder)
-		defer gcp.DeleteImage(t, gcpProjectID, imageID)
+		projectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
+		imageName := test_structure.LoadArtifactID(t, exampleFolder)
+		image := gcp.FetchImage(t, projectID, imageName)
+		defer image.DeleteImage(t)
 	})
 
 	test_structure.RunTestStage(t, "deploy", func() {
+		gcpProjectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
+		gcpRegion := test_structure.LoadString(t, exampleFolder, GcpRegionVarName)
+		gcpZone := test_structure.LoadString(t, exampleFolder, GcpZoneVarName)
+
 		// GCP only supports lowercase names for some resources
 		uniqueID := strings.ToLower(random.UniqueId())
 		serverClusterName := fmt.Sprintf("consul-server-cluster-%s", uniqueID)
 		clientClusterName := fmt.Sprintf("consul-client-cluster-%s", uniqueID)
-		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
-		gcpRegionID := gcp.GetGoogleRegionFromEnvVar()
-		gcpZone := test_structure.LoadString(t, exampleFolder, SavedGCPZone)
 		imageID := test_structure.LoadArtifactID(t, exampleFolder)
 
 		terraformOptions := &terraform.Options{
 			TerraformDir: exampleFolder,
 			Vars: map[string]interface{}{
 				ConsulClusterExampleVarProject:                    gcpProjectID,
-				ConsulClusterExampleVarRegion:                     gcpRegionID,
+				ConsulClusterExampleVarRegion:                     gcpRegion,
 				ConsulClusterExampleVarZone:                       gcpZone,
 				ConsulClusterExampleVarServerClusterName:          serverClusterName,
 				ConsulClusterExampleVarClientClusterName:          clientClusterName,
@@ -123,20 +128,21 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 	})
 
 	test_structure.RunTestStage(t, "validate", func() {
-		gcpProjectID := gcp.GetGoogleProjectIDFromEnvVar()
-		gcpZone := test_structure.LoadString(t, exampleFolder, SavedGCPZone)
+		gcpProjectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
+		gcpRegion := test_structure.LoadString(t, exampleFolder, GcpRegionVarName)
+
 		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
 
 		// Check the Consul servers
-		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputServerInstanceGroupName, terraformOptions, gcpProjectID, gcpZone)
+		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputServerInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
 
 		// Check the Consul clients
-		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpZone)
+		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
 	})
 }
 
 // Check that the Consul cluster comes up within a reasonable time period and can respond to requests
-func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terratestOptions *terraform.Options, projectID string, zone string) {
+func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terratestOptions *terraform.Options, projectID string, region string) {
 	groupName := terraform.OutputRequired(t, terratestOptions, groupNameOutputVar)
 
 	// It can take a few minutes for the managed instance group to boot up
@@ -144,9 +150,15 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 	timeBetweenRetries := 5 * time.Second
 
 	// Check every 5 seconds until an instance has joined the managed instance group
-	nodeIPAddress := retry.DoWithRetry(t, fmt.Sprintf("Waiting for instances in group %s", groupName), maxRetries, timeBetweenRetries, func() (string, error) {
-		ip, err := getRandomPublicIPFromInstanceGroup(t, projectID, zone, groupName)
+	ip := retry.DoWithRetry(t, fmt.Sprintf("Waiting for instances in group %s", groupName), maxRetries, timeBetweenRetries, func() (string, error) {
+		instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
 
+		instance, err := instanceGroup.GetRandomInstanceE(t)
+		if err != nil {
+			return "", err
+		}
+
+		ip, err := instance.GetPublicIpE(t)
 		if err != nil {
 			return "", err
 		}
@@ -154,7 +166,7 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 		return ip, nil
 	})
 
-	testConsulCluster(t, nodeIPAddress)
+	testConsulCluster(t, ip)
 }
 
 // Use a Consul client to connect to the given node and use it to verify that:

@@ -8,13 +8,10 @@ terraform {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE A GCE INSTANCE GROUP TO RUN CONSUL SERVER
-# Ideally, we would run a "regional" Managed Instance Group that spans many Zones, but the Terraform GCP provider has
-# not yet implemented https://github.com/terraform-providers/terraform-provider-google/issues/45, so we settle for a
-# single-zone Managed Instance Group.
+# CREATE A REGIONAL MANAGED INSTANCE GROUP TO RUN CONSUL SERVER
 # ---------------------------------------------------------------------------------------------------------------------
 
-# Create the single-zone Managed Instance Group where Consul Server will live.
+# Create the Regional Managed Instance Group where Consul Server will live.
 resource "google_compute_region_instance_group_manager" "consul_server" {
   project = "${var.project}"
   name = "${var.cluster_name}-ig"
