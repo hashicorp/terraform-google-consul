@@ -3,17 +3,12 @@
 # You must provide a value for each of these parameters.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "project" {
+variable "gcp_project_id" {
   description = "The project to deploy the cluster in"
 }
 
 variable "gcp_region" {
   description = "All GCP resources will be launched in this Region."
-}
-
-variable "gcp_zones" {
-  description = "All zones you want to deploy to within the specified region"
-  type = "list"
 }
 
 variable "cluster_name" {
