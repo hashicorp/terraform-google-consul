@@ -7,7 +7,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "google" {
-  project = "${var.gcp_project}"
   region  = "${var.gcp_region}"
 }
 
@@ -25,6 +24,7 @@ module "consul_servers" {
   # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-cluster?ref=v0.0.1"
   source = "./modules/consul-cluster"
 
+  gcp_project_id      = "${var.gcp_project_id}"
   gcp_region          = "${var.gcp_region}"
   cluster_name        = "${var.consul_server_cluster_name}"
   cluster_description = "Consul Server cluster"
@@ -88,6 +88,7 @@ module "consul_clients" {
   # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-cluster?ref=v0.0.1"
   source = "./modules/consul-cluster"
 
+  gcp_project_id      = "${var.gcp_project}"
   gcp_region          = "${var.gcp_region}"
   cluster_name        = "${var.consul_client_cluster_name}"
   cluster_description = "Consul Clients cluster"
