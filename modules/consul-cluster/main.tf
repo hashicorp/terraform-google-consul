@@ -14,7 +14,7 @@ terraform {
 # Create the Regional Managed Instance Group where Consul Server will live.
 resource "google_compute_region_instance_group_manager" "consul_server" {
   project = "${var.gcp_project_id}"
-  name = "${var.cluster_name}-ig"
+  name    = "${var.cluster_name}-ig"
 
   base_instance_name = "${var.cluster_name}"
   instance_template  = "${data.template_file.compute_instance_template_self_link.rendered}"
@@ -34,7 +34,7 @@ resource "google_compute_region_instance_group_manager" "consul_server" {
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is true.
 resource "google_compute_instance_template" "consul_server_public" {
   project = "${var.gcp_project_id}"
-  count = "${var.assign_public_ip_addresses}"
+  count   = "${var.assign_public_ip_addresses}"
 
   name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
@@ -61,8 +61,8 @@ resource "google_compute_instance_template" "consul_server_public" {
   }
 
   network_interface {
-    network    = "${var.subnetwork_name != "" ? "" : var.network_name}"
-    subnetwork = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
+    network            = "${var.subnetwork_name != "" ? "" : var.network_name}"
+    subnetwork         = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
     subnetwork_project = "${var.gcp_project_id}"
 
     access_config {
@@ -97,7 +97,7 @@ resource "google_compute_instance_template" "consul_server_public" {
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is false.
 resource "google_compute_instance_template" "consul_server_private" {
   project = "${var.gcp_project_id}"
-  count = "${1 - var.assign_public_ip_addresses}"
+  count   = "${1 - var.assign_public_ip_addresses}"
 
   name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
@@ -124,8 +124,8 @@ resource "google_compute_instance_template" "consul_server_private" {
   }
 
   network_interface {
-    network    = "${var.subnetwork_name != "" ? "" : var.network_name}"
-    subnetwork = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
+    network            = "${var.subnetwork_name != "" ? "" : var.network_name}"
+    subnetwork         = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
     subnetwork_project = "${var.gcp_project_id}"
   }
 
@@ -196,7 +196,7 @@ resource "google_compute_firewall" "allow_intracluster_consul" {
 # - This Firewall Rule is only created if at least one source tag or source CIDR block is specified.
 resource "google_compute_firewall" "allow_inbound_http_api" {
   project = "${var.gcp_project_id}"
-  count = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
+  count   = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
 
   name    = "${var.cluster_name}-rule-external-api-access"
   network = "${var.network_name}"
@@ -221,7 +221,7 @@ resource "google_compute_firewall" "allow_inbound_http_api" {
 # - This Firewall Rule is only created if at least one source tag or source CIDR block is specified.
 resource "google_compute_firewall" "allow_inbound_dns" {
   project = "${var.gcp_project_id}"
-  count = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
+  count   = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
 
   name    = "${var.cluster_name}-rule-external-dns-access"
   network = "${var.network_name}"
