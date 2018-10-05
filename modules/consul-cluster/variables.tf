@@ -7,6 +7,10 @@ variable "gcp_project_id" {
   description = "The project to deploy the cluster in"
 }
 
+variable "network_project_id" {
+  description = "The name of the GCP Project where the network is located. Useful when using networks shared between projects"
+}
+
 variable "gcp_region" {
   description = "All GCP resources will be launched in this Region."
 }

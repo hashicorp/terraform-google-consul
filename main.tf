@@ -25,6 +25,7 @@ module "consul_servers" {
   source = "./modules/consul-cluster"
 
   gcp_project_id      = "${var.gcp_project_id}"
+  network_project_id  = "${var.network_project_id}"
   gcp_region          = "${var.gcp_region}"
   cluster_name        = "${var.consul_server_cluster_name}"
   cluster_description = "Consul Server cluster"
