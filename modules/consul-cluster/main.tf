@@ -198,7 +198,7 @@ resource "google_compute_firewall" "allow_intracluster_consul" {
 resource "google_compute_firewall" "allow_inbound_http_api" {
   project = "${var.network_project_id}"
 
-  count   = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
+  count = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
 
   name    = "${var.cluster_name}-rule-external-api-access"
   network = "${var.network_name}"
