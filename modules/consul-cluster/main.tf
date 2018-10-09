@@ -63,7 +63,7 @@ resource "google_compute_instance_template" "consul_server_public" {
   network_interface {
     network            = "${var.subnetwork_name != "" ? "" : var.network_name}"
     subnetwork         = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
-    subnetwork_project = "${var.network_project_id}"
+    subnetwork_project = "${var.network_project_id != "" ? var.network_project_id : var.gcp_project_id}"
 
     access_config {
       # The presence of this property assigns a public IP address to each Compute Instance. We intentionally leave it
@@ -96,8 +96,9 @@ resource "google_compute_instance_template" "consul_server_public" {
 # Create the Instance Template that will be used to populate the Managed Instance Group.
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is false.
 resource "google_compute_instance_template" "consul_server_private" {
-  project = "${var.gcp_project_id}"
   count   = "${1 - var.assign_public_ip_addresses}"
+
+  project = "${var.gcp_project_id}"
 
   name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
@@ -126,7 +127,7 @@ resource "google_compute_instance_template" "consul_server_private" {
   network_interface {
     network            = "${var.subnetwork_name != "" ? "" : var.network_name}"
     subnetwork         = "${var.subnetwork_name != "" ? var.subnetwork_name : ""}"
-    subnetwork_project = "${var.network_project_id}"
+    subnetwork_project = "${var.network_project_id != "" ? var.network_project_id : var.gcp_project_id}"
   }
 
   service_account {
@@ -158,7 +159,7 @@ resource "google_compute_instance_template" "consul_server_private" {
 # - This Firewall Rule may be redundant depnding on the settings of your VPC Network, but if your Network is locked down,
 #   this Rule will open up the appropriate ports.
 resource "google_compute_firewall" "allow_intracluster_consul" {
-  project = "${var.network_project_id}"
+  project = "${var.network_project_id != "" ? var.network_project_id : var.gcp_project_id}"
 
   name    = "${var.cluster_name}-rule-cluster"
   network = "${var.network_name}"
@@ -196,9 +197,9 @@ resource "google_compute_firewall" "allow_intracluster_consul" {
 # - Note that public access to your Consul Cluster will only be permitted if var.assign_public_ip_addresses is true.
 # - This Firewall Rule is only created if at least one source tag or source CIDR block is specified.
 resource "google_compute_firewall" "allow_inbound_http_api" {
-  project = "${var.network_project_id}"
-
   count = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
+
+  project = "${var.network_project_id != "" ? var.network_project_id : var.gcp_project_id}"
 
   name    = "${var.cluster_name}-rule-external-api-access"
   network = "${var.network_name}"
@@ -222,8 +223,9 @@ resource "google_compute_firewall" "allow_inbound_http_api" {
 # - Note that public access to your Consul Cluster will only be permitted if var.assign_public_ip_addresses is true.
 # - This Firewall Rule is only created if at least one source tag or source CIDR block is specified.
 resource "google_compute_firewall" "allow_inbound_dns" {
-  project = "${var.network_project_id}"
   count   = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
+
+  project = "${var.network_project_id != "" ? var.network_project_id : var.gcp_project_id}"
 
   name    = "${var.cluster_name}-rule-external-dns-access"
   network = "${var.network_name}"
