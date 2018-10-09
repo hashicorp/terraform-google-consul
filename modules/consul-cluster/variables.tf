@@ -3,6 +3,10 @@
 # You must provide a value for each of these parameters.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "gcp_project_id" {
+  description = "The project to deploy the cluster in"
+}
+
 variable "gcp_region" {
   description = "All GCP resources will be launched in this Region."
 }
@@ -35,6 +39,11 @@ variable "startup_script" {
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
+
+variable "network_project_id" {
+  description = "The name of the GCP Project where the network is located. Useful when using networks shared between projects. If empty, var.gcp_project_id will be used."
+  default = ""
+}
 
 variable "service_account_scopes" {
   description = "A list of service account scopes that will be added to the Compute Instance Template in addition to the scopes automatically added by this module."

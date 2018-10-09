@@ -3,7 +3,7 @@
 # These parameters must be supplied when consuming this module.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "gcp_project" {
+variable "gcp_project_id" {
   description = "The name of the GCP Project where all resources will be launched."
 }
 
@@ -39,6 +39,11 @@ variable "consul_client_source_image" {
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
+
+variable "network_project_id" {
+  description = "The name of the GCP Project where the network is located. Useful when using networks shared between projects. If empty, var.gcp_project_id will be used."
+  default = ""
+}
 
 variable "consul_server_cluster_size" {
   description = "The number of nodes to have in the Consul Server cluster. We strongly recommended that you use either 3 or 5."
