@@ -25,7 +25,6 @@ jobs:
       - persist_to_workspace:
           root: *workspace_root
           paths: test/vendor
-
   test:
     <<: *defaults
     steps:
@@ -34,3 +33,10 @@ jobs:
       - attach_workspace:
           at: *workspace_root
       - run: run-go-tests --circle-ci-2 --path test
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+    - build
+    - test
