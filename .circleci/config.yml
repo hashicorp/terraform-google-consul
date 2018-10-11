@@ -32,11 +32,11 @@ jobs:
       - run: echo 'export PATH=$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
       - attach_workspace:
           at: *workspace_root
-      - run:
-        # Write service account creds to disk where the API expects them
-        - export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcloud.json"
-        - echo $GCLOUD_SERVICE_KEY > /tmp/gcloud.json
-        - run-go-tests --circle-ci-2 --path test
+      # Write service account creds to disk where the API expects them
+      - run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcloud.json" && \
+          echo $GCLOUD_SERVICE_KEY > /tmp/gcloud.json && \
+          run-go-tests --circle-ci-2 --path test
 
 workflows:
   version: 2
