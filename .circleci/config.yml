@@ -1,33 +1,48 @@
+workspace_root: &workspace_root
+  /go/src/github.com/hashicorp/terraform-google-consul
+
+defaults: &defaults
+  working_directory: *workspace_root
+  docker:
+  - image: gruntwork/circle-ci-test-image-base:latest
+
 version: 2
 jobs:
   build:
-    machine: true
-    # Changing default working dir to the one used for the go path configuration
-    # Circle requires the use of the full path without env vars here
-    working_directory: /home/circleci/.go_workspace/src/github.com/hashicorp/terraform-google-consul
+    <<: *defaults
     steps:
       - checkout
+      - attach_workspace:
+          at: *workspace_root
       - restore_cache:
           keys:
             - dep-{{ checksum "test/Gopkg.lock" }}
-            - external-dep
-      - run: echo 'export PATH=$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
-
-      # Install the gruntwork-module-circleci-helpers and use it to configure the build environment and run tests.
-      - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
-      - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
-      - run: gruntwork-install --module-name "build-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
-      - run: gruntwork-install --module-name "aws-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
-      - run: gruntwork-install --module-name "git-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
       - run: configure-environment-for-gruntwork-module --go-src-path test --use-go-dep --circle-ci-2
-
-      - save_cache:
-          key: external-dep
-          paths:
-            - $HOME/terraform
-            - $HOME/packer
-            - $HOME/dep
       - save_cache:
           key: dep-{{ checksum "test/Gopkg.lock" }}
           paths:
-            - $HOME/.go_workspace/src/github.com/hashicorp/terraform-google-consul/test/vendor
+          - /go/src/github.com/hashicorp/terraform-google-consul/test/vendor
+      - persist_to_workspace:
+          root: *workspace_root
+          paths: test/vendor
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: echo 'export PATH=$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
+      - attach_workspace:
+          at: *workspace_root
+      # Write service account creds to disk where the API expects them
+      - run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcloud.json" && \
+          echo $GCLOUD_SERVICE_KEY > /tmp/gcloud.json && \
+          run-go-tests --circle-ci-2 --path test
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+    - build
+    - test:
+        requires:
+        - build

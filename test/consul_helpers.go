@@ -20,7 +20,7 @@ var (
 	// RepoRoot represents the root of the project.
 	RepoRoot = "../"
 
-	ConsulClusterExampleVarProject = "gcp_project"
+	ConsulClusterExampleVarProject = "gcp_project_id"
 	ConsulClusterExampleVarRegion  = "gcp_region"
 	ConsulClusterExampleVarZone    = "gcp_zone"
 
