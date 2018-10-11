@@ -1,6 +1,6 @@
 output "gcp_project" {
   description = "The GCP Project where all resources are deployed."
-  value       = "${var.gcp_project}"
+  value       = "${var.gcp_project_id}"
 }
 
 output "gcp_region" {
