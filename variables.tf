@@ -42,7 +42,7 @@ variable "consul_client_source_image" {
 
 variable "network_project_id" {
   description = "The name of the GCP Project where the network is located. Useful when using networks shared between projects. If empty, var.gcp_project_id will be used."
-  default = ""
+  default     = ""
 }
 
 variable "consul_server_cluster_size" {
