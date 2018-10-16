@@ -87,7 +87,7 @@ function get_all_consul_server_property_values {
   local expected_num_servers
 
   gcp_project=$(get_required_terraform_output "gcp_project") || exit 1
-  gcp_zone=$(get_required_terraform_output "gcp_zone") || exit 1
+  gcp_zone=$(get_required_terraform_output "gcp_region") || exit 1
   cluster_tag_name=$(get_required_terraform_output "cluster_tag_name") || exit 1
   expected_num_servers=$(get_required_terraform_output "cluster_size") || exit 1
 
