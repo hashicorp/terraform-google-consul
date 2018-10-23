@@ -82,12 +82,12 @@ function get_all_consul_server_property_values {
   local server_property_name="$1"
 
   local gcp_project
-  local gcp_zone
+  local gcp_region
   local cluster_tag_name
   local expected_num_servers
 
   gcp_project=$(get_required_terraform_output "gcp_project") || exit 1
-  gcp_zone=$(get_required_terraform_output "gcp_region") || exit 1
+  gcp_region=$(get_required_terraform_output "gcp_region") || exit 1
   cluster_tag_name=$(get_required_terraform_output "cluster_tag_name") || exit 1
   expected_num_servers=$(get_required_terraform_output "cluster_size") || exit 1
 
@@ -97,7 +97,7 @@ function get_all_consul_server_property_values {
   local i
 
   for (( i=1; i<="$MAX_RETRIES"; i++ )); do
-    vals=($(get_consul_server_property_values "$gcp_project" "$gcp_zone" "$cluster_tag_name" "$server_property_name"))
+    vals=($(get_consul_server_property_values "$gcp_project" "$gcp_region" "$cluster_tag_name" "$server_property_name"))
     if [[ "${#vals[@]}" -eq "$expected_num_servers" ]]; then
       log_info "Found $server_property_name for all $expected_num_servers expected Consul servers!"
       echo "${vals[@]}"
