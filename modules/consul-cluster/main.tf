@@ -96,7 +96,7 @@ resource "google_compute_instance_template" "consul_server_public" {
 # Create the Instance Template that will be used to populate the Managed Instance Group.
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is false.
 resource "google_compute_instance_template" "consul_server_private" {
-  count   = "${1 - var.assign_public_ip_addresses}"
+  count = "${1 - var.assign_public_ip_addresses}"
 
   project = "${var.gcp_project_id}"
 
@@ -223,7 +223,7 @@ resource "google_compute_firewall" "allow_inbound_http_api" {
 # - Note that public access to your Consul Cluster will only be permitted if var.assign_public_ip_addresses is true.
 # - This Firewall Rule is only created if at least one source tag or source CIDR block is specified.
 resource "google_compute_firewall" "allow_inbound_dns" {
-  count   = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
+  count = "${length(var.allowed_inbound_cidr_blocks_dns) + length(var.allowed_inbound_tags_dns) > 0 ? 1 : 0}"
 
   project = "${var.network_project_id != "" ? var.network_project_id : var.gcp_project_id}"
 
@@ -273,5 +273,5 @@ data "template_file" "compute_instance_template_self_link" {
 # https://github.com/terraform-providers/terraform-provider-google/issues/2067.
 data "google_compute_image" "image" {
   name    = "${var.source_image}"
-  project = "${var.gcp_project_id}"
+  project = "${var.image_project_id != "" ? var.image_project_id : var.gcp_project_id}"
 }
