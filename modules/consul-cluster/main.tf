@@ -273,5 +273,5 @@ data "template_file" "compute_instance_template_self_link" {
 # https://github.com/terraform-providers/terraform-provider-google/issues/2067.
 data "google_compute_image" "image" {
   name    = "${var.source_image}"
-  project = "${var.image_project_id != "" ? var.image_project_id : var.gcp_project_id}
+  project = "${var.image_project_id != "" ? var.image_project_id : var.gcp_project_id}"
 }
