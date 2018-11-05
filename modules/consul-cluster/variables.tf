@@ -40,6 +40,11 @@ variable "startup_script" {
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "image_project_id"{
+  description = "The name of the GCP project where the image is located. Useful when using a project to store all custom images. If empty, var.gcp_project_id will be used."
+  default = ""
+}
+
 variable "network_project_id" {
   description = "The name of the GCP Project where the network is located. Useful when using networks shared between projects. If empty, var.gcp_project_id will be used."
   default = ""
