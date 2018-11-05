@@ -27,8 +27,8 @@ variable "cluster_size" {
   description = "The number of nodes to have in the Consul cluster. We strongly recommended that you use either 3 or 5."
 }
 
-variable "source_image" {
-  description = "The source image used to create the boot disk for a Consul Server node. Only images based on Ubuntu 16.04 LTS are supported at this time."
+variable "source_image_family" {
+  description = "The source image family used to create the boot disk for a Consul Server node. Only images based on Ubuntu 16.04 LTS are supported at this time."
 }
 
 variable "startup_script" {
