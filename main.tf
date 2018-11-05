@@ -53,7 +53,8 @@ module "consul_servers" {
   # WARNING! By specifying just the "family" name of the Image, Google will automatically use the latest Consul image.
   # In production, you should specify the exact image name to make it clear which image the current Consul servers are
   # deployed with.
-  source_image = "${var.consul_server_source_image}"
+  source_image_family = "${var.consul_server_source_image_family}"
+
   image_project_id = "${var.consul_image_project_id}"
 
   # WARNING! This makes the Consul cluster accessible from the public Internet, which is convenient for testing, but
@@ -109,7 +110,7 @@ module "consul_clients" {
 
   assign_public_ip_addresses = true
 
-  source_image = "${var.consul_client_source_image}"
+  source_image_family = "${var.consul_client_source_image_family}"
 
   # Our Consul Clients are completely stateless, so we are free to destroy and re-create them as needed.
   # Todo: Research this further

@@ -27,11 +27,11 @@ variable "consul_client_cluster_tag_name" {
   description = "A tag that will uniquely identify the Consul Clients. In this example, the Consul Server cluster uses this tag to identify the Consul Client servers that should have query permissions."
 }
 
-variable "consul_server_source_image" {
+variable "consul_server_source_image_family" {
   description = "The Google Image used to launch each node in the Consul Server cluster."
 }
 
-variable "consul_client_source_image" {
+variable "consul_client_source_image_family" {
   description = "The Google Image used to launch each node in the Consul Client cluster."
 }
 
@@ -42,7 +42,7 @@ variable "consul_client_source_image" {
 
 variable "consul_image_project_id" {
   description = "The name of the GCP Project where the image is located. Useful when using a project to store custom images. If empty, var.gcp_project_id will be used."
-  default = ""
+  default     = ""
 }
 
 variable "network_project_id" {
