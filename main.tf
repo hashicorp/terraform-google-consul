@@ -54,6 +54,7 @@ module "consul_servers" {
   # In production, you should specify the exact image name to make it clear which image the current Consul servers are
   # deployed with.
   source_image = "${var.consul_server_source_image}"
+  image_project_id = "${var.consul_image_project_id}"
 
   # WARNING! This makes the Consul cluster accessible from the public Internet, which is convenient for testing, but
   # NOT for production usage. In production, set this to false.
