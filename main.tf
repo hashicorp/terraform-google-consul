@@ -55,6 +55,8 @@ module "consul_servers" {
   # deployed with.
   source_image = "${var.consul_server_source_image}"
 
+  image_project_id = "${var.image_project_id}"
+
   # WARNING! This makes the Consul cluster accessible from the public Internet, which is convenient for testing, but
   # NOT for production usage. In production, set this to false.
   assign_public_ip_addresses = true
@@ -108,7 +110,8 @@ module "consul_clients" {
 
   assign_public_ip_addresses = true
 
-  source_image = "${var.consul_client_source_image}"
+  source_image     = "${var.consul_client_source_image}"
+  image_project_id = "${var.image_project_id}"
 
   # Our Consul Clients are completely stateless, so we are free to destroy and re-create them as needed.
   # Todo: Research this further
