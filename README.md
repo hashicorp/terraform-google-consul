@@ -1,3 +1,4 @@
+[![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io)
 # Consul for Google Cloud Platform (GCP)
 
 This repo contains a Terraform Module for how to deploy a [Consul](https://www.consul.io/) cluster on 
