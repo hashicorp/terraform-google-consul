@@ -33,8 +33,9 @@ resource "google_compute_region_instance_group_manager" "consul_server" {
 # Create the Instance Template that will be used to populate the Managed Instance Group.
 # NOTE: This Compute Instance Template is only created if var.assign_public_ip_addresses is true.
 resource "google_compute_instance_template" "consul_server_public" {
-  project = "${var.gcp_project_id}"
   count   = "${var.assign_public_ip_addresses}"
+  project = "${var.gcp_project_id}"
+  region  = "${var.subnetwork_name != "" ? var.region : ""}"
 
   name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
@@ -77,8 +78,8 @@ resource "google_compute_instance_template" "consul_server_public" {
 
     scopes = ["${concat(
       list(
-        "userinfo-email", 
-        "compute-ro", 
+        "userinfo-email",
+        "compute-ro",
         "${var.storage_access_scope}"
       ),
       var.service_account_scopes
@@ -99,6 +100,7 @@ resource "google_compute_instance_template" "consul_server_private" {
   count = "${1 - var.assign_public_ip_addresses}"
 
   project = "${var.gcp_project_id}"
+  region  = "${var.subnetwork_name != "" ? var.region : ""}"
 
   name_prefix = "${var.cluster_name}"
   description = "${var.cluster_description}"
@@ -135,8 +137,8 @@ resource "google_compute_instance_template" "consul_server_private" {
 
     scopes = ["${concat(
       list(
-        "userinfo-email", 
-        "compute-ro", 
+        "userinfo-email",
+        "compute-ro",
         "${var.storage_access_scope}"
       ),
       var.service_account_scopes

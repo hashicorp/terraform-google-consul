@@ -169,6 +169,12 @@ function generate_consul_config {
     encrypt_key_val="\"encrypt\": \"$encrypt_key\","
   fi
 
+  if [[ -z "$datacenter_override" ]]; then
+    datacenter="$instance_region"
+  else
+    datacenter="$datacenter_override"
+  fi
+
   local autopilot_configuration=$(cat <<EOF
 "autopilot": {
   "cleanup_dead_servers": $cleanup_dead_servers,
@@ -189,7 +195,7 @@ EOF
   "bind_addr": "$instance_ip_address",
   $bootstrap_expect_key_val
   "client_addr": "0.0.0.0",
-  "datacenter": "$instance_region",
+  "datacenter": "$datacenter",
   "node_name": "$instance_name",
   $retry_join_key_val
   "server": $server,
@@ -266,6 +272,7 @@ function run {
   local log_dir=""
   local bin_dir=""
   local user=""
+  local datacenter_override=""
   local skip_consul_config="false"
   local encrypt_key="$EMPTY_VAL"
   local cleanup_dead_servers="$DEFAULT_AUTOPILOT_CLEANUP_DEAD_SERVERS"
@@ -323,6 +330,10 @@ function run {
         ;;
       --encrypt-key)
         encrypt_key="$2"
+        shift
+        ;;
+      --datacenter-override)
+        datacenter_override="$2"
         shift
         ;;
       --autopilot-cleanup-dead-servers)
