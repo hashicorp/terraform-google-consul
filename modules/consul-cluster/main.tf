@@ -44,7 +44,7 @@ resource "google_compute_instance_template" "consul_server_public" {
 
   tags                    = "${concat(list(var.cluster_tag_name), var.custom_tags)}"
   metadata_startup_script = "${var.startup_script}"
-  metadata                = "${merge(map(var.metadata_key_name_for_cluster_size, var.cluster_size), var.custom_metadata)}"
+  metadata                = "${merge({var.metadata_key_name_for_cluster_size, var.cluster_size}, var.custom_metadata)}"
 
   scheduling {
     automatic_restart   = true
