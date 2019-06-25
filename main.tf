@@ -7,11 +7,13 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "google" {
-  region = "${var.gcp_region}"
+  region = var.gcp_region
 }
 
 terraform {
-  required_version = ">= 0.10.0"
+  # The modules used in this example have been updated with 0.12 syntax, which means the example is no longer
+  # compatible with any versions below 0.12.
+  required_version = ">= 0.12"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -24,20 +26,20 @@ module "consul_servers" {
   # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-cluster?ref=v0.0.1"
   source = "./modules/consul-cluster"
 
-  gcp_project_id      = "${var.gcp_project_id}"
-  gcp_region          = "${var.gcp_region}"
-  cluster_name        = "${var.consul_server_cluster_name}"
+  gcp_project_id      = var.gcp_project_id
+  gcp_region          = var.gcp_region
+  cluster_name        = var.consul_server_cluster_name
   cluster_description = "Consul Server cluster"
-  cluster_size        = "${var.consul_server_cluster_size}"
-  cluster_tag_name    = "${var.consul_server_cluster_tag_name}"
-  startup_script      = "${data.template_file.startup_script_server.rendered}"
+  cluster_size        = var.consul_server_cluster_size
+  cluster_tag_name    = var.consul_server_cluster_tag_name
+  startup_script      = data.template_file.startup_script_server.rendered
 
   # Grant API and DNS access to requests originating from the the Consul client cluster we create below.
-  allowed_inbound_tags_http_api        = ["${var.consul_server_cluster_tag_name}"]
-  allowed_inbound_cidr_blocks_http_api = "${var.consul_server_allowed_inbound_cidr_blocks_http_api}"
+  allowed_inbound_tags_http_api        = [var.consul_server_cluster_tag_name]
+  allowed_inbound_cidr_blocks_http_api = var.consul_server_allowed_inbound_cidr_blocks_http_api
 
-  allowed_inbound_tags_dns        = ["${var.consul_server_cluster_tag_name }"]
-  allowed_inbound_cidr_blocks_dns = "${var.consul_server_allowed_inbound_cidr_blocks_dns}"
+  allowed_inbound_tags_dns        = [var.consul_server_cluster_tag_name]
+  allowed_inbound_cidr_blocks_dns = var.consul_server_allowed_inbound_cidr_blocks_dns
 
   # WARNING! These configuration values are suitable for testing, but for production, see https://www.consul.io/docs/guides/performance.html
   # Production recommendations:
@@ -53,9 +55,9 @@ module "consul_servers" {
   # WARNING! By specifying just the "family" name of the Image, Google will automatically use the latest Consul image.
   # In production, you should specify the exact image name to make it clear which image the current Consul servers are
   # deployed with.
-  source_image = "${var.consul_server_source_image}"
+  source_image = var.consul_server_source_image
 
-  image_project_id = "${var.image_project_id}"
+  image_project_id = var.image_project_id
 
   # WARNING! This makes the Consul cluster accessible from the public Internet, which is convenient for testing, but
   # NOT for production usage. In production, set this to false.
@@ -70,10 +72,12 @@ module "consul_servers" {
 # Render the Startup Script that will run on each Consul Server Instance on boot.
 # This script will configure and start Consul.
 data "template_file" "startup_script_server" {
-  template = "${file("${path.module}/examples/root-example/startup-script-server.sh")}"
+  template = file(
+    "${path.module}/examples/root-example/startup-script-server.sh",
+  )
 
-  vars {
-    cluster_tag_name = "${var.consul_server_cluster_tag_name}"
+  vars = {
+    cluster_tag_name = var.consul_server_cluster_tag_name
   }
 }
 
@@ -90,19 +94,19 @@ module "consul_clients" {
   # source = "git::git@github.com:gruntwork-io/consul-gcp-module.git//modules/consul-cluster?ref=v0.0.1"
   source = "./modules/consul-cluster"
 
-  gcp_project_id      = "${var.gcp_project_id}"
-  gcp_region          = "${var.gcp_region}"
-  cluster_name        = "${var.consul_client_cluster_name}"
+  gcp_project_id      = var.gcp_project_id
+  gcp_region          = var.gcp_region
+  cluster_name        = var.consul_client_cluster_name
   cluster_description = "Consul Clients cluster"
-  cluster_size        = "${var.consul_client_cluster_size}"
-  cluster_tag_name    = "${var.consul_client_cluster_tag_name}"
-  startup_script      = "${data.template_file.startup_script_client.rendered}"
+  cluster_size        = var.consul_client_cluster_size
+  cluster_tag_name    = var.consul_client_cluster_tag_name
+  startup_script      = data.template_file.startup_script_client.rendered
 
-  allowed_inbound_tags_http_api        = ["${var.consul_client_cluster_tag_name}"]
-  allowed_inbound_cidr_blocks_http_api = "${var.consul_client_allowed_inbound_cidr_blocks_http_api}"
+  allowed_inbound_tags_http_api        = [var.consul_client_cluster_tag_name]
+  allowed_inbound_cidr_blocks_http_api = var.consul_client_allowed_inbound_cidr_blocks_http_api
 
-  allowed_inbound_tags_dns        = ["${var.consul_client_cluster_tag_name }"]
-  allowed_inbound_cidr_blocks_dns = "${var.consul_client_allowed_inbound_cidr_blocks_dns}"
+  allowed_inbound_tags_dns        = [var.consul_client_cluster_tag_name]
+  allowed_inbound_cidr_blocks_dns = var.consul_client_allowed_inbound_cidr_blocks_dns
 
   machine_type             = "g1-small"
   root_volume_disk_type    = "pd-standard"
@@ -110,8 +114,8 @@ module "consul_clients" {
 
   assign_public_ip_addresses = true
 
-  source_image     = "${var.consul_client_source_image}"
-  image_project_id = "${var.image_project_id}"
+  source_image     = var.consul_client_source_image
+  image_project_id = var.image_project_id
 
   # Our Consul Clients are completely stateless, so we are free to destroy and re-create them as needed.
   # Todo: Research this further
@@ -121,9 +125,11 @@ module "consul_clients" {
 # Render the Startup Script that will run on each Consul Server Instance on boot.
 # This script will configure and start Consul.
 data "template_file" "startup_script_client" {
-  template = "${file("${path.module}/examples/root-example/startup-script-client.sh")}"
+  template = file(
+    "${path.module}/examples/root-example/startup-script-client.sh",
+  )
 
-  vars {
-    cluster_tag_name = "${var.consul_server_cluster_tag_name}"
+  vars = {
+    cluster_tag_name = var.consul_server_cluster_tag_name
   }
 }
