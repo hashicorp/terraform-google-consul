@@ -84,9 +84,9 @@ resource "google_compute_instance_template" "consul_server_public" {
   service_account {
     email = var.service_account_email
     scopes = concat(
-        ["userinfo-email", "compute-ro", var.storage_access_scope],
-        var.service_account_scopes,
-      )
+      ["userinfo-email", "compute-ro", var.storage_access_scope],
+      var.service_account_scopes,
+    )
   }
 
   # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
@@ -107,8 +107,8 @@ resource "google_compute_instance_template" "consul_server_private" {
   name_prefix = var.cluster_name
   description = var.cluster_description
 
-  instance_description = var.cluster_description
-  machine_type         = var.machine_type
+  instance_description    = var.cluster_description
+  machine_type            = var.machine_type
   tags                    = concat([var.cluster_tag_name], var.custom_tags)
   metadata_startup_script = var.startup_script
   metadata = merge(
@@ -141,9 +141,9 @@ resource "google_compute_instance_template" "consul_server_private" {
   service_account {
     email = var.service_account_email
     scopes = concat(
-        ["userinfo-email", "compute-ro", var.storage_access_scope],
-        var.service_account_scopes,
-      )
+      ["userinfo-email", "compute-ro", var.storage_access_scope],
+      var.service_account_scopes,
+    )
   }
 
   # Per Terraform Docs (https://www.terraform.io/docs/providers/google/r/compute_instance_template.html#using-with-instance-group-manager),
