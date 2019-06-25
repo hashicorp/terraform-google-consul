@@ -5,6 +5,9 @@ defaults: &defaults
   working_directory: *workspace_root
   docker:
   - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.11
+  environment:
+    # This module has not been updated for tf12 syntax
+    TERRAFORM_VERSION: 0.11.14
 
 version: 2
 jobs:
@@ -17,7 +20,7 @@ jobs:
       - restore_cache:
           keys:
             - dep-{{ checksum "test/Gopkg.lock" }}
-      - run: configure-environment-for-gruntwork-module --go-src-path test --use-go-dep --circle-ci-2
+      - run: configure-environment-for-gruntwork-module --go-src-path test --use-go-dep --circle-ci-2 --terraform-version ${TERRAFORM_VERSION}
       - save_cache:
           key: dep-{{ checksum "test/Gopkg.lock" }}
           paths:
