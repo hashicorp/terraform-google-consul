@@ -22,7 +22,6 @@ var (
 
 	ConsulClusterExampleVarProject = "gcp_project_id"
 	ConsulClusterExampleVarRegion  = "gcp_region"
-	ConsulClusterExampleVarZone    = "gcp_zone"
 
 	ConsulClusterExampleVarServerClusterName = "consul_server_cluster_name"
 	ConsulClusterExampleVarClientClusterName = "consul_client_cluster_name"
@@ -94,7 +93,6 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 	test_structure.RunTestStage(t, "deploy", func() {
 		gcpProjectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
 		gcpRegion := test_structure.LoadString(t, exampleFolder, GcpRegionVarName)
-		gcpZone := test_structure.LoadString(t, exampleFolder, GcpZoneVarName)
 
 		// GCP only supports lowercase names for some resources
 		uniqueID := strings.ToLower(random.UniqueId())
@@ -107,7 +105,6 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 			Vars: map[string]interface{}{
 				ConsulClusterExampleVarProject:                    gcpProjectID,
 				ConsulClusterExampleVarRegion:                     gcpRegion,
-				ConsulClusterExampleVarZone:                       gcpZone,
 				ConsulClusterExampleVarServerClusterName:          serverClusterName,
 				ConsulClusterExampleVarClientClusterName:          clientClusterName,
 				ConsulClusterExampleVarServerClusterTagName:       serverClusterName,
