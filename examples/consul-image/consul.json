@@ -6,18 +6,32 @@
     "consul_version": "1.2.2"
   },
   "builders": [{
+    "name": "ubuntu-16-image",
     "type": "googlecompute",
-    "image_name": "consul-{{isotime \"2006-01-02-030405\"}}",
+    "image_name": "consul-ubuntu16-{{isotime \"2006-01-02-030405\"}}",
     "image_family": "consul",
     "project_id": "{{user `project_id`}}",
     "source_image_family": "ubuntu-1604-lts",
     "zone": "{{user `zone`}}",
     "ssh_username": "ubuntu"
+  },
+  {
+    "name": "ubuntu-18-image",
+    "type": "googlecompute",
+    "image_name": "consul-ubuntu18-{{isotime \"2006-01-02-030405\"}}",
+    "image_family": "consul",
+    "project_id": "{{user `project_id`}}",
+    "source_image_family": "ubuntu-1804-lts",
+    "zone": "{{user `zone`}}",
+    "ssh_username": "ubuntu"
   }],
   "provisioners": [{
+    "type": "shell",
+    "inline": ["mkdir -p /tmp/terraform-google-consul/modules"]
+  },{
     "type": "file",
-    "source": "{{template_dir}}/../../../terraform-google-consul",
-    "destination": "/tmp"
+    "source": "{{template_dir}}/../../modules/",
+    "destination": "/tmp/terraform-google-consul/modules"
   },{
     "type": "shell",
     "inline": [
