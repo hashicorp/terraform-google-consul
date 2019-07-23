@@ -3,7 +3,7 @@
 This folder shows an example of how to use the [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul) and
 [install-dnsmasq](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-dnsmasq) modules with [Packer](https://www.packer.io/) to create [Custom Images](
 https://cloud.google.com/compute/docs/images) that have Consul and Dnsmasq installed on
-top of Ubuntu 16.04 LTS. At this time, Ubuntu 16.04 LTS is the only supported Linux distribution.
+top of Ubuntu. At this time, Ubuntu 16.04 and 18.04 LTS are the only supported Linux distributions.
 
 These Images will have [Consul](https://www.consul.io/) installed and configured to automatically join a cluster during
 boot-up. They also have [Dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) installed and configured to use
