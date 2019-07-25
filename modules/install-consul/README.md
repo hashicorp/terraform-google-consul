@@ -8,6 +8,7 @@ that can be deployed in [GCP](https://cloud.google.com) across a Managed Instanc
 This script has been tested on the following operating systems:
 
 * Ubuntu 16.04
+* Ubuntu 18.04
 
 There is a good chance it will work on other flavors of Debian as well.
 

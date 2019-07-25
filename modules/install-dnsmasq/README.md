@@ -1,15 +1,16 @@
 # Dnsmasq Install Script
 
-This folder contains a script for installing [Dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) and configuring 
+This folder contains a script for installing [Dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) and configuring
 it to forward requests for a specific domain to Consul. This way, you can easily use Consul as your DNS server for
-domain names such as `foo.service.consul`, where `foo` is a service registered with Consul (see the [Registering 
+domain names such as `foo.service.consul`, where `foo` is a service registered with Consul (see the [Registering
 Services docs](https://www.consul.io/intro/getting-started/services.html) for instructions on registering your services
-with Consul). All other domain names will continue to be resolved via the default resolver on your OS. See the [Consul 
-DNS Forwarding Guide](https://www.consul.io/docs/guides/forwarding.html) for more info. 
+with Consul). All other domain names will continue to be resolved via the default resolver on your OS. See the [Consul
+DNS Forwarding Guide](https://www.consul.io/docs/guides/forwarding.html) for more info.
 
 This script has been tested on the following operating systems:
 
 * Ubuntu 16.04
+* Ubuntu 18.04
 
 There is a good chance it will work on other flavors of Debian as well.
 
@@ -25,8 +26,8 @@ git clone --branch <VERSION> https://github.com/gruntwork-io/consul-gcp-module.g
 consul-gcp-module/modules/install-dnsmasq/install-dnsmasq
 ```
 
-Note: by default, the `install-dnsmasq` script assumes that a Consul agent is already running locally and connected to 
-a Consul cluster. After the install completes, restart `dnsmasq` (e.g. `sudo /etc/init.d/dnsmasq restart`) and queries 
+Note: by default, the `install-dnsmasq` script assumes that a Consul agent is already running locally and connected to
+a Consul cluster. After the install completes, restart `dnsmasq` (e.g. `sudo /etc/init.d/dnsmasq restart`) and queries
 to the `.consul` domain will be resolved via Consul:
 
 ```
@@ -35,7 +36,7 @@ dig foo.service.consul
 
 We recommend running the `install-dnsmasq` script as part of a [Packer](https://www.packer.io/) template to create a
 [Google Image](https://cloud.google.com/compute/docs/images) (see the [consul-image example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-image) for
-sample code). 
+sample code).
 
 
 
@@ -45,7 +46,7 @@ sample code).
 The `install-dnsmasq` script accepts the following arguments:
 
 * `consul-domain DOMAIN`: The domain name to point to Consul. Optional. Default: `consul`.
-* `consul-ip IP`: The IP address to use for Consul. Optional. Default: `127.0.0.1`. This assumes a Consul agent is 
+* `consul-ip IP`: The IP address to use for Consul. Optional. Default: `127.0.0.1`. This assumes a Consul agent is
   running locally and connected to a Consul cluster.
 * `consul-dns-port PORT`: The port Consul uses for DNS requests. Optional. Default: `8600`.
 

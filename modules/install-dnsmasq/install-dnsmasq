@@ -3,6 +3,7 @@
 # with the following operating systems:
 #
 # - Ubuntu 16.04
+# - Ubuntu 18.04
 
 set -e
 
@@ -19,7 +20,7 @@ function print_usage {
   echo
   echo "Usage: install-dnsmasq [OPTIONS]"
   echo
-  echo "Install Dnsmasq and configure it to forward requests for a specific domain to Consul. This script has been tested with Ubuntu 16.04."
+  echo "Install Dnsmasq and configure it to forward requests for a specific domain to Consul. This script has been tested with Ubuntu 16.04 and 18.04."
   echo
   echo "Options:"
   echo
