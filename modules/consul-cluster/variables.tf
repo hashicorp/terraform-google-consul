@@ -34,7 +34,7 @@ variable "cluster_size" {
 }
 
 variable "source_image" {
-  description = "The source image used to create the boot disk for a Consul Server node. Only images based on Ubuntu 16.04 LTS are supported at this time."
+  description = "The source image used to create the boot disk for a Consul Server node. Only images based on Ubuntu 16.04 or 18.04 LTS are supported at this time."
   type        = string
 }
 
