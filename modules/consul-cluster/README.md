@@ -276,7 +276,10 @@ This module creates Firewall rules that allow inbound requests as follows:
 
 * **Consul**: For all the [ports used by Consul](https://www.consul.io/docs/agent/options.html#ports), all members of 
   the Consul Server cluster will automatically accept inbound traffic based on a [tag](
-  https://cloud.google.com/compute/docs/vpc/add-remove-network-tags) shared by all cluster members.  
+  https://cloud.google.com/compute/docs/vpc/add-remove-network-tags) shared by all cluster members.
+  If necessary, you can use the `allowed_inbound_cidr_blocks_cluster` parameter to control the list of [CIDR blocks](
+  https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) where you want agents to be able to communicate with
+  the cluster (when network tag is not enough).
 
 * **External HTTP API Access**: For external access to the Consul Server cluster over the HTTP API port (default: 8500),
   you can use the `allowed_inbound_cidr_blocks_http_api` parameter to control the list of [CIDR blocks](

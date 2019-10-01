@@ -190,8 +190,9 @@ resource "google_compute_firewall" "allow_intracluster_consul" {
     ]
   }
 
-  source_tags = [var.cluster_tag_name]
-  target_tags = [var.cluster_tag_name]
+  source_ranges = var.allowed_inbound_cidr_blocks_cluster
+  source_tags   = [var.cluster_tag_name]
+  target_tags   = [var.cluster_tag_name]
 }
 
 # Specify which traffic is allowed into the Consul Cluster solely for HTTP API requests
