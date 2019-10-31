@@ -14,16 +14,25 @@ terraform {
 
 # Create the Regional Managed Instance Group where Consul Server will live.
 resource "google_compute_region_instance_group_manager" "consul_server" {
-  project = var.gcp_project_id
-  name    = "${var.cluster_name}-ig"
+  provider = "google-beta"
+  project  = var.gcp_project_id
+  name     = "${var.cluster_name}-ig"
 
   base_instance_name = var.cluster_name
-  instance_template  = data.template_file.compute_instance_template_self_link.rendered
   region             = var.gcp_region
 
-  # Consul Server is a stateful cluster, so the update strategy used to roll out a new GCE Instance Template must be
-  # a rolling update. But since Terraform does not yet support ROLLING_UPDATE, such updates must be manually rolled out.
-  update_strategy = var.instance_group_update_strategy
+  version {
+    name              = "default"
+    instance_template = data.template_file.compute_instance_template_self_link.rendered
+  }
+
+  update_policy {
+    max_surge_fixed       = 0
+    max_unavailable_fixed = 1
+    minimal_action        = "RESTART"
+    type                  = "PROACTIVE"
+    min_ready_sec         = 300
+  }
 
   target_pools = var.instance_group_target_pools
   target_size  = var.cluster_size
