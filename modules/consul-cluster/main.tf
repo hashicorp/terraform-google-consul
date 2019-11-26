@@ -18,7 +18,9 @@ resource "google_compute_region_instance_group_manager" "consul_server" {
   name    = "${var.cluster_name}-ig"
 
   base_instance_name = var.cluster_name
-  instance_template  = data.template_file.compute_instance_template_self_link.rendered
+  version {
+    instance_template  = data.template_file.compute_instance_template_self_link.rendered
+  }
   region             = var.gcp_region
 
   # Consul Server is a stateful cluster, so the update strategy used to roll out a new GCE Instance Template must be
