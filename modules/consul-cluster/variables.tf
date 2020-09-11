@@ -140,26 +140,20 @@ variable "allowed_inbound_tags_dns" {
 
 # Update Policy
 
-variable "instance_group_update_strategy" {
-  description = "The update strategy to be used by the Instance Group. IMPORTANT! When you update almost any cluster setting, under the hood, this module creates a new Instance Group Template. Once that Instance Group Template is created, the value of this variable determines how the new Template will be rolled out across the Instance Group. Unfortunately, as of August 2017, Google only supports the options 'RESTART' (instantly restart all Compute Instances and launch new ones from the new Template) or 'NONE' (do nothing; updates should be handled manually). Google does offer a rolling updates feature that perfectly meets our needs, but this is in Alpha (https://goo.gl/MC3mfc). Therefore, until this module supports a built-in rolling update strategy, we recommend using `NONE` and either using the alpha rolling updates strategy to roll out new Vault versions, or to script this using GCE API calls. If using the alpha feature, be sure you are comfortable with the level of risk you are taking on. For additional detail, see https://goo.gl/hGH6dd."
-  type        = string
-  default     = "NONE"
-}
-
 variable "instance_group_update_policy_type" {
-  description = ""
+  description = "The type of update process. You can specify either PROACTIVE so that the instance group manager proactively executes actions in order to bring instances to their target versions or OPPORTUNISTIC so that no action is proactively executed but the update will be performed as part of other actions (for example, resizes or recreateInstances calls)."
   type        = string
   default     = "PROACTIVE"
 }
 
 variable "instance_group_update_policy_redistribution_type" {
-  description = ""
+  description = "The instance redistribution policy for regional managed instance groups. Valid values are: 'PROACTIVE' and 'NONE'. If 'PROACTIVE', the group attempts to maintain an even distribution of VM instances across zones in the region. If 'NONE', proactive redistribution is disabled."
   type        = string
   default     = "PROACTIVE"
 }
 
 variable "instance_group_update_policy_minimal_action" {
-  description = ""
+  description = "Minimal action to be taken on an instance. You can specify either 'RESTART' to restart existing instances or 'REPLACE' to delete and create new instances from the target template. If you specify a 'RESTART', the Updater will attempt to perform that action only. However, if the Updater determines that the minimal action you specify is not enough to perform the update, it might perform a more disruptive action."
   type        = string
   default     = "REPLACE"
 }
@@ -171,25 +165,25 @@ variable "instance_group_update_policy_max_surge_fixed" {
 }
 
 variable "instance_group_update_policy_max_surge_percent" {
-  description = "Only allowed for regional managed instance groups with size at least 10."
+  description = "The maximum number of instances(calculated as percentage) that can be created above the specified targetSize during the update process. Conflicts with var.instance_group_update_policy_max_surge_fixed. Only allowed for regional managed instance groups with size at least 10."
   type        = number
   default     = null
 }
 
 variable "instance_group_update_policy_max_unavailable_fixed" {
-  description = ""
+  description = "The maximum number of instances that can be unavailable during the update process. Conflicts with var.instance_group_update_policy_max_unavailable_percent. It has to be either 0 or at least equal to the number of zones. If fixed values are used, at least one of var.instance_group_update_policy_max_unavailable_fixed or var.instance_group_update_policy_max_surge_fixed must be greater than 0."
   type        = number
   default     = 3
 }
 
 variable "instance_group_update_policy_max_unavailable_percent" {
-  description = ""
+  description = "The maximum number of instances(calculated as percentage) that can be unavailable during the update process. Conflicts with var.instance_group_update_policy_max_unavailable_fixed. Only allowed for regional managed instance groups with size at least 10."
   type        = number
   default     = null
 }
 
 variable "instance_group_update_policy_min_ready_sec" {
-  description = ""
+  description = "Minimum number of seconds to wait for after a newly created instance becomes available. This value must be between 0-3600."
   type        = number
   default     = 50
 }
