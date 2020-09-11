@@ -66,7 +66,12 @@ module "consul_servers" {
   # WARNING! This update strategy will delete and re-create the entire Consul cluster when making some changes to this
   # module. Unfortunately, Google and Terraform do not yet support an automatic stable way of performing a rolling update.
   # For now for production usage, set this to "NONE", and manually coordinate your Consul Server upgrades per Consul docs.
-  instance_group_update_strategy = "NONE"
+  #instance_group_update_strategy = "NONE"
+
+  # TODO - explain update strategy
+  instance_group_update_policy_type                = "PROACTIVE"
+  instance_group_update_policy_redistribution_type = "PROACTIVE"
+  instance_group_update_policy_minimal_action      = "REPLACE"
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
@@ -118,8 +123,10 @@ module "consul_clients" {
   image_project_id = var.image_project_id
 
   # Our Consul Clients are completely stateless, so we are free to destroy and re-create them as needed.
-  # Todo: Research this further
-  instance_group_update_strategy = "NONE"
+  # TODO: Research this further
+  instance_group_update_policy_type                = "PROACTIVE"
+  instance_group_update_policy_redistribution_type = "PROACTIVE"
+  instance_group_update_policy_minimal_action      = "REPLACE"
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.

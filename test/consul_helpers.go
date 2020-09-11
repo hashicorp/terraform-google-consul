@@ -12,7 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/gruntwork-io/terratest/modules/test-structure"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/hashicorp/consul/api"
 )
 
@@ -80,14 +80,16 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		test_structure.SaveArtifactID(t, exampleFolder, imageID)
 	})
 
-	defer test_structure.RunTestStage(t, "teardown", func() {
-		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
-		terraform.Destroy(t, terraformOptions)
-
+	defer test_structure.RunTestStage(t, "cleanup_image", func() {
 		projectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
 		imageName := test_structure.LoadArtifactID(t, exampleFolder)
 		image := gcp.FetchImage(t, projectID, imageName)
 		defer image.DeleteImage(t)
+	})
+
+	defer test_structure.RunTestStage(t, "teardown", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+		terraform.Destroy(t, terraformOptions)
 	})
 
 	test_structure.RunTestStage(t, "deploy", func() {
