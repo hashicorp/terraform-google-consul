@@ -50,7 +50,7 @@ module "consul_servers" {
   machine_type = "g1-small"
 
   root_volume_disk_type    = "pd-standard"
-  root_volume_disk_size_gb = "15"
+  root_volume_disk_size_gb = "20"
 
   # WARNING! By specifying just the "family" name of the Image, Google will automatically use the latest Consul image.
   # In production, you should specify the exact image name to make it clear which image the current Consul servers are
@@ -110,7 +110,7 @@ module "consul_clients" {
 
   machine_type             = "g1-small"
   root_volume_disk_type    = "pd-standard"
-  root_volume_disk_size_gb = "15"
+  root_volume_disk_size_gb = "20"
 
   assign_public_ip_addresses = true
 
