@@ -164,6 +164,12 @@ variable "instance_group_update_policy_minimal_action" {
   default     = "REPLACE"
 }
 
+variable "instance_group_update_policy_max_surge_fixed" {
+  description = "The maximum number of instances that can be created above the specified targetSize during the update process. Conflicts with var.instance_group_update_policy_max_surge_percent. See https://www.terraform.io/docs/providers/google/r/compute_region_instance_group_manager.html#max_surge_fixed for more information."
+  type        = number
+  default     = null
+}
+
 variable "instance_group_update_policy_max_surge_percent" {
   description = "Only allowed for regional managed instance groups with size at least 10."
   type        = number
@@ -173,7 +179,13 @@ variable "instance_group_update_policy_max_surge_percent" {
 variable "instance_group_update_policy_max_unavailable_fixed" {
   description = ""
   type        = number
-  default     = 0
+  default     = 2
+}
+
+variable "instance_group_update_policy_max_unavailable_percent" {
+  description = ""
+  type        = number
+  default     = null
 }
 
 variable "instance_group_update_policy_min_ready_sec" {

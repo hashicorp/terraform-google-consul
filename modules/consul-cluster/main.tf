@@ -30,8 +30,10 @@ resource "google_compute_region_instance_group_manager" "consul_server" {
     type                         = var.instance_group_update_policy_type
     instance_redistribution_type = var.instance_group_update_policy_redistribution_type
     minimal_action               = var.instance_group_update_policy_minimal_action
+    max_surge_fixed              = var.instance_group_update_policy_max_surge_fixed
     max_surge_percent            = var.instance_group_update_policy_max_surge_percent
     max_unavailable_fixed        = var.instance_group_update_policy_max_unavailable_fixed
+    max_unavailable_percent      = var.instance_group_update_policy_max_unavailable_percent
     min_ready_sec                = var.instance_group_update_policy_min_ready_sec
   }
 
