@@ -22,4 +22,5 @@ out/
 vendor
 
 # Ignore test data
-.test_data
+.test_data/
+
