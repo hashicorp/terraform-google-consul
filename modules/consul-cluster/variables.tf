@@ -173,7 +173,7 @@ variable "instance_group_update_policy_max_surge_percent" {
 variable "instance_group_update_policy_max_unavailable_fixed" {
   description = ""
   type        = number
-  default     = 2
+  default     = 0
 }
 
 variable "instance_group_update_policy_min_ready_sec" {
