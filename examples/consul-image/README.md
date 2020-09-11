@@ -1,9 +1,8 @@
 # Consul Google Image
 
 This folder shows an example of how to use the [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul) and
-[install-dnsmasq](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-dnsmasq) modules with [Packer](https://www.packer.io/) to create [Custom Images](
-https://cloud.google.com/compute/docs/images) that have Consul and Dnsmasq installed on
-top of Ubuntu. At this time, Ubuntu 16.04 and 18.04 LTS are the only supported Linux distributions.
+[install-dnsmasq](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-dnsmasq) modules with [Packer](https://www.packer.io/) to create [Custom Images](https://cloud.google.com/compute/docs/images) that have Consul and Dnsmasq installed on
+top of Ubuntu. At this time, Ubuntu 18.04 LTS is the only supported Linux distribution.
 
 These Images will have [Consul](https://www.consul.io/) installed and configured to automatically join a cluster during
 boot-up. They also have [Dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) installed and configured to use
@@ -13,8 +12,6 @@ in Consul). To see how to deploy this Image, check out the [consul-cluster examp
 
 For more info on Consul installation and configuration, check out the
 [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul) and [install-dnsmasq](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-dnsmasq) documentation.
-
-
 
 ## Quick start
 
@@ -28,10 +25,7 @@ To build the Consul Image:
 1. Run `packer build consul.json`.
 
 When the build finishes, it will output the ID of the new Custom Image. To see how to deploy one of these Images, check
-out the  [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example).
-
-
-
+out the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example).
 
 ## Creating your own Packer template for production usage
 
@@ -41,18 +35,21 @@ provisioner. Instead of:
 
 ```json
 {
-  "provisioners": [{
-    "type": "file",
-    "source": "{{template_dir}}/../../../terraform-google-consul",
-    "destination": "/tmp"
-  },{
-    "type": "shell",
-    "inline": [
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "{{template_dir}}/../../../terraform-google-consul",
+      "destination": "/tmp"
+    },
+    {
+      "type": "shell",
+      "inline": [
         "/tmp/terraform-google-consul/modules/install-consul/install-consul --version {{user `consul_version`}}",
         "/tmp/terraform-google-consul/modules/install-dnsmasq/install-dnsmasq"
-    ],
-    "pause_before": "30s"
-  }]
+      ],
+      "pause_before": "30s"
+    }
+  ]
 }
 ```
 
@@ -60,15 +57,17 @@ Your code should look more like this:
 
 ```json
 {
-  "provisioners": [{
-    "type": "shell",
-    "inline": [
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
         "git clone --branch `<MODULE_VERSION>` https://github.com/hashicorp/terraform-google-consul.git  /tmp/terraform-google-consul",
         "/tmp/terraform-google-consul/modules/install-consul/install-consul --version {{user `consul_version`}}",
         "/tmp/terraform-google-consul/modules/install-dnsmasq/install-dnsmasq"
-    ],
-    "pause_before": "30s"
-  }]
+      ],
+      "pause_before": "30s"
+    }
+  ]
 }
 ```
 

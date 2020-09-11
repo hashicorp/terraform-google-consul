@@ -3,13 +3,9 @@
 This folder contains a script for configuring and running Consul on a [GCP](https://cloud.google.com/) Compute Instance.
 This script has been tested on the following operating systems:
 
-* Ubuntu 16.04
-* Ubuntu 18.04
+- Ubuntu 18.04
 
 There is a good chance it will work on other flavors of Debian as well.
-
-
-
 
 ## Quick start
 
@@ -41,12 +37,9 @@ This will:
 
 We recommend using the `run-consul` command as part of the [Startup Script](https://cloud.google.com/compute/docs/startupscript),
 so that it executes when the Compute Instance is first booting. After runing `run-consul` on that initial boot, the `supervisord`
-configuration  will automatically restart Consul if it crashes or the Compute instance reboots.
+configuration will automatically restart Consul if it crashes or the Compute instance reboots.
 
 See the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example) for fully-working sample code.
-
-
-
 
 ## Command line Arguments
 
@@ -54,44 +47,40 @@ The `run-consul` script accepts the following arguments:
 
 **Required:**
 
-* `server` If set, run in server mode. Exactly one of `--server` or `--client` must be set.
-* `client` If set, run in client mode. Exactly one of `--server` or `--client` must be set.
+- `server` If set, run in server mode. Exactly one of `--server` or `--client` must be set.
+- `client` If set, run in client mode. Exactly one of `--server` or `--client` must be set.
 
 **Optional:**
 
-* `cluster-tag-name` Automatically form a cluster with Instances that have the same value for this Compute Instance tag
+- `cluster-tag-name` Automatically form a cluster with Instances that have the same value for this Compute Instance tag
   name.
-* `raft-protocol` This controls the internal version of the Raft consensus protocol used for server communications. Must
+- `raft-protocol` This controls the internal version of the Raft consensus protocol used for server communications. Must
   be set to 3 in order to gain access to Autopilot features, with the exception of `cleanup_dead_servers`. Default is 3.
-* `config-dir` The path to the Consul config folder. Default is to take the absolute path of `../config`,
+- `config-dir` The path to the Consul config folder. Default is to take the absolute path of `../config`,
   relative to the `run-consul` script itself.
-* `data-dir` The path to the Consul config folder. Default is to take the absolute path of `../data`,
+- `data-dir` The path to the Consul config folder. Default is to take the absolute path of `../data`,
   relative to the `run-consul` script itself.
-* `log-dir` The path to the Consul log folder. Default is the absolute path of '../log', relative to this script.
-* `bin-dir` The path to the folder with Consul binary. Default is the absolute path of the parent folder of this script."
-* `user` The user to run Consul as. Default is to use the owner of `config-dir`.
-* `skip-consul-config` If this flag is set, don't generate a Consul configuration file. This is useful if
+- `log-dir` The path to the Consul log folder. Default is the absolute path of '../log', relative to this script.
+- `bin-dir` The path to the folder with Consul binary. Default is the absolute path of the parent folder of this script."
+- `user` The user to run Consul as. Default is to use the owner of `config-dir`.
+- `skip-consul-config` If this flag is set, don't generate a Consul configuration file. This is useful if
   you have a custom configuration file and don't want to use any of of the default settings from `run-consul`.
 
   Options for Consul Autopilot:
 
-  * `--autopilot-cleanup-dead-servers` (optional): Set to true or false to control the automatic removal of dead server nodes periodically and whenever a new server is added to the cluster. Defaults to true.
-  * `--autopilot-last-contact-threshold` (optional): Controls the maximum amount of time a server can go without contact from the leader before being considered unhealthy. Must be a duration value such as 10s. Defaults to 200ms.
-  * `--autopilot-max-trailing-logs` (optional): Controls the maximum number of log entries that a server can trail the leader by before being considered unhealthy. Defaults to 250.
-  * `--autopilot-server-stabilization-time` (optional): Controls the minimum amount of time a server must be stable in the 'healthy' state before being added to the cluster. Only takes effect if all servers are running Raft protocol version 3 or higher. Must be a duration value such as 30s. Defaults to 10s.
-  * `--autopilot-redundancy-zone-tag` (optional)(enterprise-only): This controls the -node-meta key to use when Autopilot is separating servers into zones for redundancy. Only one server in each zone can be a voting member at one time. If left blank, this feature will be disabled. Defaults to az.
-  * `--autopilot-disable-upgrade-migration` (optional)(enterprise-only): If this flag is set, this will disable Autopilot's upgrade migration strategy in Consul Enterprise of waiting until enough newer-versioned servers have been added to the cluster before promoting any of them to voters. Defaults to false.
-  * `--autopilot-upgrade-version-tag` (optional)(enterprise-only): That tag to be used to override the version information used during a migration.
-
+  - `--autopilot-cleanup-dead-servers` (optional): Set to true or false to control the automatic removal of dead server nodes periodically and whenever a new server is added to the cluster. Defaults to true.
+  - `--autopilot-last-contact-threshold` (optional): Controls the maximum amount of time a server can go without contact from the leader before being considered unhealthy. Must be a duration value such as 10s. Defaults to 200ms.
+  - `--autopilot-max-trailing-logs` (optional): Controls the maximum number of log entries that a server can trail the leader by before being considered unhealthy. Defaults to 250.
+  - `--autopilot-server-stabilization-time` (optional): Controls the minimum amount of time a server must be stable in the 'healthy' state before being added to the cluster. Only takes effect if all servers are running Raft protocol version 3 or higher. Must be a duration value such as 30s. Defaults to 10s.
+  - `--autopilot-redundancy-zone-tag` (optional)(enterprise-only): This controls the -node-meta key to use when Autopilot is separating servers into zones for redundancy. Only one server in each zone can be a voting member at one time. If left blank, this feature will be disabled. Defaults to az.
+  - `--autopilot-disable-upgrade-migration` (optional)(enterprise-only): If this flag is set, this will disable Autopilot's upgrade migration strategy in Consul Enterprise of waiting until enough newer-versioned servers have been added to the cluster before promoting any of them to voters. Defaults to false.
+  - `--autopilot-upgrade-version-tag` (optional)(enterprise-only): That tag to be used to override the version information used during a migration.
 
 Example:
 
 ```
 /opt/consul/bin/run-consul --server --cluster-tag-name consul-server-prod
 ```
-
-
-
 
 ## Consul configuration
 
@@ -100,44 +89,42 @@ defaults for a Consul cluster in GCP. Check out the [Consul Configuration Files
 documentation](https://www.consul.io/docs/agent/options.html#configuration-files) for what configuration settings are
 available.
 
-
 ### Default configuration
 
 `run-consul` sets the following configuration values by default:
 
-* [advertise_addr](https://www.consul.io/docs/agent/options.html#advertise_addr): Set to the Compute Instance's private IP
+- [advertise_addr](https://www.consul.io/docs/agent/options.html#advertise_addr): Set to the Compute Instance's private IP
   address.
 
-* [bind_addr](https://www.consul.io/docs/agent/options.html#bind_addr): Set to the Compute Instance's private IP address.
+- [bind_addr](https://www.consul.io/docs/agent/options.html#bind_addr): Set to the Compute Instance's private IP address.
 
-* [bootstrap_expect](https://www.consul.io/docs/agent/options.html#bootstrap_expect): If `--server` is set,
+- [bootstrap_expect](https://www.consul.io/docs/agent/options.html#bootstrap_expect): If `--server` is set,
   set this config based on the [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata) tags:
-    * Set this config to the value of the `cluster-size` tag.     
 
-* [client_addr](https://www.consul.io/docs/agent/options.html#client_addr): Set to 0.0.0.0 so you can access the client
+  - Set this config to the value of the `cluster-size` tag.
+
+- [client_addr](https://www.consul.io/docs/agent/options.html#client_addr): Set to 0.0.0.0 so you can access the client
   and UI endpoint on each Compute Instance from the outside.
 
-* [datacenter](https://www.consul.io/docs/agent/options.html#datacenter): Set to the current Instance Region (e.g.
+- [datacenter](https://www.consul.io/docs/agent/options.html#datacenter): Set to the current Instance Region (e.g.
   `us-west1`), as fetched from [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata).
 
-* [node_name](https://www.consul.io/docs/agent/options.html#node_name): Set to the instance name, as fetched from
+- [node_name](https://www.consul.io/docs/agent/options.html#node_name): Set to the instance name, as fetched from
   [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata).
 
+- [raft-protocol](https://www.consul.io/docs/agent/options.html#raft_protocol) Set to the value of `--raft-protocol`.
 
-* [raft-protocol](https://www.consul.io/docs/agent/options.html#raft_protocol) Set to the value of `--raft-protocol`.
+- [retry_join](https://www.consul.io/docs/agent/options.html#retry-join): Set the following keys for this setting:
 
+  - [provider](https://www.consul.io/docs/agent/options.html#provider-2): Set to `gce` for Google Compute Engine.
+  - [project_name](https://www.consul.io/docs/agent/options.html#project_name): Set to the name of the GCP Project where
+    the Consul Servers are located.
+  - [tag_value](https://www.consul.io/docs/agent/options.html#tag_value-2): Set to the value of the tag shared by all
+    Consul Server nodes.
 
-* [retry_join](https://www.consul.io/docs/agent/options.html#retry-join): Set the following keys for this setting:
-    * [provider](https://www.consul.io/docs/agent/options.html#provider-2): Set to `gce` for Google Compute Engine.
-    * [project_name](https://www.consul.io/docs/agent/options.html#project_name): Set to the name of the GCP Project where
-      the Consul Servers are located.
-    * [tag_value](https://www.consul.io/docs/agent/options.html#tag_value-2): Set to the value of the tag shared by all
-      Consul Server nodes.
+- [server](https://www.consul.io/docs/agent/options.html#server): Set to true if `--server` is set.
 
-* [server](https://www.consul.io/docs/agent/options.html#server): Set to true if `--server` is set.
-
-* [ui](https://www.consul.io/docs/agent/options.html#ui): Set to true to make the UI available.
-
+- [ui](https://www.consul.io/docs/agent/options.html#ui): Set to true to make the UI available.
 
 ### Overriding the configuration
 
@@ -160,21 +147,17 @@ contents:
 }
 ```
 
-If you want to override *all* the default settings, you can tell `run-consul` not to generate a default config file
+If you want to override _all_ the default settings, you can tell `run-consul` not to generate a default config file
 at all using the `--skip-consul-config` flag:
 
 ```
 /opt/consul/bin/run-consul --server --skip-consul-config
 ```
 
-
 ### Required permissions
 
 The `run-consul` script assumes only that the Compute Instance can query its own metadata, a permission enabled by
 default on all Compute Instances.
-
-
-
 
 ## How do you handle encryption?
 
@@ -184,7 +167,6 @@ Module. To enable encryption, you need to do the following:
 
 1. [Gossip encryption: provide an encryption key](#gossip-encryption-provide-an-encryption-key)
 1. [RPC encryption: provide TLS certificates](#rpc-encryption-provide-tls-certificates)
-
 
 ### Gossip encryption: provide an encryption key
 
@@ -197,7 +179,6 @@ configuration file (e.g. `encryption.json`) in the Consul config dir (default lo
   "encrypt": "cg8StVXbQJ0gPvMd9o7yrg=="
 }
 ```
-
 
 ### RPC encryption: provide TLS certificates
 
@@ -236,10 +217,10 @@ set with reasonable defaults. It includes automatic cleaning up of dead servers 
 a replacement Consul server comes online. The internal health check runs on the leader to
 track other servers. A server is considered healthy when:
 
-* Its status is `Alive`
-* The time since its last contact with the current leader is below `autopilot-last-contact-threshold`
-* Its latest [Raft consensus algorithm](https://raft.github.io/) term matches the leader's term
-* The number of Raft log entries it trails the leader by does not exceed `autopilot-max-trailing-logs`
+- Its status is `Alive`
+- The time since its last contact with the current leader is below `autopilot-last-contact-threshold`
+- Its latest [Raft consensus algorithm](https://raft.github.io/) term matches the leader's term
+- The number of Raft log entries it trails the leader by does not exceed `autopilot-max-trailing-logs`
 
 There are Autopilot settings called [upgrade migrations](https://www.consul.io/docs/guides/autopilot.html#upgrade-migrations)
 that are useful when adding new members to the cluster either with newer configurations or using
