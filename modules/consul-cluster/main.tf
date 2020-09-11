@@ -27,12 +27,12 @@ resource "google_compute_region_instance_group_manager" "consul_server" {
   # Consul Server is a stateful cluster, so the update strategy used to roll out a new GCE Instance Template must be
   # a rolling update. But since Terraform does not yet support ROLLING_UPDATE, such updates must be manually rolled out.
   update_policy {
-    type                         = "PROACTIVE"
-    instance_redistribution_type = "PROACTIVE"
-    minimal_action               = "REPLACE"
-    max_surge_percent            = 20
-    max_unavailable_fixed        = 2
-    min_ready_sec                = 50
+    type                         = var.instance_group_update_policy_type
+    instance_redistribution_type = var.instance_group_update_policy_redistribution_type
+    minimal_action               = var.instance_group_update_policy_minimal_action
+    max_surge_percent            = var.instance_group_update_policy_max_surge_percent
+    max_unavailable_fixed        = var.instance_group_update_policy_max_unavailable_fixed
+    min_ready_sec                = var.instance_group_update_policy_min_ready_sec
   }
 
   target_pools = var.instance_group_target_pools
