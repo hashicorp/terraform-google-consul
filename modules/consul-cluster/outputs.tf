@@ -19,29 +19,15 @@ output "instance_group_name" {
 }
 
 output "instance_template_url" {
-  value = data.template_file.compute_instance_template_self_link.rendered
+  value = google_compute_instance_template.consul_server.self_link
 }
 
 output "instance_template_name" {
-  value = element(
-    concat(
-      google_compute_instance_template.consul_server_public.*.name,
-      google_compute_instance_template.consul_server_private.*.name,
-      [""],
-    ),
-    0,
-  )
+  value = google_compute_instance_template.consul_server.name
 }
 
 output "instance_template_metadata_fingerprint" {
-  value = element(
-    concat(
-      google_compute_instance_template.consul_server_public.*.metadata_fingerprint,
-      google_compute_instance_template.consul_server_private.*.metadata_fingerprint,
-      [""],
-    ),
-    0,
-  )
+  value = google_compute_instance_template.consul_server.metadata_fingerprint
 }
 
 output "firewall_rule_intracluster_url" {
@@ -82,4 +68,3 @@ output "firewall_rule_inbound_dns_name" {
     0,
   )
 }
-
