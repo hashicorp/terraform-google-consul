@@ -14,6 +14,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/hashicorp/consul/api"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -60,6 +61,10 @@ var (
 // 2. Building the Image in the consul-image example with the given build name
 // 3. Deploying that Image using the consul-cluster Terraform code
 // 4. Checking that the Consul cluster comes up within a reasonable time period and can respond to requests
+// 5. Writing a random key to the KV store using one of the Consul clients
+// 6. Building a new Image using the consul-image example with the given build name
+// 7. Redeploying both of the cluster instance groups using the new image
+// 8. Validating the rolling deployment by verifying the key was propagated correctly
 func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder string, packerTemplatePath string) {
 	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, RepoRoot, examplesFolder)
 
@@ -80,11 +85,14 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		test_structure.SaveArtifactID(t, exampleFolder, imageID)
 	})
 
-	defer test_structure.RunTestStage(t, "cleanup_image", func() {
+	defer test_structure.RunTestStage(t, "cleanup_images", func() {
 		projectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
 		imageName := test_structure.LoadArtifactID(t, exampleFolder)
-		image := gcp.FetchImage(t, projectID, imageName)
-		defer image.DeleteImage(t)
+		secondImageName := test_structure.LoadString(t, exampleFolder, "Artifact2")
+		image1 := gcp.FetchImage(t, projectID, imageName)
+		image2 := gcp.FetchImage(t, projectID, secondImageName)
+		defer image1.DeleteImage(t)
+		defer image2.DeleteImage(t)
 	})
 
 	defer test_structure.RunTestStage(t, "teardown", func() {
@@ -137,6 +145,50 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 
 		// Check the Consul clients
 		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
+
+		// Write a random KV store key to one of the clients
+		randomKeyName := writeConsulClusterKVStore(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
+
+		test_structure.SaveString(t, exampleFolder, "RandomKeyName", randomKeyName)
+	})
+
+	test_structure.RunTestStage(t, "build_2nd_image", func() {
+		projectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
+		gcpZone := test_structure.LoadString(t, exampleFolder, GcpZoneVarName)
+
+		// Build a new image in the same zone
+		imageID := buildImage(t, packerTemplatePath, packerBuildName, projectID, gcpZone)
+		test_structure.SaveString(t, exampleFolder, "Artifact2", imageID)
+	})
+
+	test_structure.RunTestStage(t, "redeploy_cluster", func() {
+		newImage := test_structure.LoadString(t, exampleFolder, "Artifact2")
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+
+		// Switch the two instance groups to use the new image
+		terraformOptions.Vars[ConsulClusterExampleVarServerSourceImage] = newImage
+		terraformOptions.Vars[ConsulClusterExampleVarClientSourceImage] = newImage
+		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
+
+		// Redeploy the cluster by running Terraform apply
+		terraform.Apply(t, terraformOptions)
+	})
+
+	test_structure.RunTestStage(t, "validate_key_exists", func() {
+		gcpProjectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
+		gcpRegion := test_structure.LoadString(t, exampleFolder, GcpRegionVarName)
+		keyName := test_structure.LoadString(t, exampleFolder, "RandomKeyName")
+
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+
+		// Check the Consul servers
+		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputServerInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
+
+		// Check the Consul clients
+		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
+
+		// Read the KV store key using one of the clients
+		checkConsulClusterKVStoreHasKey(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion, keyName)
 	})
 }
 
@@ -202,6 +254,55 @@ func testConsulCluster(t *testing.T, nodeIPAddress string) {
 	})
 
 	logger.Logf(t, "Consul cluster is properly deployed and has elected leader %s", leader)
+}
+
+func writeConsulClusterKVStore(t *testing.T, groupNameOutputVar string, terratestOptions *terraform.Options, projectID string, region string) string {
+	groupName := terraform.OutputRequired(t, terratestOptions, groupNameOutputVar)
+
+	// get a random instance from the consul clients instance group
+	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
+	instance, err := instanceGroup.GetRandomInstanceE(t)
+	require.NoError(t, err)
+
+	ip, err := instance.GetPublicIpE(t)
+	require.NoError(t, err)
+
+	consulClient := createConsulClient(t, ip)
+
+	// Get a handle to the KV API
+	kv := consulClient.KV()
+
+	// PUT a new KV pair
+	uniqueID := strings.ToLower(random.UniqueId())
+	randomKeyName := fmt.Sprintf("random-key-%s", uniqueID)
+	logger.Logf(t, "Writing random key %s to the Consul client %s", randomKeyName, ip)
+	p := &api.KVPair{Key: randomKeyName, Value: []byte("bar")}
+	_, err = kv.Put(p, nil)
+	require.NoError(t, err)
+
+	return randomKeyName
+}
+
+func checkConsulClusterKVStoreHasKey(t *testing.T, groupNameOutputVar string, terratestOptions *terraform.Options, projectID string, region string, keyName string) {
+	groupName := terraform.OutputRequired(t, terratestOptions, groupNameOutputVar)
+
+	// get a random instance from the consul clients instance group
+	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
+	instance, err := instanceGroup.GetRandomInstanceE(t)
+	require.NoError(t, err)
+
+	ip, err := instance.GetPublicIpE(t)
+	require.NoError(t, err)
+
+	consulClient := createConsulClient(t, ip)
+
+	// Get a handle to the KV API
+	kv := consulClient.KV()
+
+	// Verify the given key exists
+	pair, _, err := kv.Get(keyName, nil)
+	require.NoError(t, err)
+	logger.Logf(t, "Successfully verified target key %s has propagated with value: %s", keyName, pair.Value)
 }
 
 // Create a Consul client
