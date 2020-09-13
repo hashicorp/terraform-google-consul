@@ -63,15 +63,15 @@ module "consul_servers" {
   # NOT for production usage. In production, set this to false.
   assign_public_ip_addresses = true
 
-  # WARNING! This update strategy will delete and re-create the entire Consul cluster when making some changes to this
-  # module. Unfortunately, Google and Terraform do not yet support an automatic stable way of performing a rolling update.
-  # For now for production usage, set this to "NONE", and manually coordinate your Consul Server upgrades per Consul docs.
-  #instance_group_update_strategy = "NONE"
-
-  # TODO - explain update strategy
-  instance_group_update_policy_type                = "PROACTIVE"
-  instance_group_update_policy_redistribution_type = "PROACTIVE"
-  instance_group_update_policy_minimal_action      = "REPLACE"
+  # This update strategy will performing a rolling update of the Consul cluster server nodes. We wait 5 minutes for
+  # the newly created server nodes to become available to ensure they have enough time to join the cluster and
+  # propogate the data.
+  instance_group_update_policy_type                  = "PROACTIVE"
+  instance_group_update_policy_redistribution_type   = "PROACTIVE"
+  instance_group_update_policy_minimal_action        = "REPLACE"
+  instance_group_update_policy_max_surge_fixed       = length(data.google_compute_zones.available.names)
+  instance_group_update_policy_max_unavailable_fixed = 0
+  instance_group_update_policy_min_ready_sec         = 300
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
@@ -123,10 +123,12 @@ module "consul_clients" {
   image_project_id = var.image_project_id
 
   # Our Consul Clients are completely stateless, so we are free to destroy and re-create them as needed.
-  # TODO: Research this further
-  instance_group_update_policy_type                = "PROACTIVE"
-  instance_group_update_policy_redistribution_type = "PROACTIVE"
-  instance_group_update_policy_minimal_action      = "REPLACE"
+  instance_group_update_policy_type                  = "PROACTIVE"
+  instance_group_update_policy_redistribution_type   = "PROACTIVE"
+  instance_group_update_policy_minimal_action        = "REPLACE"
+  instance_group_update_policy_max_surge_fixed       = 1 * length(data.google_compute_zones.available.names)
+  instance_group_update_policy_max_unavailable_fixed = 1 * length(data.google_compute_zones.available.names)
+  instance_group_update_policy_min_ready_sec         = 50
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
@@ -139,4 +141,9 @@ data "template_file" "startup_script_client" {
   vars = {
     cluster_tag_name = var.consul_server_cluster_tag_name
   }
+}
+
+data "google_compute_zones" "available" {
+  project = var.gcp_project_id
+  region  = var.gcp_region
 }
