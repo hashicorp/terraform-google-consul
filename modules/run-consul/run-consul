@@ -129,6 +129,15 @@ function get_instance_ip_address {
   get_instance_metadata_value "instance/network-interfaces/$network_interface_number/ip"
 }
 
+function split_by_lines {
+  local prefix="$1"
+  shift
+
+  for var in "$@"; do
+    echo "${prefix}${var}"
+  done
+}
+
 function generate_consul_config {
   local -r server="${1}"
   local -r config_dir="${2}"
