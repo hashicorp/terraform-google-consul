@@ -35,6 +35,6 @@
       "/tmp/terraform-google-consul/modules/install-consul/install-consul --version {{user `consul_version`}}",
       "/tmp/terraform-google-consul/modules/install-dnsmasq/install-dnsmasq"
     ],
-    "pause_before": "30s"
+    "pause_before": "10s"
   }]
 }
