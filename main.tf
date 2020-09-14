@@ -33,6 +33,7 @@ module "consul_servers" {
   cluster_size        = var.consul_server_cluster_size
   cluster_tag_name    = var.consul_server_cluster_tag_name
   startup_script      = data.template_file.startup_script_server.rendered
+  shutdown_script     = file("${path.module}/examples/root-example/shutdown-script.sh")
 
   # Grant API and DNS access to requests originating from the the Consul client cluster we create below.
   allowed_inbound_tags_http_api        = [var.consul_server_cluster_tag_name]
@@ -65,7 +66,7 @@ module "consul_servers" {
 
   # This update strategy will performing a rolling update of the Consul cluster server nodes. We wait 5 minutes for
   # the newly created server nodes to become available to ensure they have enough time to join the cluster and
-  # propogate the data.
+  # propagate the data.
   instance_group_update_policy_type                  = "PROACTIVE"
   instance_group_update_policy_redistribution_type   = "PROACTIVE"
   instance_group_update_policy_minimal_action        = "REPLACE"
@@ -106,6 +107,7 @@ module "consul_clients" {
   cluster_size        = var.consul_client_cluster_size
   cluster_tag_name    = var.consul_client_cluster_tag_name
   startup_script      = data.template_file.startup_script_client.rendered
+  shutdown_script     = file("${path.module}/examples/root-example/shutdown-script.sh")
 
   allowed_inbound_tags_http_api        = [var.consul_client_cluster_tag_name]
   allowed_inbound_cidr_blocks_http_api = var.consul_client_allowed_inbound_cidr_blocks_http_api

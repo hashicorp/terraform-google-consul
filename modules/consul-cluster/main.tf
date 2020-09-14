@@ -63,7 +63,11 @@ resource "google_compute_instance_template" "consul_server" {
   metadata_startup_script = var.startup_script
   metadata = merge(
     {
-      "${var.metadata_key_name_for_cluster_size}" = var.cluster_size
+      "${var.metadata_key_name_for_cluster_size}" = var.cluster_size,
+
+      # The Terraform Google provider currently doesn't support a `metadata_shutdown_script` argument so we manually
+      # set it here using the instance metadata.
+      "shutdown-script" = var.shutdown_script
     },
     var.custom_metadata,
   )

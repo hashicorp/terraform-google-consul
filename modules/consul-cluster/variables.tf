@@ -39,7 +39,12 @@ variable "source_image" {
 }
 
 variable "startup_script" {
-  description = "A Startup Script to execute when the server first boots. We remmend passing in a bash script that executes the run-consul script, which should have been installed in the Consul Google Image by the install-consul module."
+  description = "A Startup Script to execute when the server first boots. We recommend passing in a bash script that executes the run-consul script, which should have been installed in the Consul Google Image by the install-consul module."
+  type        = string
+}
+
+variable "shutdown_script" {
+  description = "A Shutdown Script to execute when the server recieves a restart or stop event. We recommend passing in a bash script that executes the `consul leave` command."
   type        = string
 }
 
