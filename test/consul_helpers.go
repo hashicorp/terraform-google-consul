@@ -223,22 +223,22 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 // Use a Consul client to connect to the given node and use it to verify that:
 //
 // 1. The Consul cluster has deployed
-// 2. The cluster has the expected number of members
+// 2. The cluster has the expected number of nodes
 // 3. The cluster has elected a leader
 func testConsulCluster(t *testing.T, nodeIPAddress string) {
 	consulClient := createConsulClient(t, nodeIPAddress)
 	maxRetries := 60
 	sleepBetweenRetries := 10 * time.Second
-	expectedMembers := ConsulClusterExampleDefaultNumClients + ConsulClusterExampleDefaultNumServers
+	expectedNodes := ConsulClusterExampleDefaultNumClients + ConsulClusterExampleDefaultNumServers
 
-	leader := retry.DoWithRetry(t, "Check Consul members", maxRetries, sleepBetweenRetries, func() (string, error) {
-		members, err := consulClient.Agent().Members(false)
+	leader := retry.DoWithRetry(t, "Check Consul nodes", maxRetries, sleepBetweenRetries, func() (string, error) {
+		nodes, _, err := consulClient.Catalog().Nodes(nil)
 		if err != nil {
 			return "", err
 		}
 
-		if len(members) != expectedMembers {
-			return "", fmt.Errorf("Expected the cluster to have %d members, but found %d", expectedMembers, len(members))
+		if len(nodes) != expectedNodes {
+			return "", fmt.Errorf("Expected the cluster to have %d nodes, but found %d", expectedNodes, len(nodes))
 		}
 
 		leader, err := consulClient.Status().Leader()
