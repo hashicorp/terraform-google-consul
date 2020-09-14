@@ -40,7 +40,7 @@ The `install-consul` script accepts the following arguments:
 Example:
 
 ```
-install-consul --version 1.10.0
+install-consul --version 1.8.3
 ```
 
 ## How it works
@@ -49,7 +49,6 @@ The `install-consul` script does the following:
 
 1. [Create a user and folders for Consul](#create-a-user-and-folders-for-consul)
 1. [Install Consul binaries and scripts](#install-consul-binaries-and-scripts)
-1. [Install supervisord](#install-supervisord)
 1. [Follow-up tasks](#follow-up-tasks)
 
 ### Create a user and folders for Consul
@@ -60,7 +59,7 @@ Create an OS user named `consul`. Create the following folders, all owned by use
 - `/opt/consul/bin`: directory for Consul binaries.
 - `/opt/consul/data`: directory where the Consul agent can store state.
 - `/opt/consul/config`: directory where the Consul agent looks up configuration.
-- `/opt/consul/log`: directory where Consul will store log output.
+- `/opt/consul/tls/ca`: directory where Consul will store the TLS certificates.
 
 ### Install Consul binaries and scripts
 
@@ -70,11 +69,6 @@ Install the following:
   number is configurable via the `--version` argument), and extract the `consul` binary into `/opt/consul/bin`. Add a
   symlink to the `consul` binary in `/usr/local/bin`.
 - `run-consul`: Copy the [run-consul script](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul) into `/opt/consul/bin`.
-
-### Install supervisord
-
-Install [supervisord](http://supervisord.org/). We use it as a cross-platform supervisor to ensure Consul is started
-whenever the system boots and restarted if the Consul process crashes.
 
 ### Follow-up tasks
 

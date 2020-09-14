@@ -19,8 +19,8 @@ To install Dnsmasq, use `git` to clone this repository at a specific tag (see th
 for all available tags) and run the `install-dnsmasq` script:
 
 ```
-git clone --branch <VERSION> https://github.com/gruntwork-io/consul-gcp-module.git
-consul-gcp-module/modules/install-dnsmasq/install-dnsmasq
+git clone --branch <VERSION> https://github.com/hashicorp/terraform-google-consul.git
+./terraform-google-consul/modules/install-dnsmasq/install-dnsmasq
 ```
 
 Note: by default, the `install-dnsmasq` script assumes that a Consul agent is already running locally and connected to
