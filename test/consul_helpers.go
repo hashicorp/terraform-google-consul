@@ -202,14 +202,7 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 
 	// Check every 5 seconds until an instance has joined the managed instance group
 	ip := retry.DoWithRetry(t, fmt.Sprintf("Waiting for instances in group %s", groupName), maxRetries, timeBetweenRetries, func() (string, error) {
-		instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
-
-		instance, err := instanceGroup.GetRandomInstanceE(t)
-		if err != nil {
-			return "", err
-		}
-
-		ip, err := instance.GetPublicIpE(t)
+		ip, err := getPublicIPFromRandomInstanceE(t, projectID, region, groupName)
 		if err != nil {
 			return "", err
 		}
@@ -217,21 +210,32 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 		return ip, nil
 	})
 
-	testConsulCluster(t, ip)
+	logger.Logf(t, "Consul cluster is working correctly. Got member IP: %s", ip)
+	testConsulCluster(t, projectID, region, groupName)
 }
 
-// Use a Consul client to connect to the given node and use it to verify that:
+// Pick a random node from the Consul cluster and use it to verify that:
 //
 // 1. The Consul cluster has deployed
 // 2. The cluster has the expected number of nodes
 // 3. The cluster has elected a leader
-func testConsulCluster(t *testing.T, nodeIPAddress string) {
-	consulClient := createConsulClient(t, nodeIPAddress)
+//
+// Note: We must pick a random node each time as nodes may be removed during
+// the rolling deployment or a new leader needs to be elected.
+func testConsulCluster(t *testing.T, projectID string, region string, groupName string) {
 	maxRetries := 60
 	sleepBetweenRetries := 10 * time.Second
 	expectedNodes := ConsulClusterExampleDefaultNumClients + ConsulClusterExampleDefaultNumServers
 
 	leader := retry.DoWithRetry(t, "Check Consul nodes", maxRetries, sleepBetweenRetries, func() (string, error) {
+		nodeIPAddress, err := getPublicIPFromRandomInstanceE(t, projectID, region, groupName)
+		if err != nil {
+			return "", err
+		}
+
+		// Create a Consul Client to query the available node
+		consulClient := createConsulClient(t, nodeIPAddress)
+
 		nodes, _, err := consulClient.Catalog().Nodes(nil)
 		if err != nil {
 			return "", err
@@ -254,6 +258,22 @@ func testConsulCluster(t *testing.T, nodeIPAddress string) {
 	})
 
 	logger.Logf(t, "Consul cluster is properly deployed and has elected leader %s", leader)
+}
+
+func getPublicIPFromRandomInstanceE(t *testing.T, projectID string, region string, groupName string) (string, error) {
+	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
+
+	instance, err := instanceGroup.GetRandomInstanceE(t)
+	if err != nil {
+		return "", err
+	}
+
+	ip, err := instance.GetPublicIpE(t)
+	if err != nil {
+		return "", err
+	}
+
+	return ip, nil
 }
 
 func writeConsulClusterKVStore(t *testing.T, groupNameOutputVar string, terratestOptions *terraform.Options, projectID string, region string) string {
