@@ -120,6 +120,12 @@ variable "instance_group_update_strategy" {
   default     = "NONE"
 }
 
+variable "allowed_inbound_cidr_blocks_cluster" {
+  description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow cluster connections to Consul."
+  type        = list(string)
+  default     = []
+}
+
 variable "allowed_inbound_cidr_blocks_http_api" {
   description = "A list of CIDR-formatted IP address ranges from which the Compute Instances will allow API connections to Consul."
   type        = list(string)
