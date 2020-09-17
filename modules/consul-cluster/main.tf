@@ -91,12 +91,6 @@ resource "google_compute_instance_template" "consul_server" {
     subnetwork         = var.subnetwork_name != null ? var.subnetwork_name : null
     subnetwork_project = var.network_project_id != null ? var.network_project_id : null
 
-    #access_config {
-    # The presence of this property assigns a public IP address to each Compute Instance. We intentionally leave it
-    # blank so that an external IP address is selected automatically.
-    #  nat_ip = ""
-    #}
-
     # Create access config dynamically. If a public ip is requested, we just need the empty `access_config` block
     # to automatically assign an external IP address.
     dynamic "access_config" {
