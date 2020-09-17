@@ -20,7 +20,6 @@ jobs:
             gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.28.2"
             gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag "v0.29.0"
             configure-environment-for-gruntwork-module \
-              --go-src-path ./test \
               --terragrunt-version NONE \
               --packer-version 1.6.2 \
               --terraform-version 0.12.28

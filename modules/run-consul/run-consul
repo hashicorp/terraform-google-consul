@@ -189,12 +189,12 @@ EOF
 
   local recursors_config=""
   if (( ${#recursors[@]} != 0 )); then
-        recursors_config="\"recursors\" : [ "
-        for recursor in "${recursors[@]}"
-        do
-            recursors_config="${recursors_config}\"${recursor}\", "
-        done
-        recursors_config=$(echo "${recursors_config}"| sed 's/, $//')" ],"
+    recursors_config="\"recursors\" : [ "
+    for recursor in "${recursors[@]}"
+    do
+        recursors_config="${recursors_config}\"${recursor}\", "
+    done
+    recursors_config=$(echo "${recursors_config}"| sed 's/, $//')" ],"
   fi
 
   local bootstrap_expect=""
