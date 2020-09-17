@@ -15,7 +15,7 @@ code by adding a `module` configuration and setting its `source` parameter to UR
 ```hcl
 module "consul_cluster" {
   # Use version v0.0.1 of the consul-cluster module
-  source = "github.com/gruntwork-io/consul-gcp-module//modules/consul-cluster?ref=v0.0.1"
+  source = "github.com/hashicorp/terraform-google-consul//modules/consul-cluster?ref=v0.5.0"
 
   # Specify either the Google Image "family" or a specific Google Image. You should build this using the scripts
   # in the install-consul module.
