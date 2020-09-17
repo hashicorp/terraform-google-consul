@@ -72,7 +72,7 @@ function retry {
 function install_dependencies {
   log_info "Installing dependencies"
 
-  if $(os_is_ubuntu); then
+  if os_is_ubuntu; then
     sudo apt-get update -y
     sudo apt-get install -y curl unzip jq
   else
