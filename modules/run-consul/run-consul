@@ -162,7 +162,7 @@ function generate_consul_config {
   local -r config_path="$config_dir/$CONSUL_CONFIG_FILE"
 
   shift 20
-  local -r recursors=("$@")
+  local -ar recursors=("$@")
 
   local instance_id=""
   local instance_name=""
@@ -188,7 +188,7 @@ EOF
   fi
 
   local recursors_config=""
-  if (( ${#recursors[@]} != 0 )); then
+  if [[ ${#recursors[@]} -ne 0 ]]; then
     recursors_config="\"recursors\" : [ "
     for recursor in "${recursors[@]}"
     do
@@ -276,7 +276,7 @@ function generate_systemd_config {
   local -r consul_bin_dir="$6"
   local -r consul_user="$7"
   shift 7
-  local -r environment=("$@")
+  local -ar environment=("$@")
   local -r config_path="$consul_config_dir/$CONSUL_CONFIG_FILE"
 
   log_info "Creating systemd config file to run Consul in $systemd_config_path"
