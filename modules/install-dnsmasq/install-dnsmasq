@@ -48,7 +48,7 @@ function install_dnsmasq {
 
   log_info "Installing Dnsmasq"
 
-  if $(os_is_ubuntu); then
+  if os_is_ubuntu; then
     sudo apt-get update -y
     sudo apt-get install -y dnsmasq
   else
