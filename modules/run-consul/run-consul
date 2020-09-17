@@ -188,7 +188,7 @@ EOF
   fi
 
   local recursors_config=""
-  if (( ${#recursors[@]} != 0 )); then
+  if [[ ${#recursors[@]} -ne 0 ]]; then
         recursors_config="\"recursors\" : [ "
         for recursor in "${recursors[@]}"
         do
