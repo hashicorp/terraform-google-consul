@@ -162,7 +162,7 @@ function generate_consul_config {
   local -r config_path="$config_dir/$CONSUL_CONFIG_FILE"
 
   shift 20
-  local -r recursors=("$@")
+  local -ar recursors=("$@")
 
   local instance_id=""
   local instance_name=""
