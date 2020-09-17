@@ -5,6 +5,8 @@ This folder contains a [Terraform](https://www.terraform.io/) module to deploy a
 Group. This module is designed to deploy a [Google Image](https://cloud.google.com/compute/docs/images) that has Consul
 installed via the [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul) module in this Module.
 
+
+
 ## How do you use this module?
 
 This folder defines a [Terraform module](https://www.terraform.io/docs/modules/usage.html), which you can use in your
@@ -29,29 +31,47 @@ module "consul_cluster" {
               /opt/consul/bin/run-consul --server --cluster-tag-name consul-cluster
               EOF
 
+  # Configure and start Consul during boot. It will automatically form a cluster with all nodes that have that
+  # same tag.
+  # Ensure the Consul node correctly leaves the cluster when the instance restarts or terminates.
+  startup_script = <<-EOF
+              #!/bin/bash
+              /opt/consul/bin/consul leave
+              EOF
+
   # ... See variables.tf for the other parameters you must define for the consul-cluster module
 }
 ```
 
 Note the following parameters:
 
-- `source`: Use this parameter to specify the URL of the consul-cluster module. The double slash (`//`) is intentional
+* `source`: Use this parameter to specify the URL of the consul-cluster module. The double slash (`//`) is intentional
   and required. Terraform uses it to specify subfolders within a Git repo (see [module
   sources](https://www.terraform.io/docs/modules/sources.html)). The `ref` parameter specifies a specific Git tag in
   this repo. That way, instead of using the latest version of this module from the `master` branch, which
   will change every time you run Terraform, you're using a fixed version of the repo.
 
-- `source_image`: Use this parameter to specify the name of the Consul [Google Image](https://cloud.google.com/compute/docs/images)
+* `source_image`: Use this parameter to specify the name of the Consul [Google Image](https://cloud.google.com/compute/docs/images)
   to deploy on each server in the cluster. You should install Consul in this Image using the scripts in the
   [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul) module.
-- `startup_script`: Use this parameter to specify a [Startup Script](https://cloud.google.com/compute/docs/startupscript) script that each
+
+* `startup_script`: Use this parameter to specify a [Startup Script](https://cloud.google.com/compute/docs/startupscript) that each
   server will run during boot. This is where you can use the [run-consul script](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul) to configure and
   run Consul. The `run-consul` script is one of the scripts installed by the [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul)
   module.
 
+* `shutdown_script`: Use this parameter to specify a [Shutdown Script](https://cloud.google.com/compute/docs/shutdownscript) that each
+  server will run right before stopping or restarting. This is where you can execute the [consul leave](https://www.consul.io/commands/leave)
+  command to gracefully leave the cluster and shutdown the agent. Note: Nodes that leave will not attempt to re-join the cluster
+  on restarting with a snapshot.
+
+
 You can find the other parameters in [variables.tf](variables.tf).
 
 Check out the [consul-cluster example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/root-example) for fully-working sample code.
+
+
+
 
 ## How do you connect to the Consul cluster?
 
@@ -112,6 +132,7 @@ Finally, you can try opening up the Consul UI in your browser at the URL `http:/
 
 ![Consul UI](https://github.com/hashicorp/terraform-google-consul/blob/master/_docs/consul-ui-screenshot.png?raw=true)
 
+
 ### Using the Consul agent on another Compute Instance
 
 The easiest way to run [Consul agent](https://www.consul.io/docs/agent/basics.html) and have it connect to the Consul
@@ -140,9 +161,12 @@ Using the `retry-join` params, you can run a Consul agent on a Compute Instance 
 consul agent -retry-join 'provider=gce project_name=my-project tag_value=consul-server' -data-dir=/tmp/consul
 ```
 
-Note that, by default, the Consul cluster nodes advertise their _private_ IP addresses, so the command above only works
+Note that, by default, the Consul cluster nodes advertise their *private* IP addresses, so the command above only works
 from Compute Instances inside the same VPC Network (or any VPC network with proper peering connections and route table
 entries).
+
+
+
 
 ## What's included in this module?
 
@@ -152,13 +176,15 @@ This module creates the following architecture:
 
 This architecture consists of the following resources:
 
-- [Zonal Managed Instance Group](#zonal-managed-instance-group)
-- [Firewall Rules](#firewall-rules)
+* [Zonal Managed Instance Group](#zonal-managed-instance-group)
+* [Firewall Rules](#firewall-rules)
+
 
 ### Regional Managed Instance Group
 
 This module runs Consul on top of a [Regional Managed Instance Group](https://cloud.google.com/compute/docs/instance-groups/)
-, which spreads Compute Instances across multiple [Zones](https://cloud.google.com/compute/docs/regions-zones/regions-zones) for High Availability.
+, which spreads Compute Instances across multiple [Zones](
+https://cloud.google.com/compute/docs/regions-zones/regions-zones) for High Availability.
 
 Each of the Compute Instances should be running a Google Image that has Consul installed via the [install-consul](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/install-consul)
 module. You pass in the name of the Image to run using the `source_image` input parameter.
@@ -166,17 +192,20 @@ module. You pass in the name of the Image to run using the `source_image` input 
 #### Compute Instance Tags
 
 This module allows you to specify a [tag](https://cloud.google.com/compute/docs/vpc/add-remove-network-tags) to add to
-each Compute Instance in the Managed Instance Group. We recommend using this tag with the [retry_join](https://www.consul.io/docs/agent/options.html?#retry-join) configuration to allow the Compute Instances to find each
+each Compute Instance in the Managed Instance Group. We recommend using this tag with the [retry_join](
+https://www.consul.io/docs/agent/options.html?#retry-join) configuration to allow the Compute Instances to find each
 other and automatically form a cluster.
+
 
 ### Firewall Rules
 
 We create separate Firewall Rules that allow:
 
-- All the inbound ports specified in the [Consul documentation](https://www.consul.io/docs/agent/options.html?#ports-used)
+* All the inbound ports specified in the [Consul documentation](https://www.consul.io/docs/agent/options.html?#ports-used)
   for use within the Consul Cluster.
-- HTTP API requests from GCP resources that have the given tags or any IP address within the given CIDR Blocks
-- DNS requests from GCP resources that have the given tags or any IP address within the given CIDR Blocks
+* HTTP API requests from GCP resources that have the given tags or any IP address within the given CIDR Blocks
+* DNS requests from GCP resources that have the given tags or any IP address within the given CIDR Blocks
+
 
 ## How do you roll out updates?
 
@@ -192,7 +221,7 @@ There are two ways a Consul node may go down:
 
 1. The Consul process may crash. In that case, `supervisor` should restart it automatically.
 1. The Compute Instance running Consul stops, crashes, or is otherwise deleted. In that case, the Managed Instance Group
-   will launch a replacement automatically. Note that in this case, although the Consul agent did not exit gracefully,
+   will launch a replacement automatically.  Note that in this case, although the Consul agent did not exit gracefully,
    the replacement Instance will have the same name and therefore no manual clean out of old nodes is necessary!
 
 ## Gotchas
@@ -202,7 +231,8 @@ from the public Internet. But running private nodes creates a few gotchas:
 
 - **Configure Private Google Access.** By default, the Google Cloud API is queried over the public Internet, but private
   Compute Instances have no access to the public Internet so how do they query the Google API? Fortunately, Google
-  enables a Subnet property where you can [access Google APIs from within the network](https://cloud.google.com/compute/docs/private-google-access/configure-private-google-access) and not over the public
+  enables a Subnet property where you can [access Google APIs from within the network](
+  https://cloud.google.com/compute/docs/private-google-access/configure-private-google-access) and not over the public
   Internet. **Setting this property is outside the scope of this module, but private Vault servers will not work unless
   this is enabled, or they have public Internet access.**
 
@@ -211,7 +241,8 @@ from the public Internet. But running private nodes creates a few gotchas:
   setup a means to enter the network, for example, by setting up a public Bastion Host.
 
 - **Internet access for private Compute Instances.** If you do want your private Compute Instances to have Internet
-  access, then Google recommends [setting up your own network proxy or NAT Gateway](https://cloud.google.com/compute/docs/vpc/special-configurations#proxyvm).
+  access, then Google recommends [setting up your own network proxy or NAT Gateway](
+  https://cloud.google.com/compute/docs/vpc/special-configurations#proxyvm).  
 
 ## Security
 
@@ -222,51 +253,64 @@ Here are some of the main security considerations to keep in mind when using thi
 1. [Firewall rules](#firewall-rules)
 1. [SSH access](#ssh-access)
 
+
 ### Encryption in transit
 
 Consul can encrypt all of its network traffic. For instructions on enabling network encryption, have a look at the
 [How do you handle encryption documentation](https://github.com/hashicorp/terraform-google-consul/tree/master/modules/run-consul#how-do-you-handle-encryption).
+
 
 ### Encryption at rest
 
 The Compute Instances in the cluster store all their data on the root disk volume. By default, [GCE encrypts all data at
 rest](https://cloud.google.com/compute/docs/disks/customer-supplied-encryption), a process managed by GCE without any
 additional actions needed on your part. You can also provide your own encryption keys and GCE will use these to protect
-the Google-generated keys used to encrypt and decrypt your data.
+the Google-generated keys used to encrypt and decrypt your data.  
+
 
 ### Firewall rules
 
 This module creates Firewall rules that allow inbound requests as follows:
 
-- **Consul**: For all the [ports used by Consul](https://www.consul.io/docs/agent/options.html#ports), all members of
-  the Consul Server cluster will automatically accept inbound traffic based on a [tag](https://cloud.google.com/compute/docs/vpc/add-remove-network-tags) shared by all cluster members.
+* **Consul**: For all the [ports used by Consul](https://www.consul.io/docs/agent/options.html#ports), all members of
+  the Consul Server cluster will automatically accept inbound traffic based on a [tag](
+  https://cloud.google.com/compute/docs/vpc/add-remove-network-tags) shared by all cluster members.  
 
-- **External HTTP API Access**: For external access to the Consul Server cluster over the HTTP API port (default: 8500),
-  you can use the `allowed_inbound_cidr_blocks_http_api` parameter to control the list of [CIDR blocks](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing), and the `allowed_inbound_tags_http_api` to control the
+* **External HTTP API Access**: For external access to the Consul Server cluster over the HTTP API port (default: 8500),
+  you can use the `allowed_inbound_cidr_blocks_http_api` parameter to control the list of [CIDR blocks](
+  https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing), and the `allowed_inbound_tags_http_api` to control the
   list of tags that will be allowed access.
-- **External DNS Access**: For external access to the Consul Server cluster via the DNS port (default: 8600),
+
+* **External DNS Access**: For external access to the Consul Server cluster via the DNS port (default: 8600),
   you can use the `allowed_inbound_cidr_blocks_dns` parameter to control the list of CIDR blocks, and the
   `allowed_inbound_tags_dns` to control the list of tags that will be allowed access.
 
 Note that all the ports mentioned above are configurable via the `xxx_port` variables (e.g. `server_rpc_port`). See
 [variables.tf](variables.tf) for the full list.
 
+
+
 ### SSH access
 
-You can SSH to the Compute Instances using the [conventional methods offered by GCE](https://cloud.google.com/compute/docs/instances/connecting-to-instance). Google [strongly recommends](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys) that you connect to an Instance [from your web
+You can SSH to the Compute Instances using the [conventional methods offered by GCE](
+https://cloud.google.com/compute/docs/instances/connecting-to-instance). Google [strongly recommends](
+https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys) that you connect to an Instance [from your web
 browser](https://cloud.google.com/compute/docs/instances/connecting-to-instance#sshinbrowser) or using the [gcloud
 command line tool](https://cloud.google.com/compute/docs/instances/connecting-to-instance#sshingcloud).
 
 If you must manually manage your SSH keys, use the `custom_metadata` property to specify accepted SSH keys in the format
 required by GCE.
 
+
+
 ## What's NOT included in this module?
 
 This module does NOT handle the following items, which you may want to provide on your own:
 
-- [Monitoring, alerting, log aggregation](#monitoring-alerting-log-aggregation)
-- [VPCs, subnetworks, route tables](#vpcs-subnetworks-route-tables)
-- [DNS entries](#dns-entries)
+* [Monitoring, alerting, log aggregation](#monitoring-alerting-log-aggregation)
+* [VPCs, subnetworks, route tables](#vpcs-subnetworks-route-tables)
+* [DNS entries](#dns-entries)
+
 
 ### Monitoring, alerting, log aggregation
 
@@ -277,11 +321,13 @@ logging, and diagnostics platform that works with both GCP and AWS.
 If you wish to install the StackDriver monitoring agent or logging agent, pass the desired installation instructions to
 the `startup_script` property.
 
+
 ### VPCs, subnetworks, route tables
 
 This module assumes you've already created your network topology (VPC, subnetworks, route tables, etc). By default,
 it will use the "default" network for the Project you select, but you may specify custom networks via the `network_name`
 and `subnetwork_name` properties.
+
 
 ### DNS entries
 
