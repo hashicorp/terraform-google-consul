@@ -84,7 +84,7 @@ function install_dependencies {
 function create_consul_user {
   local -r username="$1"
 
-  if $(os_user_exists "$username"); then
+  if os_user_exists "$username"; then
     echo "User $username already exists. Will not create again."
   else
     log_info "Creating user named $username"
