@@ -1,48 +1,56 @@
-workspace_root: &workspace_root
-  /go/src/github.com/hashicorp/terraform-google-consul
-
 defaults: &defaults
-  working_directory: *workspace_root
   docker:
-  - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.11
+    - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.13
 
 version: 2
 jobs:
-  build:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: *workspace_root
-      - restore_cache:
-          keys:
-            - dep-{{ checksum "test/Gopkg.lock" }}
-      - run: configure-environment-for-gruntwork-module --go-src-path test --use-go-dep --circle-ci-2
-      - save_cache:
-          key: dep-{{ checksum "test/Gopkg.lock" }}
-          paths:
-          - /go/src/github.com/hashicorp/terraform-google-consul/test/vendor
-      - persist_to_workspace:
-          root: *workspace_root
-          paths: test/vendor
   test:
     <<: *defaults
     steps:
       - checkout
-      - run: echo 'export PATH=$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
-      - attach_workspace:
-          at: *workspace_root
-      # Write service account creds to disk where the API expects them
-      - run: |
-          export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcloud.json" && \
-          echo $GCLOUD_SERVICE_KEY > /tmp/gcloud.json && \
-          run-go-tests --circle-ci-2 --path test
+
+      # The weird way you have to set PATH in Circle 2.0
+      - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$PATH' >> $BASH_ENV
+
+      - run:
+          name: install gruntwork tooling
+          command: |
+            sudo apt-get -y update
+            curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
+            gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.28.2"
+            gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag "v0.29.0"
+            configure-environment-for-gruntwork-module \
+              --terragrunt-version NONE \
+              --packer-version 1.6.2 \
+              --terraform-version 0.12.28
+
+      - run:
+          name: run tests
+          # Note that we add TF_WARN_OUTPUT_ERRORS=1 below to work around a Terraform bug that appears when you run
+          # destroy: https://github.com/hashicorp/terraform/issues/17862
+          command: |
+            mkdir -p /tmp/logs
+            # required for terraform and terratest to authenticate correctly
+            echo $GCLOUD_SERVICE_KEY > /tmp/gcloud.json
+            export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcloud.json"
+            TF_WARN_OUTPUT_ERRORS=1 run-go-tests --path test --timeout 1h | tee /tmp/logs/all.log
+          no_output_timeout: 3600s
+
+      - run:
+          name: parse test output
+          command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
+          when: always
+
+      - store_artifacts:
+          path: /tmp/logs
+      - store_test_results:
+          path: /tmp/logs
 
 workflows:
   version: 2
   build-and-test:
     jobs:
-    - build
-    - test:
-        requires:
-        - build
+      - test:
+          filters:
+            tags:
+              only: /^v.*/

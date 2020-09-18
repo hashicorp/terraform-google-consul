@@ -9,12 +9,9 @@ DNS Forwarding Guide](https://www.consul.io/docs/guides/forwarding.html) for mor
 
 This script has been tested on the following operating systems:
 
-* Ubuntu 16.04
-* Ubuntu 18.04
+- Ubuntu 18.04
 
 There is a good chance it will work on other flavors of Debian as well.
-
-
 
 ## Quick start
 
@@ -22,8 +19,8 @@ To install Dnsmasq, use `git` to clone this repository at a specific tag (see th
 for all available tags) and run the `install-dnsmasq` script:
 
 ```
-git clone --branch <VERSION> https://github.com/gruntwork-io/consul-gcp-module.git
-consul-gcp-module/modules/install-dnsmasq/install-dnsmasq
+git clone --branch <VERSION> https://github.com/hashicorp/terraform-google-consul.git
+./terraform-google-consul/modules/install-dnsmasq/install-dnsmasq
 ```
 
 Note: by default, the `install-dnsmasq` script assumes that a Consul agent is already running locally and connected to
@@ -38,26 +35,20 @@ We recommend running the `install-dnsmasq` script as part of a [Packer](https://
 [Google Image](https://cloud.google.com/compute/docs/images) (see the [consul-image example](https://github.com/hashicorp/terraform-google-consul/tree/master/examples/consul-image) for
 sample code).
 
-
-
-
 ## Command line Arguments
 
 The `install-dnsmasq` script accepts the following arguments:
 
-* `consul-domain DOMAIN`: The domain name to point to Consul. Optional. Default: `consul`.
-* `consul-ip IP`: The IP address to use for Consul. Optional. Default: `127.0.0.1`. This assumes a Consul agent is
+- `consul-domain DOMAIN`: The domain name to point to Consul. Optional. Default: `consul`.
+- `consul-ip IP`: The IP address to use for Consul. Optional. Default: `127.0.0.1`. This assumes a Consul agent is
   running locally and connected to a Consul cluster.
-* `consul-dns-port PORT`: The port Consul uses for DNS requests. Optional. Default: `8600`.
+- `consul-dns-port PORT`: The port Consul uses for DNS requests. Optional. Default: `8600`.
 
 Example:
 
 ```
 install-dnsmasq
 ```
-
-
-
 
 ## Troubleshooting
 

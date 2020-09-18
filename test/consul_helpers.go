@@ -12,8 +12,9 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/gruntwork-io/terratest/modules/test-structure"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/hashicorp/consul/api"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -60,6 +61,10 @@ var (
 // 2. Building the Image in the consul-image example with the given build name
 // 3. Deploying that Image using the consul-cluster Terraform code
 // 4. Checking that the Consul cluster comes up within a reasonable time period and can respond to requests
+// 5. Writing a random key to the KV store using one of the Consul clients
+// 6. Building a new Image using the consul-image example with the given build name
+// 7. Redeploying both of the cluster instance groups using the new image
+// 8. Validating the rolling deployment by verifying the key was propagated correctly
 func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder string, packerTemplatePath string) {
 	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, RepoRoot, examplesFolder)
 
@@ -80,14 +85,19 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 		test_structure.SaveArtifactID(t, exampleFolder, imageID)
 	})
 
+	defer test_structure.RunTestStage(t, "cleanup_images", func() {
+		projectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
+		imageName := test_structure.LoadArtifactID(t, exampleFolder)
+		secondImageName := test_structure.LoadString(t, exampleFolder, "Artifact2")
+		image1 := gcp.FetchImage(t, projectID, imageName)
+		image2 := gcp.FetchImage(t, projectID, secondImageName)
+		defer image1.DeleteImage(t)
+		defer image2.DeleteImage(t)
+	})
+
 	defer test_structure.RunTestStage(t, "teardown", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
 		terraform.Destroy(t, terraformOptions)
-
-		projectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
-		imageName := test_structure.LoadArtifactID(t, exampleFolder)
-		image := gcp.FetchImage(t, projectID, imageName)
-		defer image.DeleteImage(t)
 	})
 
 	test_structure.RunTestStage(t, "deploy", func() {
@@ -135,6 +145,50 @@ func runConsulClusterTest(t *testing.T, packerBuildName string, examplesFolder s
 
 		// Check the Consul clients
 		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
+
+		// Write a random KV store key to one of the clients
+		randomKeyName := writeConsulClusterKVStore(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
+
+		test_structure.SaveString(t, exampleFolder, "RandomKeyName", randomKeyName)
+	})
+
+	test_structure.RunTestStage(t, "build_2nd_image", func() {
+		projectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
+		gcpZone := test_structure.LoadString(t, exampleFolder, GcpZoneVarName)
+
+		// Build a new image in the same zone
+		imageID := buildImage(t, packerTemplatePath, packerBuildName, projectID, gcpZone)
+		test_structure.SaveString(t, exampleFolder, "Artifact2", imageID)
+	})
+
+	test_structure.RunTestStage(t, "redeploy_cluster", func() {
+		newImage := test_structure.LoadString(t, exampleFolder, "Artifact2")
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+
+		// Switch the two instance groups to use the new image
+		terraformOptions.Vars[ConsulClusterExampleVarServerSourceImage] = newImage
+		terraformOptions.Vars[ConsulClusterExampleVarClientSourceImage] = newImage
+		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
+
+		// Redeploy the cluster by running Terraform apply
+		terraform.Apply(t, terraformOptions)
+	})
+
+	test_structure.RunTestStage(t, "validate_key_exists", func() {
+		gcpProjectID := test_structure.LoadString(t, exampleFolder, GcpProjectIdVarName)
+		gcpRegion := test_structure.LoadString(t, exampleFolder, GcpRegionVarName)
+		keyName := test_structure.LoadString(t, exampleFolder, "RandomKeyName")
+
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+
+		// Check the Consul servers
+		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputServerInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
+
+		// Check the Consul clients
+		checkConsulClusterIsWorking(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion)
+
+		// Read the KV store key using one of the clients
+		checkConsulClusterKVStoreHasKey(t, ConsulClusterExampleOutputClientInstanceGroupName, terraformOptions, gcpProjectID, gcpRegion, keyName)
 	})
 }
 
@@ -148,14 +202,7 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 
 	// Check every 5 seconds until an instance has joined the managed instance group
 	ip := retry.DoWithRetry(t, fmt.Sprintf("Waiting for instances in group %s", groupName), maxRetries, timeBetweenRetries, func() (string, error) {
-		instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
-
-		instance, err := instanceGroup.GetRandomInstanceE(t)
-		if err != nil {
-			return "", err
-		}
-
-		ip, err := instance.GetPublicIpE(t)
+		ip, err := getPublicIPFromRandomInstanceE(t, projectID, region, groupName)
 		if err != nil {
 			return "", err
 		}
@@ -163,28 +210,39 @@ func checkConsulClusterIsWorking(t *testing.T, groupNameOutputVar string, terrat
 		return ip, nil
 	})
 
-	testConsulCluster(t, ip)
+	logger.Logf(t, "Consul cluster is working correctly. Got member IP: %s", ip)
+	testConsulCluster(t, projectID, region, groupName)
 }
 
-// Use a Consul client to connect to the given node and use it to verify that:
+// Pick a random node from the Consul cluster and use it to verify that:
 //
 // 1. The Consul cluster has deployed
-// 2. The cluster has the expected number of members
+// 2. The cluster has the expected number of nodes
 // 3. The cluster has elected a leader
-func testConsulCluster(t *testing.T, nodeIPAddress string) {
-	consulClient := createConsulClient(t, nodeIPAddress)
+//
+// Note: We must pick a random node each time as nodes may be removed during
+// the rolling deployment or a new leader needs to be elected.
+func testConsulCluster(t *testing.T, projectID string, region string, groupName string) {
 	maxRetries := 60
 	sleepBetweenRetries := 10 * time.Second
-	expectedMembers := ConsulClusterExampleDefaultNumClients + ConsulClusterExampleDefaultNumServers
+	expectedNodes := ConsulClusterExampleDefaultNumClients + ConsulClusterExampleDefaultNumServers
 
-	leader := retry.DoWithRetry(t, "Check Consul members", maxRetries, sleepBetweenRetries, func() (string, error) {
-		members, err := consulClient.Agent().Members(false)
+	leader := retry.DoWithRetry(t, "Check Consul nodes", maxRetries, sleepBetweenRetries, func() (string, error) {
+		nodeIPAddress, err := getPublicIPFromRandomInstanceE(t, projectID, region, groupName)
 		if err != nil {
 			return "", err
 		}
 
-		if len(members) != expectedMembers {
-			return "", fmt.Errorf("Expected the cluster to have %d members, but found %d", expectedMembers, len(members))
+		// Create a Consul Client to query the available node
+		consulClient := createConsulClient(t, nodeIPAddress)
+
+		nodes, _, err := consulClient.Catalog().Nodes(nil)
+		if err != nil {
+			return "", err
+		}
+
+		if len(nodes) != expectedNodes {
+			return "", fmt.Errorf("Expected the cluster to have %d nodes, but found %d", expectedNodes, len(nodes))
 		}
 
 		leader, err := consulClient.Status().Leader()
@@ -200,6 +258,71 @@ func testConsulCluster(t *testing.T, nodeIPAddress string) {
 	})
 
 	logger.Logf(t, "Consul cluster is properly deployed and has elected leader %s", leader)
+}
+
+func getPublicIPFromRandomInstanceE(t *testing.T, projectID string, region string, groupName string) (string, error) {
+	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
+
+	instance, err := instanceGroup.GetRandomInstanceE(t)
+	if err != nil {
+		return "", err
+	}
+
+	ip, err := instance.GetPublicIpE(t)
+	if err != nil {
+		return "", err
+	}
+
+	return ip, nil
+}
+
+func writeConsulClusterKVStore(t *testing.T, groupNameOutputVar string, terratestOptions *terraform.Options, projectID string, region string) string {
+	groupName := terraform.OutputRequired(t, terratestOptions, groupNameOutputVar)
+
+	// get a random instance from the consul clients instance group
+	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
+	instance, err := instanceGroup.GetRandomInstanceE(t)
+	require.NoError(t, err)
+
+	ip, err := instance.GetPublicIpE(t)
+	require.NoError(t, err)
+
+	consulClient := createConsulClient(t, ip)
+
+	// Get a handle to the KV API
+	kv := consulClient.KV()
+
+	// PUT a new KV pair
+	uniqueID := strings.ToLower(random.UniqueId())
+	randomKeyName := fmt.Sprintf("random-key-%s", uniqueID)
+	logger.Logf(t, "Writing random key %s to the Consul client %s", randomKeyName, ip)
+	p := &api.KVPair{Key: randomKeyName, Value: []byte("bar")}
+	_, err = kv.Put(p, nil)
+	require.NoError(t, err)
+
+	return randomKeyName
+}
+
+func checkConsulClusterKVStoreHasKey(t *testing.T, groupNameOutputVar string, terratestOptions *terraform.Options, projectID string, region string, keyName string) {
+	groupName := terraform.OutputRequired(t, terratestOptions, groupNameOutputVar)
+
+	// get a random instance from the consul clients instance group
+	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectID, region, groupName)
+	instance, err := instanceGroup.GetRandomInstanceE(t)
+	require.NoError(t, err)
+
+	ip, err := instance.GetPublicIpE(t)
+	require.NoError(t, err)
+
+	consulClient := createConsulClient(t, ip)
+
+	// Get a handle to the KV API
+	kv := consulClient.KV()
+
+	// Verify the given key exists
+	pair, _, err := kv.Get(keyName, nil)
+	require.NoError(t, err)
+	logger.Logf(t, "Successfully verified target key %s has propagated with value: %s", keyName, pair.Value)
 }
 
 // Create a Consul client
