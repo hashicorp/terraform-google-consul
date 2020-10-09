@@ -9,6 +9,7 @@ DNS Forwarding Guide](https://www.consul.io/docs/guides/forwarding.html) and [Gi
 
 This script has been tested on the following operating systems:
 
+- Ubuntu 16.04
 - Ubuntu 18.04
 
 ## Quick start
