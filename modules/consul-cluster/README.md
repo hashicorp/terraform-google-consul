@@ -34,7 +34,7 @@ module "consul_cluster" {
   # Configure and start Consul during boot. It will automatically form a cluster with all nodes that have that
   # same tag.
   # Ensure the Consul node correctly leaves the cluster when the instance restarts or terminates.
-  startup_script = <<-EOF
+  shutdown_script = <<-EOF
               #!/bin/bash
               /opt/consul/bin/consul leave
               EOF
