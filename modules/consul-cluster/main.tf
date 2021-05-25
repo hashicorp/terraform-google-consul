@@ -77,6 +77,10 @@ resource "google_compute_instance_template" "consul_server" {
     on_host_maintenance = "MIGRATE"
     preemptible         = false
   }
+  
+  shielded_instance_config {	
+    enable_secure_boot = true	
+  }
 
   disk {
     boot         = true
