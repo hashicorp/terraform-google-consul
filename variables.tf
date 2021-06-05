@@ -95,3 +95,15 @@ variable "consul_client_allowed_inbound_cidr_blocks_dns" {
   type        = list(string)
   default     = []
 }
+
+variable "consul_server_machine_type" {
+  description = "The Google Compute VM type used to launch each node in the Consul Server cluster."
+  type        = string
+  default     = "g1-small"
+}
+
+variable "consul_client_machine_type" {
+  description = "The Google Compute VM type used to launch each node in the Consul Client cluster."
+  type        = string
+  default     = "g1-small"
+}
