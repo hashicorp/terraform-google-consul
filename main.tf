@@ -32,7 +32,7 @@ module "consul_servers" {
   cluster_description = "Consul Server cluster"
   cluster_size        = var.consul_server_cluster_size
   cluster_tag_name    = var.consul_server_cluster_tag_name
-  startup_script      = data.template_file.startup_script_server.rendered
+  startup_script      = local.startup_script_server
   shutdown_script     = file("${path.module}/examples/root-example/shutdown-script.sh")
 
   # Grant API and DNS access to requests originating from the the Consul client cluster we create below.
@@ -77,14 +77,11 @@ module "consul_servers" {
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
 # This script will configure and start Consul.
-data "template_file" "startup_script_server" {
-  template = file(
+locals {
+  startup_script_server = templatefile(
     "${path.module}/examples/root-example/startup-script-server.sh",
+    { cluster_tag_name = var.consul_server_cluster_tag_name },
   )
-
-  vars = {
-    cluster_tag_name = var.consul_server_cluster_tag_name
-  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -106,7 +103,7 @@ module "consul_clients" {
   cluster_description = "Consul Clients cluster"
   cluster_size        = var.consul_client_cluster_size
   cluster_tag_name    = var.consul_client_cluster_tag_name
-  startup_script      = data.template_file.startup_script_client.rendered
+  startup_script      = local.startup_script_client
   shutdown_script     = file("${path.module}/examples/root-example/shutdown-script.sh")
 
   allowed_inbound_tags_http_api        = [var.consul_client_cluster_tag_name]
@@ -135,14 +132,11 @@ module "consul_clients" {
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
 # This script will configure and start Consul.
-data "template_file" "startup_script_client" {
-  template = file(
+locals {
+  startup_script_client = templatefile(
     "${path.module}/examples/root-example/startup-script-client.sh",
+    { cluster_tag_name = var.consul_server_cluster_tag_name },
   )
-
-  vars = {
-    cluster_tag_name = var.consul_server_cluster_tag_name
-  }
 }
 
 data "google_compute_zones" "available" {
