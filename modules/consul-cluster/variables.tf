@@ -187,12 +187,6 @@ variable "instance_group_update_policy_max_unavailable_percent" {
   default     = null
 }
 
-variable "instance_group_update_policy_min_ready_sec" {
-  description = "Minimum number of seconds to wait for after a newly created instance becomes available. This value must be between 0-3600."
-  type        = number
-  default     = 300
-}
-
 # Metadata
 
 variable "metadata_key_name_for_cluster_size" {
