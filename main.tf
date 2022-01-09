@@ -10,6 +10,10 @@ provider "google" {
   region = var.gcp_region
 }
 
+provider "google-beta" {
+  region = var.gcp_region
+}
+
 terraform {
   # The modules used in this example have been updated with 0.12 syntax, which means the example is no longer
   # compatible with any versions below 0.12.
@@ -72,6 +76,7 @@ module "consul_servers" {
   instance_group_update_policy_minimal_action        = "REPLACE"
   instance_group_update_policy_max_surge_fixed       = length(data.google_compute_zones.available.names)
   instance_group_update_policy_max_unavailable_fixed = 0
+  instance_group_update_policy_min_ready_sec         = 300
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
@@ -129,6 +134,7 @@ module "consul_clients" {
   instance_group_update_policy_minimal_action        = "REPLACE"
   instance_group_update_policy_max_surge_fixed       = 1 * length(data.google_compute_zones.available.names)
   instance_group_update_policy_max_unavailable_fixed = 1 * length(data.google_compute_zones.available.names)
+  instance_group_update_policy_min_ready_sec         = 50
 }
 
 # Render the Startup Script that will run on each Consul Server Instance on boot.
