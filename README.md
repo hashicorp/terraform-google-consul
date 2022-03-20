@@ -1,4 +1,9 @@
-[![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_gcp_consul)
+# DISCLAIMER: This is no longer supported.
+Moving forward in the future this repository will be no longer supported and eventually lead to
+deprecation. Please use our latest versions of our products moving forward or alternatively you
+may fork the repository to continue use and development for your personal/business use.
+
+---
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 
 # Consul for Google Cloud Platform (GCP)
@@ -51,7 +56,7 @@ is a Terraform Module and contains many "submodules" which can be composed toget
 
 ## Who maintains this Terraform Module?
 
-This Terraform Module is maintained by [Gruntwork](http://www.gruntwork.io/). If you're looking for help or commercial
+This Terraform Module is maintained by [Gruntwork](https://www.gruntwork.io/?ref=repo_gcp_consul). If you're looking for help or commercial
 support, send an email to [modules@gruntwork.io](mailto:modules@gruntwork.io?Subject=Consul%20Terraform%20Module).
 Gruntwork can help with:
 
@@ -94,4 +99,4 @@ MINOR, and PATCH versions on each release to indicate any incompatibilities.
 This code is released under the Apache 2.0 License. Please see [LICENSE](https://github.com/hashicorp/terraform-google-consul/tree/master/LICENSE) and [NOTICE](https://github.com/hashicorp/terraform-google-consul/tree/master/NOTICE) for more
 details.
 
-Copyright &copy; 2017 Gruntwork, Inc.
+Copyright &copy; 2017 [Gruntwork](https://www.gruntwork.io/?ref=repo_gcp_consul), Inc.
