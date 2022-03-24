@@ -1,4 +1,9 @@
-[![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_gcp_consul)
+# DISCLAIMER: This is no longer supported.
+Moving forward in the future this repository will be no longer supported and eventually lead to
+deprecation. Please use our latest versions of our products moving forward or alternatively you
+may fork the repository to continue use and development for your personal/business use.
+
+---
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 
 # Consul for Google Cloud Platform (GCP)
@@ -49,16 +54,10 @@ To deploy Consul clients using this Module:
 A Terraform Module refers to a self-contained packages of Terraform configurations that are managed as a group. This repo
 is a Terraform Module and contains many "submodules" which can be composed together to create useful infrastructure patterns.
 
-## Who maintains this Terraform Module?
+## Who created this Module?
 
-This Terraform Module is maintained by [Gruntwork](http://www.gruntwork.io/). If you're looking for help or commercial
-support, send an email to [modules@gruntwork.io](mailto:modules@gruntwork.io?Subject=Consul%20Terraform%20Module).
-Gruntwork can help with:
+These modules were created by [Gruntwork](http://www.gruntwork.io/?ref=repo_gcp_consul), in partnership with HashiCorp, in 2017 and maintained through 2021. They were deprecated in 2022, see the top of the README for details.
 
-- Setup, customization, and support for this Terraform Module.
-- Terraform Module for other types of Google Cloud infrastructure.
-- Terraform Modules that meet compliance requirements, such as HIPAA.
-- Consulting & Training on Google Cloud, AWS, Terraform, and DevOps.
 
 ## Code included in this Terraform Module:
 
@@ -76,9 +75,6 @@ Gruntwork can help with:
   and configure it to forward requests for a specific domain to Consul. This allows you to use Consul as a DNS server
   for URLs such as `foo.service.consul`.
 
-## How do I contribute to this Terraform Module?
-
-Contributions are very welcome! Check out the [Contribution Guidelines](https://github.com/hashicorp/terraform-google-consul/tree/master/CONTRIBUTING.md) for instructions.
 
 ## How is this Terraform Module versioned?
 
@@ -94,4 +90,4 @@ MINOR, and PATCH versions on each release to indicate any incompatibilities.
 This code is released under the Apache 2.0 License. Please see [LICENSE](https://github.com/hashicorp/terraform-google-consul/tree/master/LICENSE) and [NOTICE](https://github.com/hashicorp/terraform-google-consul/tree/master/NOTICE) for more
 details.
 
-Copyright &copy; 2017 Gruntwork, Inc.
+Copyright &copy; 2017 [Gruntwork](https://www.gruntwork.io/?ref=repo_gcp_consul), Inc.
