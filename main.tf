@@ -48,7 +48,7 @@ module "consul_servers" {
   #                 to contain between 2 - 4 times the working set size.
   # - root_volume_disk_type: pd-ssd or local-ssd (for write-heavy workloads, use SSDs for the best write throughput)
   # - root_volume_disk_size_gb: Consul's data set is persisted, so this depends on the size of your expected data set
-  machine_type = "g1-small"
+  machine_type = var.consul_server_machine_type
 
   root_volume_disk_type    = "pd-standard"
   root_volume_disk_size_gb = "20"
@@ -115,7 +115,7 @@ module "consul_clients" {
   allowed_inbound_tags_dns        = [var.consul_client_cluster_tag_name]
   allowed_inbound_cidr_blocks_dns = var.consul_client_allowed_inbound_cidr_blocks_dns
 
-  machine_type             = "g1-small"
+  machine_type             = var.consul_client_machine_type
   root_volume_disk_type    = "pd-standard"
   root_volume_disk_size_gb = "20"
 
